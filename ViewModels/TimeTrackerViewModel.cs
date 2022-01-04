@@ -29,14 +29,15 @@ namespace TimeTracker.ViewModels
         private DateTime  trackingStartedAt;
         private DateTime  trackingStopedAt;
         private TimeSpan timeTrackedSaved;
-        private List<TimeLog> timeLogs = new List<TimeLog>();
+        private List<TimeLog> timeLogs = new List<TimeLog>();        
+
         #endregion
 
         #region constructor
         public TimeTrackerViewModel() {
             CloseCommand = new RelayCommand(CloseCommandExecute);
             StartStopCommand = new RelayCommand(StartStopCommandExecute, CanStartStopCommandExecute);
-            EODReportsCommand = new RelayCommand(EODReportsCommandExecute, CanEODReportsCommandExecute);
+            EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
 
 
@@ -128,8 +129,18 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        #endregion
+        private bool canSendReport=true;
 
+        public bool CanSendReport
+        {
+            get { return canSendReport; }
+            set { 
+                canSendReport = value;
+                OnPropertyChanged(nameof(CanSendReport));
+            }
+        }
+
+        #endregion
 
         #region commands
         public RelayCommand CloseCommand { get; set; }
@@ -159,14 +170,16 @@ namespace TimeTracker.ViewModels
             if (trackerIsOn)
             {
                 idlTimeDetectionTimer.Stop();
+                CanSendReport = true;
             }
             else
             {                
                 idlTimeDetectionTimer.Start();
+                CanSendReport = false;
             }
             await SetTrackerStatus();
             timeTrackedSaved = await GetCurrrentdatTimeTracked();
-            ShowTimeTracked();
+            ShowTimeTracked(true);
         }
         public void EODReportsCommandExecute()
         {
@@ -262,8 +275,6 @@ namespace TimeTracker.ViewModels
             {
                 StartStopButtontext = "Start";
                 trackingStopedAt = DateTime.Now;
-                var timeTracked = trackingStopedAt - trackingStartedAt;                
-
                 var rest = new REST(new HttpProviders());
 
                 var result = await rest.AddTimeLog(new TimeLog()
@@ -295,22 +306,29 @@ namespace TimeTracker.ViewModels
         }
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            CurrentImagePath =  Utilities.TimeManager.CaptureMyScreen();
-            ShowTimeTracked();
+            ShowTimeTracked(false);
+            captureScreen();
+        }
+        private void captureScreen()
+        {
+            CurrentImagePath = Utilities.TimeManager.CaptureMyScreen();
         }
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
         {
-            var idleTime = IdleTimeDetector.GetIdleTimeInfo();
-
-            if (idleTime.IdleTime.TotalMinutes >= 10)
+            if (trackerIsOn)
             {
-                SetTrackerStatus();                
-            }
-            else
-            {                
-                if (!trackerIsOn)
+                var idleTime = IdleTimeDetector.GetIdleTimeInfo();
+
+                if (idleTime.IdleTime.TotalMinutes >= 10)
                 {
                     SetTrackerStatus();
+                }
+                else
+                {
+                    if (!trackerIsOn)
+                    {
+                        SetTrackerStatus();
+                    }
                 }
             }
         }
@@ -335,17 +353,20 @@ namespace TimeTracker.ViewModels
         }
         private bool CanStartStopCommandExecute() {
             return !string.IsNullOrEmpty(taskName) && taskName.Length > 0; 
-        }
-        private bool CanEODReportsCommandExecute()
-        {
-            return !trackerIsOn;
-        }
-        private void ShowTimeTracked()
+        }        
+        private void ShowTimeTracked(bool currentSessionSaved= false )
         {
             var sessionTimeTracked = DateTime.Now.Subtract(trackingStartedAt);
             CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
-            TimeSpan totalTimeTracked = (timeTrackedSaved + sessionTimeTracked);
-            CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+            if (currentSessionSaved) {
+                TimeSpan totalTimeTracked = timeTrackedSaved ;
+                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+            }
+            else 
+            {
+                TimeSpan totalTimeTracked = (timeTrackedSaved + sessionTimeTracked);
+                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+            }            
         }
         #endregion
     }

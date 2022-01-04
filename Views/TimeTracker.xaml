@@ -54,7 +54,7 @@
         <Label Grid.Row="1">Current Session</Label>
 
         <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
-        <Button Content="{Binding StartStopButtontext}" Grid.Row="1" Grid.Column="3" Command="{Binding StartStopCommand}" Height="30"/>
+        <Button Content="{Binding StartStopButtontext}" Grid.Row="1" Grid.Column="2" Command="{Binding StartStopCommand}" Height="30"/>
 
         <StackPanel Grid.Row="2" Orientation="Vertical">
             <Label>Today</Label>          
@@ -63,7 +63,7 @@
             <Label Content="{Binding CurrentDayTimeTracked}"/>
         </StackPanel>
 
-        <Button Content="EOD " Grid.Row="2" Grid.Column="3" Command="{Binding EODReportsCommand}" Height="30"/>
+        <Button Content="Send EOD Report" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" Height="30" IsEnabled="{Binding CanSendReport}"/>
 
         <StackPanel Grid.Row="3" Orientation="Vertical" Visibility="Hidden">
             <Label>This week</Label>
@@ -81,11 +81,11 @@
             <TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}"></TextBox>
         </StackPanel>      
         
-        <Border Grid.Row="5"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray">
+        <Border Grid.Row="5"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="10">
             <Image Source="{Binding CurrentImagePath}">
         </Image>
         </Border>
-        <Button Grid.Row="7" Grid.Column="2" Width="75" Margin="4" Command="{Binding LogoutCommand}">Logout</Button>
+        <Button Grid.Row="7" Grid.Column="2" Width="80" Margin="4" Command="{Binding LogoutCommand}">Logout</Button>
         <Button Grid.Row="7" Grid.Column="3" Width="65" Margin="4" Command="{Binding CloseCommand}">Close</Button>
     </Grid>
 </Window>

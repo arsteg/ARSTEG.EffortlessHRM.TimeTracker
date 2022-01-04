@@ -21,8 +21,23 @@ namespace TimeTracker.Views
     {
         public Login()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            this.Loaded += Login_Loaded;
         }
+
+        private void Login_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (Properties.Settings.Default.userName != string.Empty)
+            {
+                ((LoginViewModel)this.DataContext).UserName = Properties.Settings.Default.userName;                
+            }
+            if (Properties.Settings.Default.userPassword != string.Empty)
+            {                
+                this.txtPassword.Password = Properties.Settings.Default.userPassword;
+                this.chkRememberMe.IsChecked = true;
+            }
+        }
+
         private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
             if (this.DataContext != null)

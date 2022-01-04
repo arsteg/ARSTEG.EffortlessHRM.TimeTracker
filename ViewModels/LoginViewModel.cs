@@ -31,7 +31,7 @@ namespace TimeTracker.ViewModels
         #endregion
 
         #region public properties
-        private string username="mohdrafionline1@gmail.com";
+        private string username;
         public string UserName
         {
             get { return username; }
@@ -49,6 +49,41 @@ namespace TimeTracker.ViewModels
             {
                 password = value;
                 OnPropertyChanged(nameof(Password));
+               if (rememberMe)
+                {
+                    Properties.Settings.Default.userName = UserName;
+                    Properties.Settings.Default.userPassword = Password;
+                    Properties.Settings.Default.Save();
+                }
+                else
+                {
+                    Properties.Settings.Default.userName = "";
+                    Properties.Settings.Default.userPassword = "";
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
+        private bool rememberMe;
+        public bool RememberMe
+        {
+            get { return rememberMe; }
+            set
+            {
+                rememberMe = value;
+                OnPropertyChanged(nameof(RememberMe));
+                if (rememberMe)
+                {
+                    Properties.Settings.Default.userName = UserName;
+                    Properties.Settings.Default.userPassword = Password;
+                    Properties.Settings.Default.Save();
+                }
+                else
+                {
+                    Properties.Settings.Default.userName = "";
+                    Properties.Settings.Default.userPassword = "";
+                    Properties.Settings.Default.Save();
+                }
             }
         }
 

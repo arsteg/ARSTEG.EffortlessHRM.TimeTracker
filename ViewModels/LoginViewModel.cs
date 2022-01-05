@@ -4,7 +4,9 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 using TimeTracker.Models;
 using TimeTracker.Services;
 using TimeTracker.Utilities;
@@ -49,18 +51,6 @@ namespace TimeTracker.ViewModels
             {
                 password = value;
                 OnPropertyChanged(nameof(Password));
-               if (rememberMe)
-                {
-                    Properties.Settings.Default.userName = UserName;
-                    Properties.Settings.Default.userPassword = Password;
-                    Properties.Settings.Default.Save();
-                }
-                else
-                {
-                    Properties.Settings.Default.userName = "";
-                    Properties.Settings.Default.userPassword = "";
-                    Properties.Settings.Default.Save();
-                }
             }
         }
 
@@ -87,13 +77,27 @@ namespace TimeTracker.ViewModels
             }
         }
 
+
+        private int progressWidth =   0;
+        public int ProgressWidth
+        {
+            get { return progressWidth;}
+            set
+            {
+                progressWidth = value;
+                OnPropertyChanged(nameof(ProgressWidth));               
+            }
+        }
+
         #endregion
 
         #region public methods
         public  async void LoginCommandExecute() {
             try
             {
-                var rest = new REST(new HttpProviders());
+                ProgressWidth = 30;
+
+                 var rest = new REST(new HttpProviders());
 
                 var result = await rest.SignIn(new Models.Login() { email = UserName, password = Password });
 
@@ -111,7 +115,11 @@ namespace TimeTracker.ViewModels
             }
             catch(Exception ex)
             {
-                MessageBox.Show("Invalid credentials, Please try again");
+                MessageBox.Show("Invalid credentials, Please try again");                
+            }
+            finally
+            {
+                ProgressWidth = 0;
             }
         }
         public void CloseCommandExecute()

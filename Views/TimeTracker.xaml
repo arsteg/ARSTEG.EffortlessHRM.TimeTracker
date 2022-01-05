@@ -4,12 +4,20 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TimeTracker.Views"
-      mc:Ignorable="d" Height="500" Width="450" WindowStartupLocation="CenterScreen"
+      mc:Ignorable="d" Height="520" Width="450" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
       WindowState="Normal"  WindowStyle="SingleBorderWindow"  ResizeMode="CanMinimize"
-      Background="{DynamicResource MaterialDesignPaper}"
-      TextElement.Foreground="{DynamicResource MaterialDesignBody}">
-
+      Background="{DynamicResource MaterialDesignPaper}"      
+      xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+      xmlns:cmd="http://www.galasoft.ch/mvvmlight"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+      TextElement.Foreground="{DynamicResource MaterialDesignBody}" Title="Effortless HRM- Time Tracker">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <cmd:EventToCommand Command="{Binding CloseCommand}" PassEventArgsToCommand="True" />            
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    
     <Window.Resources>
         <Storyboard x:Key="closeStoryBoard">
             <ThicknessAnimation From="50,0,0,0" To="400,0,0,0" Duration="0:0:0.5" Storyboard.TargetName="LogoPanel" Storyboard.TargetProperty="Margin">
@@ -40,7 +48,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="35"></RowDefinition>
-            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="250"></RowDefinition>
@@ -54,7 +62,7 @@
         <Label Grid.Row="1">Current Session</Label>
 
         <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
-        <Button Content="{Binding StartStopButtontext}" Grid.Row="1" Grid.Column="2" Command="{Binding StartStopCommand}" Height="30"/>
+        <Button Content="{Binding StartStopButtontext}" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" Height="30" HorizontalAlignment="Right" MinWidth="110"/>
 
         <StackPanel Grid.Row="2" Orientation="Vertical">
             <Label>Today</Label>          
@@ -63,7 +71,7 @@
             <Label Content="{Binding CurrentDayTimeTracked}"/>
         </StackPanel>
 
-        <Button Content="Send EOD Report" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" Height="30" IsEnabled="{Binding CanSendReport}"/>
+        <Button x:Name="btnReport" Content="EOD Report" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" Height="30" IsEnabled="{Binding CanSendReport}" HorizontalAlignment="Right" MinWidth="110"/>
 
         <StackPanel Grid.Row="3" Orientation="Vertical" Visibility="Hidden">
             <Label>This week</Label>
@@ -85,6 +93,7 @@
             <Image Source="{Binding CurrentImagePath}">
         </Image>
         </Border>
+        <fa:ImageAwesome Grid.Row="7" Grid.Column="0" Icon="Refresh" Spin="True" Height="30" Width="{Binding ProgressWidth}"/>
         <Button Grid.Row="7" Grid.Column="2" Width="80" Margin="4" Command="{Binding LogoutCommand}">Logout</Button>
         <Button Grid.Row="7" Grid.Column="3" Width="65" Margin="4" Command="{Binding CloseCommand}">Close</Button>
     </Grid>

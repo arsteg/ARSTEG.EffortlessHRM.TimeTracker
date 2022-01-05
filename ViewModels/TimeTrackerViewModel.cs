@@ -15,6 +15,7 @@ using TimeTracker.Services;
 using TimeTracker.Utilities;
 using System.Linq;
 using System.Linq.Expressions;
+using System.ComponentModel;
 
 namespace TimeTracker.ViewModels
 {
@@ -29,13 +30,13 @@ namespace TimeTracker.ViewModels
         private DateTime  trackingStartedAt;
         private DateTime  trackingStopedAt;
         private TimeSpan timeTrackedSaved;
-        private List<TimeLog> timeLogs = new List<TimeLog>();        
-
+        private List<TimeLog> timeLogs = new List<TimeLog>();
+        private bool userIsInactive = false;
         #endregion
 
         #region constructor
         public TimeTrackerViewModel() {
-            CloseCommand = new RelayCommand(CloseCommandExecute);
+            CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
             StartStopCommand = new RelayCommand(StartStopCommandExecute, CanStartStopCommandExecute);
             EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
@@ -44,7 +45,7 @@ namespace TimeTracker.ViewModels
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             idlTimeDetectionTimer.Tick += IdlTimeDetectionTimer_Tick;
-            idlTimeDetectionTimer.Interval = new TimeSpan(00,1,00);
+            idlTimeDetectionTimer.Interval = new TimeSpan(00,10,00);
             var screenCaptureTimeInterval = configuration.GetSection("AppSettings:ScreenCaptureTimeInterval");
             dispatcherTimer.Interval = TimeSpan.Parse(screenCaptureTimeInterval.Value);
             UserName = GlobalSetting.Instance.LoginResult.data.user.email;            
@@ -139,11 +140,21 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(CanSendReport));
             }
         }
+        private int progressWidth = 0;
+        public int ProgressWidth
+        {
+            get { return progressWidth; }
+            set
+            {
+                progressWidth = value;
+                OnPropertyChanged(nameof(ProgressWidth));
+            }
+        }
 
         #endregion
 
         #region commands
-        public RelayCommand CloseCommand { get; set; }
+        public RelayCommand<CancelEventArgs> CloseCommand { get; set; }
         public RelayCommand StartStopCommand { get; set; }
         public RelayCommand EODReportsCommand { get; set; }
         public RelayCommand LogoutCommand { get; set; }
@@ -151,9 +162,32 @@ namespace TimeTracker.ViewModels
         #endregion 
         
         #region public methods
-        public void CloseCommandExecute()
-        {           
-            Application.Current.Shutdown();
+        public async void CloseCommandExecute(CancelEventArgs args)
+        {
+           if(args==null)
+            {
+                if (trackerIsOn)
+                {
+                    MessageBox.Show("Please stop the tracker before closing the application.");
+                    return;
+                }
+                else
+                {
+                    Application.Current.Shutdown();
+                }
+            }
+            else
+            {
+                if (trackerIsOn)
+                {
+                    MessageBox.Show("Please stop the tracker before closing the application.");
+                    args.Cancel = true;                    
+                }
+                else
+                {
+                    Application.Current.Shutdown();
+                }                
+            }
         }
         public void LogoutCommandExecute()
         {
@@ -181,11 +215,12 @@ namespace TimeTracker.ViewModels
             timeTrackedSaved = await GetCurrrentdatTimeTracked();
             ShowTimeTracked(true);
         }
-        public void EODReportsCommandExecute()
+        public async  void EODReportsCommandExecute()
         {
+            ProgressWidth = 30;
             try
             {
-                Task.Run(() =>
+                await Task.Run(() =>
                 {
                     EmailService emailService = new EmailService();
                     var sendGridKey = configuration.GetSection("AppSettings:SendGridKey").Value;
@@ -193,12 +228,16 @@ namespace TimeTracker.ViewModels
                     var subject = $"Daily Report - {GlobalSetting.Instance.LoginResult.data.user.email}";
                     var msgbody = GetEMailBody();
                     var result = emailService.SendEmailAsyncToRecipientUsingSendGrid(sendGridKey, senderEmail, "info@arsteg.com", "", "", subject, msgbody).GetAwaiter().GetResult();
+                    MessageBox.Show("Report has been emailed.");
                 });
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }            
+            }
+            finally{
+                ProgressWidth = 0;
+            }
         }
 
         private string GetEMailBody()
@@ -294,6 +333,7 @@ namespace TimeTracker.ViewModels
                     startTime = trackingStartedAt,
                     endTime = trackingStopedAt
                 });
+                dispatcherTimer.Stop();
             }
             else
             {
@@ -315,19 +355,22 @@ namespace TimeTracker.ViewModels
         }
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
         {
-            if (trackerIsOn)
+            if (trackerIsOn || userIsInactive)
             {
                 var idleTime = IdleTimeDetector.GetIdleTimeInfo();
 
-                if (idleTime.IdleTime.TotalMinutes >= 10)
+                if (idleTime.IdleTime.TotalMinutes >= 2)
                 {
                     SetTrackerStatus();
+                    CanSendReport = true;
+                    userIsInactive = true;
                 }
                 else
                 {
                     if (!trackerIsOn)
                     {
                         SetTrackerStatus();
+                        userIsInactive = false;
                     }
                 }
             }
@@ -367,6 +410,21 @@ namespace TimeTracker.ViewModels
                 TimeSpan totalTimeTracked = (timeTrackedSaved + sessionTimeTracked);
                 CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
             }            
+        }
+        
+        private async Task<TimeLog> SaveLoggedTime() 
+        {
+            trackingStopedAt = DateTime.Now;
+            var rest = new REST(new HttpProviders());
+            var result = await rest.AddTimeLog(new TimeLog()
+            {
+                user = UserName,
+                date = DateTime.Today,
+                task = Taskname,
+                startTime = trackingStartedAt,
+                endTime = trackingStopedAt
+            });
+            return result;
         }
         #endregion
     }

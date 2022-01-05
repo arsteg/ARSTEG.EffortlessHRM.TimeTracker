@@ -8,7 +8,7 @@
         <ResourceDictionary>
             <vm:ViewModelLocator x:Key="Locator" xmlns:vm="clr-namespace:TimeTracker.ViewModels"/>
             <ResourceDictionary.MergedDictionaries>
-                <materialDesign:CustomColorTheme BaseTheme="Light" PrimaryColor="Silver" SecondaryColor="DarkGreen" />
+                <materialDesign:CustomColorTheme BaseTheme="Inherit" PrimaryColor="Silver" SecondaryColor="DarkGreen" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>        

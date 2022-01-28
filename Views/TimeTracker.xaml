@@ -4,10 +4,11 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TimeTracker.Views"
-      mc:Ignorable="d" Height="520" Width="450" WindowStartupLocation="CenterScreen"
+      mc:Ignorable="d" Height="480" Width="400" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
       WindowState="Normal"  WindowStyle="SingleBorderWindow"  ResizeMode="CanMinimize"
       Background="{DynamicResource MaterialDesignPaper}"      
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
       xmlns:cmd="http://www.galasoft.ch/mvvmlight"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
@@ -38,11 +39,12 @@
             </Setter>
         </Style>
     </Window.Resources>
+    <Border BorderBrush="Silver" BorderThickness="1" Margin="5">
     <Grid Margin="2">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150"></ColumnDefinition>
-            <ColumnDefinition Width="100"></ColumnDefinition>
-            <ColumnDefinition Width="100"></ColumnDefinition>
+            <ColumnDefinition Width="125"></ColumnDefinition>
+            <ColumnDefinition Width="80"></ColumnDefinition>
+            <ColumnDefinition Width="80"></ColumnDefinition>
             <ColumnDefinition Width="80"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -51,8 +53,7 @@
             <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="250"></RowDefinition>
-            <RowDefinition Height="20"></RowDefinition>
+            <RowDefinition Height="230"></RowDefinition>            
             <RowDefinition Height="40"></RowDefinition>
         </Grid.RowDefinitions>
 
@@ -62,7 +63,12 @@
         <Label Grid.Row="1">Current Session</Label>
 
         <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
-        <Button Content="{Binding StartStopButtontext}" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" Height="30" HorizontalAlignment="Right" MinWidth="110"/>
+            <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="120">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="{Binding StartStopButtontext}"/>
+                    <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Foreground="White"/>
+                </StackPanel>
+            </Button>
 
         <StackPanel Grid.Row="2" Orientation="Vertical">
             <Label>Today</Label>          
@@ -70,8 +76,12 @@
         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
             <Label Content="{Binding CurrentDayTimeTracked}"/>
         </StackPanel>
-
-        <Button x:Name="btnReport" Content="EOD Report" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" Height="30" IsEnabled="{Binding CanSendReport}" HorizontalAlignment="Right" MinWidth="110"/>
+            <Button x:Name="btnReport" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" IsEnabled="{Binding CanSendReport}" HorizontalAlignment="Right" MinWidth="120">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Report"/>
+                    <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthReport}" Foreground="White"/>
+                </StackPanel>
+            </Button>
 
         <StackPanel Grid.Row="3" Orientation="Vertical" Visibility="Hidden">
             <Label>This week</Label>
@@ -86,17 +96,17 @@
         </StackPanel>
 
         <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3">
-            <TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                <TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignTextBox}"  materialDesign:HintAssist.Hint="Enter current task details here!"></TextBox>
         </StackPanel>      
         
-        <Border Grid.Row="5"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="10">
+        <Border Grid.Row="5"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="5">
             <Image Source="{Binding CurrentImagePath}">
         </Image>
-        </Border>
-        <fa:ImageAwesome Grid.Row="7" Grid.Column="0" Icon="Refresh" Spin="True" Height="30" Width="{Binding ProgressWidth}"/>
-        <Button Grid.Row="7" Grid.Column="2" Width="80" Margin="4" Command="{Binding LogoutCommand}">Logout</Button>
-        <Button Grid.Row="7" Grid.Column="3" Width="65" Margin="4" Command="{Binding CloseCommand}">Close</Button>
+        </Border>        
+        <Button Grid.Row="7" Grid.Column="2" Width="80" Command="{Binding LogoutCommand}">Logout</Button>
+        <Button Grid.Row="7" Grid.Column="3" Width="65" Command="{Binding CloseCommand}">Close</Button>
     </Grid>
+    </Border>
 </Window>
 
 

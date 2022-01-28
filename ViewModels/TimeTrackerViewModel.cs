@@ -126,7 +126,7 @@ namespace TimeTracker.ViewModels
             set
             {
                 taskName = value;
-                OnPropertyChanged(nameof(Taskname));
+                OnPropertyChanged(nameof(Taskname));                
             }
         }
 
@@ -140,14 +140,25 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(CanSendReport));
             }
         }
-        private int progressWidth = 0;
-        public int ProgressWidth
+        private int progressWidthStart = 0;
+        public int ProgressWidthStart
         {
-            get { return progressWidth; }
+            get { return progressWidthStart; }
             set
             {
-                progressWidth = value;
-                OnPropertyChanged(nameof(ProgressWidth));
+                progressWidthStart = value;
+                OnPropertyChanged(nameof(ProgressWidthStart));
+            }
+        }
+
+        private int progressWidthReport = 0;
+        public int ProgressWidthReport
+        {
+            get { return progressWidthReport; }
+            set
+            {
+                progressWidthReport = value;
+                OnPropertyChanged(nameof(ProgressWidthReport));
             }
         }
 
@@ -201,23 +212,34 @@ namespace TimeTracker.ViewModels
         }
         public async void StartStopCommandExecute()
         {
-            if (trackerIsOn)
+            ProgressWidthStart = 30;
+            try
             {
-                idlTimeDetectionTimer.Stop();
-                CanSendReport = true;
+                if (trackerIsOn)
+                {
+                    idlTimeDetectionTimer.Stop();
+                    CanSendReport = true;
+                }
+                else
+                {
+                    idlTimeDetectionTimer.Start();
+                    CanSendReport = false;
+                }
+                await SetTrackerStatus();
+                timeTrackedSaved = await GetCurrrentdatTimeTracked();
+                ShowTimeTracked(true);
             }
-            else
-            {                
-                idlTimeDetectionTimer.Start();
-                CanSendReport = false;
+            catch (Exception ex) {
+                MessageBox.Show(ex.Message);
             }
-            await SetTrackerStatus();
-            timeTrackedSaved = await GetCurrrentdatTimeTracked();
-            ShowTimeTracked(true);
+            finally
+            {
+                ProgressWidthStart = 0;
+            }
         }
         public async  void EODReportsCommandExecute()
         {
-            ProgressWidth = 30;
+            ProgressWidthReport = 30;
             try
             {
                 await Task.Run(() =>
@@ -225,10 +247,18 @@ namespace TimeTracker.ViewModels
                     EmailService emailService = new EmailService();
                     var sendGridKey = configuration.GetSection("AppSettings:SendGridKey").Value;
                     var senderEmail = configuration.GetSection("AppSettings:SenderEmail").Value;
+                    var emailReceiver = configuration.GetSection("EmailReceiver").Value;
                     var subject = $"Daily Report - {GlobalSetting.Instance.LoginResult.data.user.email}";
                     var msgbody = GetEMailBody();
-                    var result = emailService.SendEmailAsyncToRecipientUsingSendGrid(sendGridKey, senderEmail, "info@arsteg.com", "", "", subject, msgbody).GetAwaiter().GetResult();
-                    MessageBox.Show("Report has been emailed.");
+                    if (msgbody!="" && msgbody != null)
+                    {
+                        var receivers = emailReceiver.Split(",");
+                        foreach(var receiver in receivers)
+                        {
+                            var result = emailService.SendEmailAsyncToRecipientUsingSendGrid(sendGridKey, senderEmail, receiver, "", "", subject, msgbody).GetAwaiter().GetResult();
+                        }
+                        MessageBox.Show("Report has been emailed.");
+                    }
                 });
             }
             catch (Exception ex)
@@ -236,56 +266,61 @@ namespace TimeTracker.ViewModels
                 MessageBox.Show(ex.Message);
             }
             finally{
-                ProgressWidth = 0;
+                ProgressWidthReport = 0;
             }
         }
 
         private string GetEMailBody()
         {
-            var totalTimeTracked = GetCurrrentdatTimeTracked().Result;
-            
-            var imageshtml = "";
-            
-            imageshtml += $"<div><hr></div>";
-
-            imageshtml += $"<div>Total time tracked {totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes} minutes</div>";
-
-            imageshtml += $"<div><hr></div>";
-
-            imageshtml += "<div><strong> Screenshots Taken</strong></div>";
-
-            imageshtml += $"<div><hr></div>";
-
-            var folderPath = @$"{Environment.CurrentDirectory}\{DateTime.Now.ToString("yyyy-MM-dd")}";
-            var files = System.IO.Directory.GetFiles(folderPath).ToList();
-            var html = imageshtml;
-            html += @"<table border=1>";
-            for (int i = 0; i < 24; i++)
+            try
             {
-                html += "<tr>";
-                html += $"<td>{i.ToString("00")}:{00}</td>";
-                for (int j = 0; j < 6; j++)
+                var totalTimeTracked = GetCurrrentdatTimeTracked().Result;
+
+                var imageshtml = "";
+
+                imageshtml += $"<div><hr></div>";
+
+                imageshtml += $"<div>Total time tracked {totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes} minutes</div>";
+
+                imageshtml += $"<div><hr></div>";
+
+                imageshtml += "<div><strong> Screenshots Taken</strong></div>";
+
+                imageshtml += $"<div><hr></div>";
+
+                var folderPath = @$"{Environment.CurrentDirectory}\{DateTime.Now.ToString("yyyy-MM-dd")}";
+                var files = System.IO.Directory.GetFiles(folderPath).ToList();
+                var html = imageshtml;
+                html += @"<table border=1>";
+                for (int i = 0; i < 24; i++)
                 {
-                    var file = getFileName(i, j, files);
-                    if (file != "")
+                    html += "<tr>";
+                    html += $"<td>{i.ToString("00")}:{00}</td>";
+                    for (int j = 0; j < 6; j++)
                     {
-                        var filename = Path.GetFileName(file);
-                        var imageContent = File.ReadAllBytes(file);
-                        var htmlImg = @$"<div><img src='cid:{filename}' alt='Captured image file' height='200' width='200'/></div>";                        
-                        html += $"<td style='min- idth:50px'> {htmlImg} </td>";
+                        var file = getFileName(i, j, files);
+                        if (file != "")
+                        {
+                            var filename = Path.GetFileName(file);
+                            var imageContent = File.ReadAllBytes(file);
+                            var htmlImg = @$"<div><img src='cid:{filename}' alt='Captured image file' height='200' width='200'/></div>";
+                            html += $"<td style='min- idth:50px'> {htmlImg} </td>";
+                        }
+                        else
+                        {
+                            html += $"<td style='min-width:150px'></td>";
+                        }
                     }
-                    else
-                    {
-                        html += $"<td style='min-width:150px'></td>";
-                    }
+                    html += "</tr>";
                 }
-                html += "</tr>";
+                html += @"</table>";
+                return $"<html><body>{html}</body></html>";
             }
-            html += @"</table>";
-
-
-
-            return $"<html><body>{html}</body></html>";
+            catch(Exception ex)
+            {                
+                MessageBox.Show(ex.Message);
+                return "";
+            }
         }
 
         private static string getFileName(int r, int c, List<string> files)
@@ -378,21 +413,29 @@ namespace TimeTracker.ViewModels
         private async Task<TimeSpan> GetCurrrentdatTimeTracked()
         {
             var totalTime = new TimeSpan();
-            var rest = new REST(new HttpProviders());
-            var result = await rest.GetTimeLogs(new TimeLog()
+            try
             {
-                user = UserName,
-                date = DateTime.Today,
-                task = Taskname,
-                startTime = trackingStartedAt,
-                endTime = trackingStopedAt
-            });
-            
-            foreach (var timeLog in result.data.timeLogs) {
-                var trackedTime = timeLog.endTime.Subtract(timeLog.startTime);
-                totalTime+= new TimeSpan(trackedTime.Hours, trackedTime.Minutes, trackedTime.Seconds);
+                var rest = new REST(new HttpProviders());
+                var result = await rest.GetTimeLogs(new TimeLog()
+                {
+                    user = UserName,
+                    date = DateTime.Today,
+                    task = Taskname,
+                    startTime = trackingStartedAt,
+                    endTime = trackingStopedAt
+                });
+
+                foreach (var timeLog in result.data.timeLogs)
+                {
+                    var trackedTime = timeLog.endTime.Subtract(timeLog.startTime);
+                    totalTime += new TimeSpan(trackedTime.Hours, trackedTime.Minutes, trackedTime.Seconds);
+                }
+                return totalTime;
             }
-            return totalTime;
+            catch (Exception ex)
+            {
+                return totalTime;
+            }            
         }
         private bool CanStartStopCommandExecute() {
             return !string.IsNullOrEmpty(taskName) && taskName.Length > 0; 
@@ -414,17 +457,24 @@ namespace TimeTracker.ViewModels
         
         private async Task<TimeLog> SaveLoggedTime() 
         {
-            trackingStopedAt = DateTime.Now;
-            var rest = new REST(new HttpProviders());
-            var result = await rest.AddTimeLog(new TimeLog()
+            try
             {
-                user = UserName,
-                date = DateTime.Today,
-                task = Taskname,
-                startTime = trackingStartedAt,
-                endTime = trackingStopedAt
-            });
-            return result;
+                trackingStopedAt = DateTime.Now;
+                var rest = new REST(new HttpProviders());
+                var result = await rest.AddTimeLog(new TimeLog()
+                {
+                    user = UserName,
+                    date = DateTime.Today,
+                    task = Taskname,
+                    startTime = trackingStartedAt,
+                    endTime = trackingStopedAt
+                });
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return null;    
+            }
         }
         #endregion
     }

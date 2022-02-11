@@ -16,6 +16,7 @@ using TimeTracker.Utilities;
 using System.Linq;
 using System.Linq.Expressions;
 using System.ComponentModel;
+using TimeTracker.Trace;
 
 namespace TimeTracker.ViewModels
 {
@@ -242,6 +243,7 @@ namespace TimeTracker.ViewModels
             ProgressWidthReport = 30;
             try
             {
+                LogManager.Logger.Info("Sending the report");
                 await Task.Run(() =>
                 {
                     EmailService emailService = new EmailService();
@@ -263,6 +265,7 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
+                LogManager.Logger.Error(ex);
                 MessageBox.Show(ex.Message);
             }
             finally{
@@ -289,6 +292,10 @@ namespace TimeTracker.ViewModels
                 imageshtml += $"<div><hr></div>";
 
                 var folderPath = @$"{Environment.CurrentDirectory}\{DateTime.Now.ToString("yyyy-MM-dd")}";
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
                 var files = System.IO.Directory.GetFiles(folderPath).ToList();
                 var html = imageshtml;
                 html += @"<table border=1>";

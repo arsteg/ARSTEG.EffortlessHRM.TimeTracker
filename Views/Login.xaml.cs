@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Navigation;
 using TimeTracker.ViewModels;
+using System.Threading;
 
 namespace TimeTracker.Views
 {
@@ -19,8 +20,18 @@ namespace TimeTracker.Views
     /// </summary>
     public partial class Login : Window
     {
+        Mutex mutex;
+
         public Login()
-        {
+        {            
+
+            bool aIsNewInstance = false;
+            mutex = new Mutex(true, "TimeTracker", out aIsNewInstance);
+            if (!aIsNewInstance)
+            {
+                MessageBox.Show("An instance is already running...");
+                System.Windows.Application.Current.Shutdown();
+            }
             InitializeComponent();
             this.Loaded += Login_Loaded;
         }

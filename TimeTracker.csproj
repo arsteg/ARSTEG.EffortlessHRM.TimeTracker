@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <COMReference Include="{215d64d2-031c-33c7-96e3-61794cd1ee61}">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>4</VersionMinor>
+      <VersionMajor>2</VersionMajor>
+      <Guid>215d64d2-031c-33c7-96e3-61794cd1ee61</Guid>
+    </COMReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.95.4" />
     <PackageReference Include="CommonServiceLocator" Version="2.0.6" />
     <PackageReference Include="Dapper" Version="2.0.123" />
@@ -25,11 +34,15 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="5.0.0-rc2" />
     <PackageReference Include="NLog.Schema" Version="5.0.0-rc2" />
     <PackageReference Include="sendgrid" Version="9.25.1" />
+    <PackageReference Include="Simplify.Windows.Forms" Version="1.1.2" />
     <PackageReference Include="SQLitePCLRaw.core" Version="2.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Media\Audio\screencaptureSound.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="NLog.config">
@@ -47,6 +60,7 @@
   <ItemGroup>
     <Folder Include="Database\" />
     <Folder Include="Data\" />
+    <Folder Include="Media\Audio\" />
   </ItemGroup>
 
   <ItemGroup>

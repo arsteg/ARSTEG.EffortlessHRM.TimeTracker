@@ -10,6 +10,7 @@ namespace TimeTracker.Models
         public LoginResult LoginResult { get; set; }
         public Window TimeTracker { get; set; }
         public const string apiBaseUrl = "https://mysterious-brushlands-61431.herokuapp.com";
+        //public const string apiBaseUrl = "http://localhost:8080";
         public const string DefaultEndpoint = "https://apiv2.grandprixgroup.com";
         
         public const string ApiKey = "ec86b9ecfee30654";

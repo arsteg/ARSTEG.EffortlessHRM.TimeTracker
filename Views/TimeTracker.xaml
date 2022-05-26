@@ -12,7 +12,7 @@
       xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
       xmlns:cmd="http://www.galasoft.ch/mvvmlight"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
-      TextElement.Foreground="{DynamicResource MaterialDesignBody}" Title="Effortless HRM- Time Tracker">
+      TextElement.Foreground="{DynamicResource MaterialDesignBody}" Title="{Binding Title}">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
             <cmd:EventToCommand Command="{Binding CloseCommand}" PassEventArgsToCommand="True" />            
@@ -51,9 +51,9 @@
             <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="35"></RowDefinition>
+            <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="230"></RowDefinition>            
+            <RowDefinition Height="225"></RowDefinition>            
             <RowDefinition Height="40"></RowDefinition>
         </Grid.RowDefinitions>
 
@@ -83,18 +83,22 @@
                 </StackPanel>
             </Button>
 
-        <StackPanel Grid.Row="3" Orientation="Vertical" Visibility="Hidden">
+        <StackPanel Grid.Row="3" Orientation="Vertical">
             <Label>This week</Label>
         </StackPanel>
-
-        <StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Visibility="Hidden">
-            <Label>00.00 hrs of 60 hrs</Label>
+        
+        <StackPanel Grid.Row="3" Grid.Column="1">
+                <Label Content="{Binding CurrentWeekTimeTracked}"/>
+            </StackPanel>
+        
+        <StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Margin="-45,0,0,0" Visibility="Hidden">
+               <Label>hrs of 168 hrs</Label>
         </StackPanel>
-
+        
         <StackPanel Grid.Row="4" Orientation="Horizontal">
             <Label>Current Task</Label>
         </StackPanel>
-
+        
         <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3">
                 <TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignTextBox}"  materialDesign:HintAssist.Hint="Enter current task details here!"></TextBox>
         </StackPanel>      

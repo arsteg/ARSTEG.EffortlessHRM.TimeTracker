@@ -17,6 +17,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.ComponentModel;
 using TimeTracker.Trace;
+using TimeTracker.ActivityTracker;
 
 namespace TimeTracker.ViewModels
 {
@@ -32,7 +33,14 @@ namespace TimeTracker.ViewModels
         private DateTime  trackingStopedAt;
         private TimeSpan timeTrackedSaved;
         private List<TimeLog> timeLogs = new List<TimeLog>();
+        private List<TimeLog> unsavedTimeLogs = new List<TimeLog>();
+
         private bool userIsInactive = false;
+        Random rand = new Random();
+        private double minutesTracked = 0;        
+        private double totalMouseClick= 0;
+        private double totalKeysPressed= 0;
+        MouseHook mh;       
         #endregion
 
         #region constructor
@@ -46,14 +54,57 @@ namespace TimeTracker.ViewModels
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             idlTimeDetectionTimer.Tick += IdlTimeDetectionTimer_Tick;
-            idlTimeDetectionTimer.Interval = new TimeSpan(00,10,00);
-            var screenCaptureTimeInterval = configuration.GetSection("AppSettings:ScreenCaptureTimeInterval");
-            dispatcherTimer.Interval = TimeSpan.Parse(screenCaptureTimeInterval.Value);
-            UserName = GlobalSetting.Instance.LoginResult.data.user.email;            
+            idlTimeDetectionTimer.Interval = new TimeSpan(00,2,00);
+            
+            dispatcherTimer.Interval = TimeSpan.FromMinutes(9);
+            UserName = GlobalSetting.Instance.LoginResult.data.user.email;
+            minutesTracked = 0;
+            
+            mh = new MouseHook();
+            mh.SetHook();
+                        
+            mh.MouseClickEvent += mh_MouseClickEvent;
+            mh.MouseDownEvent += Mh_MouseDownEvent;
+            mh.MouseUpEvent += mh_MouseUpEvent;
+
+            InterceptKeys.OnKeyDown += InterceptKeys_OnKeyDown;
+            InterceptKeys.Start();
+        }
+
+        private void Mh_MouseDownEvent(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            totalMouseClick++;            
+        }
+
+        private void mh_MouseUpEvent(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+        }
+        private void mh_MouseClickEvent(object sender, System.Windows.Forms.MouseEventArgs e)
+        {           
         }        
+        
+        private void InterceptKeys_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            totalKeysPressed++;
+            Title = "Effortless-HRM";
+        }
+
+
         #endregion
 
-        #region Public Properties
+        #region Public Properties                
+
+        private string title = "";
+        public string Title
+        {
+            get { return title; }
+            set
+            {
+                title = value;
+                OnPropertyChanged(nameof(Title));
+            }
+        }
+
 
         private string startStopButtontext="Start";        
         public string StartStopButtontext
@@ -97,7 +148,16 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(CurrentDayTimeTracked));
             }
         }
-
+        private String currentWeekTimeTracked;
+        public string CurrentWeekTimeTracked
+        {
+            get { return currentWeekTimeTracked; }
+            set
+            {
+                currentWeekTimeTracked = value;
+                OnPropertyChanged(nameof(CurrentWeekTimeTracked));
+            }
+        }
         private String userName;
         public string UserName
         {
@@ -212,7 +272,7 @@ namespace TimeTracker.ViewModels
             GlobalSetting.Instance.TimeTracker.Close();
         }
         public async void StartStopCommandExecute()
-        {
+        {            
             ProgressWidthStart = 30;
             try
             {
@@ -227,7 +287,7 @@ namespace TimeTracker.ViewModels
                     CanSendReport = false;
                 }
                 await SetTrackerStatus();
-                timeTrackedSaved = await GetCurrrentdatTimeTracked();
+                timeTrackedSaved = await GetCurrrentdateTimeTracked();
                 ShowTimeTracked(true);
             }
             catch (Exception ex) {
@@ -277,7 +337,7 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                var totalTimeTracked = GetCurrrentdatTimeTracked().Result;
+                var totalTimeTracked = GetCurrrentdateTimeTracked().Result;
 
                 var imageshtml = "";
 
@@ -351,34 +411,16 @@ namespace TimeTracker.ViewModels
         #region Private Methods
 
         private async Task<bool> SetTrackerStatus()
-        {
+        {       
             if (trackerIsOn)
             {
                 StartStopButtontext = "Start";
-                trackingStopedAt = DateTime.Now;
-                var rest = new REST(new HttpProviders());
-
-                var result = await rest.AddTimeLog(new TimeLog()
-                {
-                    user = UserName,
-                    date = DateTime.Today,
-                    task = Taskname,
-                    startTime = trackingStartedAt,
-                    endTime = trackingStopedAt
-                });
-
-                var results = await rest.GetTimeLogs(new TimeLog()
-                {
-                    user = UserName,
-                    date = DateTime.Today,
-                    task = Taskname,
-                    startTime = trackingStartedAt,
-                    endTime = trackingStopedAt
-                });
-                dispatcherTimer.Stop();
+                Logger.Info($"stopped at {DateTime.Now}");
+                trackingStopedAt = DateTime.Now;                
             }
             else
             {
+                Logger.Info($"started at {DateTime.Now}");
                 StartStopButtontext = "Stop";
                 dispatcherTimer.Start();
                 trackingStartedAt = DateTime.Now;
@@ -388,12 +430,28 @@ namespace TimeTracker.ViewModels
         }
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            ShowTimeTracked(false);
+            var currentMinutes = DateTime.Now.Minute;
+            minutesTracked += 10;                        
+            var randonTime = (rand.Next(2, 9));            
+            double forTimerInterval = ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime) - currentMinutes; 
+            dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
+            
+            var task = Task.Run(async () => await SaveTimeSlot());
+            task.Wait();
+                        
+            ShowTimeTracked(false);            
             captureScreen();
         }
         private void captureScreen()
         {
+            Logger.Info($"screen captured at: {DateTime.Now}");
             CurrentImagePath = Utilities.TimeManager.CaptureMyScreen();
+            bool playScreenCaptureSound = false;
+            bool.TryParse(configuration.GetSection("PlayScreenCaptureSound").Value, out playScreenCaptureSound);
+            if (playScreenCaptureSound)
+            {
+                PlayMedia.PlayScreenCaptureSound();
+            }
         }
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
         {
@@ -403,21 +461,23 @@ namespace TimeTracker.ViewModels
 
                 if (idleTime.IdleTime.TotalMinutes >= 2)
                 {
-                    SetTrackerStatus();
+                    SetTrackerStatus().Wait();
                     CanSendReport = true;
                     userIsInactive = true;
+                    dispatcherTimer.IsEnabled = false;
                 }
                 else
                 {
                     if (!trackerIsOn)
                     {
-                        SetTrackerStatus();
+                        SetTrackerStatus().Wait();
                         userIsInactive = false;
+                        dispatcherTimer.IsEnabled = true;
                     }
                 }
             }
         }
-        private async Task<TimeSpan> GetCurrrentdatTimeTracked()
+        private async Task<TimeSpan> GetCurrrentdateTimeTracked()
         {
             var totalTime = new TimeSpan();
             try
@@ -444,31 +504,18 @@ namespace TimeTracker.ViewModels
                 return totalTime;
             }            
         }
-        private bool CanStartStopCommandExecute() {
-            return !string.IsNullOrEmpty(taskName) && taskName.Length > 0; 
-        }        
-        private void ShowTimeTracked(bool currentSessionSaved= false )
+
+        private async Task<TimeSpan> GetCurrrentWeekTimeTracked()
         {
-            var sessionTimeTracked = DateTime.Now.Subtract(trackingStartedAt);
-            CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
-            if (currentSessionSaved) {
-                TimeSpan totalTimeTracked = timeTrackedSaved ;
-                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
-            }
-            else 
-            {
-                TimeSpan totalTimeTracked = (timeTrackedSaved + sessionTimeTracked);
-                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
-            }            
-        }
-        
-        private async Task<TimeLog> SaveLoggedTime() 
-        {
+            var day = (int)DateTime.Today.DayOfWeek;
+
+            var startDate = DateTime.Now.AddDays(-1 * day);
+
+            var totalTime = new TimeSpan();
             try
             {
-                trackingStopedAt = DateTime.Now;
                 var rest = new REST(new HttpProviders());
-                var result = await rest.AddTimeLog(new TimeLog()
+                var result = await rest.GetTimeLogs(new TimeLog()
                 {
                     user = UserName,
                     date = DateTime.Today,
@@ -476,11 +523,58 @@ namespace TimeTracker.ViewModels
                     startTime = trackingStartedAt,
                     endTime = trackingStopedAt
                 });
+
+                foreach (var timeLog in result.data.timeLogs)
+                {
+                    var trackedTime = timeLog.endTime.Subtract(timeLog.startTime);
+                    totalTime += new TimeSpan(trackedTime.Hours, trackedTime.Minutes, trackedTime.Seconds);
+                }
+                return totalTime;
+            }
+            catch (Exception ex)
+            {
+                return totalTime;
+            }
+        }
+        private bool CanStartStopCommandExecute() {
+            return !string.IsNullOrEmpty(taskName) && taskName.Length > 0; 
+        }        
+        private void ShowTimeTracked(bool currentSessionSaved= false )
+        {
+            var sessionTimeTracked = TimeSpan.FromMinutes(minutesTracked);
+            CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
+            if (currentSessionSaved) {
+                TimeSpan totalTimeTracked = timeTrackedSaved ;
+                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+            }
+            else 
+            {
+                TimeSpan totalTimeTracked = timeTrackedSaved + TimeSpan.FromMinutes(minutesTracked);// (timeTrackedSaved + sessionTimeTracked);
+                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+            }            
+        }
+        
+        private async Task<TimeLog> SaveTimeSlot()
+        {
+            var timeLog = new TimeLog()
+            {
+                user = UserName,
+                date = DateTime.Today,
+                task = Taskname,
+                startTime = DateTime.Now.AddMinutes(-10),
+                endTime = DateTime.Now
+            };
+            try
+            {                
+                var rest = new REST(new HttpProviders());
+                var result = await rest.AddTimeLog(timeLog);
                 return result;
             }
             catch (Exception ex)
             {
-                return null;    
+                unsavedTimeLogs.Add(timeLog);
+
+                return null;
             }
         }
         #endregion

@@ -2,17 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/BrowserHistoryGatherer/bin
-/BrowserHistoryGatherer/obj
-/Tracker/bin
-/Tracker/obj
-/UrlHistoryLibrary/bin
-/UrlHistoryLibrary/obj
-/.vs
-
-
-
-*.v2
-*.v5
-*.dll
-*.props
+/bin
+/.vs/TimeTracker
+/obj
+/packages

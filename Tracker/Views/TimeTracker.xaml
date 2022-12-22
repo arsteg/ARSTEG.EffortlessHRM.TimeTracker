@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TimeTracker.Views"
-      mc:Ignorable="d" Height="400" Width="350" WindowStartupLocation="CenterScreen"
+      mc:Ignorable="d" Height="435" Width="350" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
       WindowState="Normal"  WindowStyle="SingleBorderWindow"  ResizeMode="CanMinimize"
       Background="{DynamicResource MaterialDesignPaper}"       
@@ -51,7 +51,8 @@
             <RowDefinition Height="0"></RowDefinition>
             <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="35"></RowDefinition>
-            <RowDefinition Height="35"></RowDefinition>
+                <RowDefinition Height="35"></RowDefinition>
+                <RowDefinition Height="35"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="175"></RowDefinition>            
             <RowDefinition Height="40"></RowDefinition>
@@ -95,20 +96,28 @@
                <Label>hrs of 168 hrs</Label>
         </StackPanel>
         
-        <StackPanel Grid.Row="4" Orientation="Horizontal">
+        <StackPanel Grid.Row="4" Orientation="Vertical">
+            <Label>This month</Label>
+        </StackPanel>
+
+            <StackPanel Grid.Row="4" Grid.Column="1">
+                <Label Content="{Binding CurrentMonthTimeTracked}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="5" Orientation="Horizontal">
             <Label>Current Task</Label>
         </StackPanel>
         
-        <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3">
+        <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3">
                 <TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignTextBox}"  materialDesign:HintAssist.Hint="Enter current task details here!"></TextBox>
         </StackPanel>      
         
-        <Border Grid.Row="5"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="5">
+        <Border Grid.Row="6"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="5">
             <Image Source="{Binding CurrentImagePath}">
         </Image>
         </Border>
-        <Button Grid.Row="7" Grid.Column="1" Width="80" Command="{Binding LogoutCommand}" Margin="0,0,-40,0">Logout</Button>
-            <Button Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="2" Width="80" Command="{Binding CloseCommand}" Margin="0,0,-25,0">Close</Button>
+        <Button Grid.Row="8" Grid.Column="1" Width="80" Command="{Binding LogoutCommand}" Margin="0,0,-40,0">Logout</Button>
+            <Button Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Width="80" Command="{Binding CloseCommand}" Margin="0,0,-25,0">Close</Button>
         </Grid>
     </Border>
 </Window>

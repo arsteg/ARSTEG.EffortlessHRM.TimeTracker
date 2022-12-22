@@ -159,6 +159,17 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(CurrentWeekTimeTracked));
             }
         }
+        private String currentMonthTimeTracked;
+        public string CurrentMonthTimeTracked
+        {
+            get { return currentMonthTimeTracked; }
+            set
+            {
+                currentMonthTimeTracked = value;
+                OnPropertyChanged(nameof(CurrentMonthTimeTracked));
+            }
+        }
+
         private String userName;
         public string UserName
         {
@@ -567,6 +578,21 @@ namespace TimeTracker.ViewModels
             totalTime = TimeSpan.FromMinutes(result.data.Count*10);
             return totalTime;            
         }
+
+        private async Task<TimeSpan> GetCurrrentMonthTimeTracked()
+        {
+            var totalTime = new TimeSpan();
+            var rest = new REST(new HttpProviders());
+            var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
+            {
+                user = UserName,
+                startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, 1),
+                endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
+            });
+            totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
+            return totalTime;
+        }
+
         private bool CanStartStopCommandExecute() {
             return !string.IsNullOrEmpty(taskName) && taskName.Length > 0; 
         }        
@@ -588,11 +614,13 @@ namespace TimeTracker.ViewModels
         private async void ShowCurrentTimeTracked()
         {
             var currentWeekTimeTracked  = await GetCurrrentWeekTimeTracked();
+            var currentMonthTimeTracked = await GetCurrrentMonthTimeTracked();
 
             var sessionTimeTracked = TimeSpan.FromMinutes(minutesTracked);
             CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
             TimeSpan totalTimeTracked = timeTrackedSaved;
-            CurrentWeekTimeTracked = $"{currentWeekTimeTracked.Hours} hrs {currentWeekTimeTracked.Minutes.ToString("00")} m";
+            CurrentWeekTimeTracked = $" {(currentWeekTimeTracked.Days * 24) + currentWeekTimeTracked.Hours} hrs {currentWeekTimeTracked.Minutes.ToString("00")} m";
+            CurrentMonthTimeTracked = $"{(currentMonthTimeTracked.Days * 24) + currentMonthTimeTracked.Hours} hrs {currentMonthTimeTracked.Minutes.ToString("00")} m";
         }
 
         private async Task<TimeLog> SaveTimeSlot(string filePath)

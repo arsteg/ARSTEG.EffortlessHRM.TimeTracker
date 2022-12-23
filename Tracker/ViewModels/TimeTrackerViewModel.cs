@@ -470,6 +470,7 @@ namespace TimeTracker.ViewModels
                 StartStopButtontext = "Stop";
                 dispatcherTimer.Start();
                 trackingStartedAt = DateTime.Now;
+                minutesTracked = 0;
             }
             trackerIsOn = !trackerIsOn;
             return true;
@@ -545,7 +546,7 @@ namespace TimeTracker.ViewModels
                 {
                     user = UserName,
                     date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
-                }); ;
+                });
 
                 if (result.data != null)
                 {

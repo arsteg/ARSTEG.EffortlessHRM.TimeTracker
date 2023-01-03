@@ -20,17 +20,8 @@ namespace TimeTracker.Views
     /// </summary>
     public partial class Login : Window
     {
-        Mutex mutex;
-
         public Login()
-        {            
-            bool aIsNewInstance = false;
-            mutex = new Mutex(true, "TimeTracker", out aIsNewInstance);
-            if (!aIsNewInstance)
-            {
-                MessageBox.Show("An instance is already running...");
-                System.Windows.Application.Current.Shutdown();
-            }
+        {
             InitializeComponent();
             this.Loaded += Login_Loaded;
         }

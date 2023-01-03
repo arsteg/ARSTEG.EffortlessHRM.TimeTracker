@@ -20,51 +20,63 @@ using TimeTracker.Trace;
 using TimeTracker.ActivityTracker;
 using BrowserHistoryGatherer.Data;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using System.Diagnostics;
 
 namespace TimeTracker.ViewModels
 {
-    public class TimeTrackerViewModel: ViewModelBase
+    public class TimeTrackerViewModel : ViewModelBase
     {
         #region  private members        
         private IConfiguration configuration;
         private bool trackerIsOn = false;
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private DispatcherTimer idlTimeDetectionTimer = new DispatcherTimer();
+        private DispatcherTimer saveDispatcherTimer = new DispatcherTimer();
+        private DispatcherTimer deleteImagePath = new DispatcherTimer();
 
-        private DateTime  trackingStartedAt;
-        private DateTime  trackingStopedAt;
+        private DateTime trackingStartedAt;
+        private DateTime trackingStopedAt;
         private TimeSpan timeTrackedSaved;
         private List<TimeLog> timeLogs = new List<TimeLog>();
         private List<TimeLog> unsavedTimeLogs = new List<TimeLog>();
 
         private bool userIsInactive = false;
         Random rand = new Random();
-        private double minutesTracked = 0;        
-        private int totalMouseClick= 0;
-        private int totalKeysPressed= 0;
-        MouseHook mh;       
+        private double minutesTracked = 0;
+        private int totalMouseClick = 0;
+        private int totalKeysPressed = 0;
+        MouseHook mh;
         #endregion
 
         #region constructor
-        public TimeTrackerViewModel() {
+        public TimeTrackerViewModel()
+        {
+            var projects = new Project();
+            Projects = projects.getProjects();
+
             CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
             StartStopCommand = new RelayCommand(StartStopCommandExecute, CanStartStopCommandExecute);
             EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
+            RefreshCommand = new RelayCommand(RefreshCommandExecute);
+            LogCommand = new RelayCommand(LogCommandExecute);
+            ScreenshotCaptureSoundCommand = new RelayCommand(ScreenshotCaptureSoundCommandExecute);
+            DeleteScreenshotCommand = new RelayCommand(DeleteScreenshotCommandExecute);
+            SaveScreenshotCommand = new RelayCommand(SaveScreenshotCommandExecute);
 
 
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             idlTimeDetectionTimer.Tick += IdlTimeDetectionTimer_Tick;
             idlTimeDetectionTimer.Interval = new TimeSpan(00,2,00);
-            
+
             dispatcherTimer.Interval = TimeSpan.FromMinutes(9);
             UserName = GlobalSetting.Instance.LoginResult.data.user.email;
             minutesTracked = 0;
-            
+
             mh = new MouseHook();
             mh.SetHook();
-                        
+
             mh.MouseClickEvent += mh_MouseClickEvent;
             mh.MouseDownEvent += Mh_MouseDownEvent;
             mh.MouseUpEvent += mh_MouseUpEvent;
@@ -75,19 +87,19 @@ namespace TimeTracker.ViewModels
 
         private void Mh_MouseDownEvent(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            totalMouseClick++;            
+            totalMouseClick++;
         }
 
         private void mh_MouseUpEvent(object sender, System.Windows.Forms.MouseEventArgs e)
         {
         }
         private void mh_MouseClickEvent(object sender, System.Windows.Forms.MouseEventArgs e)
-        {           
-        }        
-        
+        {
+        }
+
         private void InterceptKeys_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
-            totalKeysPressed++;            
+            totalKeysPressed++;
         }
 
 
@@ -107,13 +119,27 @@ namespace TimeTracker.ViewModels
         }
 
 
-        private string startStopButtontext="Start";        
+        private string startStopButtontext = "Start";
         public string StartStopButtontext
         {
             get { return startStopButtontext; }
-            set { 
+            set
+            {
                 startStopButtontext = value;
                 OnPropertyChanged(nameof(StartStopButtontext));
+            }
+        }
+
+        private string screenshotSoundtext = Properties.Settings.Default.playScreenCaptureSound
+            ? "Turn off sound on screenshot capture"
+            : "Turn on sound on screenshot capture";
+        public string ScreenshotSoundtext
+        {
+            get { return screenshotSoundtext; }
+            set
+            {
+                screenshotSoundtext = value;
+                OnPropertyChanged(nameof(ScreenshotSoundtext));
             }
         }
 
@@ -128,10 +154,12 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        public string DeleteImagePath { get; set; }
+
         private String currentSessionTimeTracked;
         public string CurrentSessionTimeTracked
         {
-            get { return currentSessionTimeTracked;}
+            get { return currentSessionTimeTracked; }
             set
             {
                 currentSessionTimeTracked = value;
@@ -199,7 +227,7 @@ namespace TimeTracker.ViewModels
             set
             {
                 taskName = value;
-                OnPropertyChanged(nameof(Taskname));                
+                OnPropertyChanged(nameof(Taskname));
             }
         }
 
@@ -208,7 +236,7 @@ namespace TimeTracker.ViewModels
         public bool CanSendReport
         {
             get { return canSendReport; }
-            set { 
+            set {
                 canSendReport = value;
                 OnPropertyChanged(nameof(CanSendReport));
             }
@@ -235,6 +263,102 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        private String countdownTimer;
+        public string CountdownTimer
+        {
+            get { return countdownTimer; }
+            set
+            {
+                countdownTimer = value;
+                OnPropertyChanged(nameof(CountdownTimer));
+            }
+        }
+
+        private bool canShowScreenshot = false;
+        public bool CanShowScreenshot
+        {
+            get { return canShowScreenshot; }
+            set
+            {
+                canShowScreenshot = value;
+                OnPropertyChanged(nameof(CanShowScreenshot));
+            }
+        }
+
+        private List<Project> _projects;
+        public List<Project> Projects
+        {
+            get { return _projects; }
+            set
+            {
+                _projects = value;
+                OnPropertyChanged("Projects");
+            }
+        }
+
+        private Project _sproject;
+        public Project SProject
+        {
+            get { return _sproject; }
+            set
+            {
+                _sproject = value;
+                OnPropertyChanged("SProject");
+                OnPropertyChanged("AllowTaskSelection");
+                if (SProject != null)
+                {
+                    getTaskList();
+                }
+            }
+        }
+
+        private List<ProjectTask> _tasks;
+        public List<ProjectTask> Tasks
+        {
+            get { return _tasks; }
+            set
+            {
+                _tasks = value;
+                OnPropertyChanged("Tasks");
+            }
+        }
+
+        private ProjectTask _stask;
+        public ProjectTask STask
+        {
+            get { return _stask; }
+            set
+            {
+                _stask = value;
+                OnPropertyChanged("STask");
+            }
+        }
+        public bool AllowTaskSelection
+        {
+            get { return (SProject != null); }
+        }
+
+        private double verticalOffset = 0;
+        public double VerticalOffset
+        {
+            get { return verticalOffset; }
+            set
+            {
+                verticalOffset = value;
+                OnPropertyChanged(nameof(VerticalOffset));
+            }
+        }
+
+        private double horizontalOffset = 0;
+        public double HorizontalOffset
+        {
+            get { return horizontalOffset; }
+            set
+            {
+                horizontalOffset = value;
+                OnPropertyChanged(nameof(HorizontalOffset));
+            }
+        }
         #endregion
 
         #region commands
@@ -242,13 +366,18 @@ namespace TimeTracker.ViewModels
         public RelayCommand StartStopCommand { get; set; }
         public RelayCommand EODReportsCommand { get; set; }
         public RelayCommand LogoutCommand { get; set; }
+        public RelayCommand RefreshCommand { get; set; }
+        public RelayCommand LogCommand { get; set; }
+        public RelayCommand ScreenshotCaptureSoundCommand { get; set; }
+        public RelayCommand DeleteScreenshotCommand { get; set; }
+        public RelayCommand SaveScreenshotCommand { get; set; }
 
-        #endregion 
-        
+        #endregion
+
         #region public methods
         public async void CloseCommandExecute(CancelEventArgs args)
         {
-           if(args==null)
+            if (args == null)
             {
                 if (trackerIsOn)
                 {
@@ -265,12 +394,12 @@ namespace TimeTracker.ViewModels
                 if (trackerIsOn)
                 {
                     MessageBox.Show("Please stop the tracker before closing the application.");
-                    args.Cancel = true;                    
+                    args.Cancel = true;
                 }
                 else
                 {
                     Application.Current.Shutdown();
-                }                
+                }
             }
         }
         public void LogoutCommandExecute()
@@ -278,13 +407,13 @@ namespace TimeTracker.ViewModels
             if (trackerIsOn)
             {
                 StartStopCommandExecute();
-            }            
+            }
             var login = new TimeTracker.Views.Login();
             login.Show();
             GlobalSetting.Instance.TimeTracker.Close();
         }
         public async void StartStopCommandExecute()
-        {            
+        {
             ProgressWidthStart = 30;
             try
             {
@@ -303,7 +432,8 @@ namespace TimeTracker.ViewModels
                 ShowTimeTracked(true);
                 ShowCurrentTimeTracked();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 MessageBox.Show(ex.Message);
             }
             finally
@@ -311,12 +441,12 @@ namespace TimeTracker.ViewModels
                 ProgressWidthStart = 0;
             }
         }
-        public async  void EODReportsCommandExecute()
+        public async void EODReportsCommandExecute()
         {
             ProgressWidthReport = 30;
             try
             {
-                LogManager.Logger.Info("Sending the report");                
+                LogManager.Logger.Info("Sending the report");
                 await Task.Run(() =>
                 {
                     var historyEntries = BrowserHistory.GetHistoryEntries();
@@ -326,10 +456,10 @@ namespace TimeTracker.ViewModels
                     var emailReceiver = GlobalSetting.EmailReceiver;
                     var subject = $"Daily Report - {GlobalSetting.Instance.LoginResult.data.user.email}";
                     var msgbody = GetEMailBody(historyEntries);
-                    if (msgbody!="" && msgbody != null)
+                    if (msgbody != "" && msgbody != null)
                     {
                         var receivers = emailReceiver.Split(",");
-                        foreach(var receiver in receivers)
+                        foreach (var receiver in receivers)
                         {
                             var result = emailService.SendEmailAsyncToRecipientUsingSendGrid(sendGridKey, senderEmail, receiver, "", "", subject, msgbody).GetAwaiter().GetResult();
                         }
@@ -342,7 +472,8 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Error(ex);
                 MessageBox.Show(ex.Message);
             }
-            finally{
+            finally
+            {
                 ProgressWidthReport = 0;
             }
         }
@@ -394,7 +525,7 @@ namespace TimeTracker.ViewModels
                     }
                     html += "</tr>";
                 }
-                
+
                 html += @"<h3>Browsing History</h3>";
 
                 html += @"</table>";
@@ -415,9 +546,9 @@ namespace TimeTracker.ViewModels
                 foreach (var historyEntry in historyEntries)
                 {
                     html += "<tr>";
-                    
+
                     html += $"<td> {historyEntry.Title} </td>";
-                    
+
                     html += $"<td> {historyEntry.Uri} </td>";
 
                     html += $"<td> {historyEntry.VisitCount} </td>";
@@ -429,8 +560,8 @@ namespace TimeTracker.ViewModels
 
                 return $"<html><body>{html}</body></html>";
             }
-            catch(Exception ex)
-            {                
+            catch (Exception ex)
+            {
                 MessageBox.Show(ex.Message);
                 return "";
             }
@@ -439,30 +570,69 @@ namespace TimeTracker.ViewModels
         private static string getFileName(int r, int c, List<string> files)
         {
             var result = "";
-            foreach(var file in files)
-            {               
+            foreach (var file in files)
+            {
                 var fileName = Path.GetFileNameWithoutExtension(file);
                 var hh = int.Parse(fileName.Split('-').FirstOrDefault());
                 var mm = int.Parse(fileName.Split('-').LastOrDefault());
-                if (hh==r && mm <= (c * 10 + 9) && mm>=(c*10))
+                if (hh == r && mm <= (c * 10 + 9) && mm >= (c * 10))
                 {
                     result = file;
                 }
             }
             return result;
         }
+        public void RefreshCommandExecute()
+        {
+            Project projects = new Project();
+            Projects = projects.getProjectsv1();
+        }
+        public void LogCommandExecute()
+        {
+            var file = @$"{Environment.CurrentDirectory}\logs\{DateTime.Today.ToString("yyyyMMdd")}.log";
+            Process.Start(new ProcessStartInfo { FileName = file, UseShellExecute = true });
+        }
+        public void ScreenshotCaptureSoundCommandExecute()
+        {
+            var playScreenCaptureSound = Properties.Settings.Default.playScreenCaptureSound;
+            if (playScreenCaptureSound)
+            {
+                ScreenshotSoundtext = "Turn on sound on screenshot capture";
+            }
+            else
+            {
+                ScreenshotSoundtext = "Turn off sound on screenshot capture";
+            }
+            Properties.Settings.Default.playScreenCaptureSound = !playScreenCaptureSound;
+            Properties.Settings.Default.Save();
+        }
+        public void DeleteScreenshotCommandExecute()
+        {
+            DeleteImagePath = CurrentImagePath;
+            CurrentImagePath = null;
+            saveDispatcherTimer.Stop();
+            CanShowScreenshot= false;
 
+            deleteImagePath = new DispatcherTimer();
+            deleteImagePath.Tick += new EventHandler(deleteImagePath_Tick);
+            deleteImagePath.Interval = new TimeSpan(0, 1, 0);
+            deleteImagePath.Start();
+        }
+        public void SaveScreenshotCommandExecute()
+        {
+            CanShowScreenshot = false;
+        }
         #endregion
 
         #region Private Methods
 
         private async Task<bool> SetTrackerStatus()
-        {       
+        {
             if (trackerIsOn)
             {
                 StartStopButtontext = "Start";
                 Logger.Info($"stopped at {DateTime.Now}");
-                trackingStopedAt = DateTime.Now;                
+                trackingStopedAt = DateTime.Now;
             }
             else
             {
@@ -486,24 +656,39 @@ namespace TimeTracker.ViewModels
                 dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
                 var filepath = CaptureScreen();
                 CurrentImagePath = filepath;
-                var task = Task.Run(async () => await SaveTimeSlot(filepath));
-                task.Wait();
-                totalKeysPressed = 0;
-                totalMouseClick = 0;
-                ShowTimeTracked(false);
-                ShowCurrentTimeTracked();
+
+                saveDispatcherTimer = new DispatcherTimer();
+                saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
+                saveDispatcherTimer.Interval = new TimeSpan(0, 0, 10);
+                saveDispatcherTimer.Start();
             }
         }
+
+        private void saveTimeSlot_Tick(object sender, EventArgs e)
+        {
+            CanShowScreenshot = false;
+            var task = Task.Run(async () => await SaveTimeSlot(CurrentImagePath));
+            task.Wait();
+            totalKeysPressed = 0;
+            totalMouseClick = 0;
+            ShowTimeTracked(false);
+            ShowCurrentTimeTracked();
+            saveDispatcherTimer.Stop();
+        }
+
         private string CaptureScreen()
         {
             Logger.Info($"screen captured at: {DateTime.Now}");
             currentImagePath = Utilities.TimeManager.CaptureMyScreen();
-            bool playScreenCaptureSound = false;
-            bool.TryParse(configuration.GetSection("PlayScreenCaptureSound").Value, out playScreenCaptureSound);
-            if (playScreenCaptureSound)
+            if (Properties.Settings.Default.playScreenCaptureSound)
             {
                 PlayMedia.PlayScreenCaptureSound();
             }
+            CanShowScreenshot = true;
+            Countdown(10, TimeSpan.FromSeconds(1), cur => CountdownTimer = "(" + cur + ")".ToString());
+            var screen = SystemParameters.WorkArea;
+            VerticalOffset = (screen.Height - 200);
+            HorizontalOffset = (screen.Width);
             return currentImagePath;
         }
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
@@ -527,14 +712,19 @@ namespace TimeTracker.ViewModels
                         userIsInactive = false;
                         dispatcherTimer.IsEnabled = true;
                         CanSendReport = false;
+                        getCurrentSavedTime();
                     }
-                    else if(dispatcherTimer.IsEnabled== false)
+                    else if (dispatcherTimer.IsEnabled == false)
                     {
                         CanSendReport = false;
                         dispatcherTimer.IsEnabled = true;
                     }
                 }
             }
+        }
+        public async void getCurrentSavedTime()
+        {
+            timeTrackedSaved = await GetCurrrentdateTimeTracked();
         }
         private async Task<TimeSpan> GetCurrrentdateTimeTracked()
         {
@@ -561,23 +751,23 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 return totalTime;
-            }            
+            }
         }
 
         private async Task<TimeSpan> GetCurrrentWeekTimeTracked()
         {
-            var dayOfWeekToday = (int)DateTime.Today.DayOfWeek;            
-            var startDateOfWeek = DateTime.Today.AddDays(-1 * (dayOfWeekToday-1));            
+            var dayOfWeekToday = (int)DateTime.Today.DayOfWeek;
+            var startDateOfWeek = DateTime.Today.AddDays(-1 * (dayOfWeekToday - 1));
             var totalTime = new TimeSpan();
             var rest = new REST(new HttpProviders());
             var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
             {
                 user = UserName,
                 startDate = new DateTime(startDateOfWeek.Date.Year, startDateOfWeek.Date.Month, startDateOfWeek.Date.Day),
-                endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),                
+                endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
             });
-            totalTime = TimeSpan.FromMinutes(result.data.Count*10);
-            return totalTime;            
+            totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
+            return totalTime;
         }
 
         private async Task<TimeSpan> GetCurrrentMonthTimeTracked()
@@ -594,33 +784,36 @@ namespace TimeTracker.ViewModels
             return totalTime;
         }
 
-        private bool CanStartStopCommandExecute() {
-            return !string.IsNullOrEmpty(taskName) && taskName.Length > 0; 
-        }        
-        private void ShowTimeTracked(bool currentSessionSaved= false )
+        private bool CanStartStopCommandExecute()
+        {
+            return !string.IsNullOrEmpty(taskName) && taskName.Length > 0;
+            //return STask?.Id > 0;
+        }
+        private void ShowTimeTracked(bool currentSessionSaved = false)
         {
             var sessionTimeTracked = TimeSpan.FromMinutes(minutesTracked);
             CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
-            if (currentSessionSaved) {
-                TimeSpan totalTimeTracked = timeTrackedSaved ;
+            if (currentSessionSaved)
+            {
+                TimeSpan totalTimeTracked = timeTrackedSaved;
                 CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
             }
-            else 
+            else
             {
                 TimeSpan totalTimeTracked = timeTrackedSaved + TimeSpan.FromMinutes(minutesTracked);// (timeTrackedSaved + sessionTimeTracked);
                 CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
-            }            
+            }
         }
 
         private async void ShowCurrentTimeTracked()
         {
-            var currentWeekTimeTracked  = await GetCurrrentWeekTimeTracked();
-            var currentMonthTimeTracked = await GetCurrrentMonthTimeTracked();
+            var currentWeekTimeTracked = await GetCurrrentWeekTimeTracked();
 
             var sessionTimeTracked = TimeSpan.FromMinutes(minutesTracked);
             CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
             TimeSpan totalTimeTracked = timeTrackedSaved;
             CurrentWeekTimeTracked = $" {(currentWeekTimeTracked.Days * 24) + currentWeekTimeTracked.Hours} hrs {currentWeekTimeTracked.Minutes.ToString("00")} m";
+            var currentMonthTimeTracked = await GetCurrrentMonthTimeTracked();
             CurrentMonthTimeTracked = $"{(currentMonthTimeTracked.Days * 24) + currentMonthTimeTracked.Hours} hrs {currentMonthTimeTracked.Minutes.ToString("00")} m";
         }
 
@@ -633,17 +826,17 @@ namespace TimeTracker.ViewModels
             var timeLog = new TimeLog()
             {
                 user = UserName,
-                date =  new DateTime(currentDate.Year, currentDate.Month, currentDate.Day),
+                date = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day),
                 task = Taskname,
                 startTime = DateTime.Now.AddMinutes(-10),
                 endTime = DateTime.Now,
                 fileString = file,
                 filePath = fileName,
                 keysPressed = totalKeysPressed,
-                clicks= totalMouseClick
+                clicks = totalMouseClick
             };
             try
-            {                
+            {
                 var rest = new REST(new HttpProviders());
                 var result = await rest.AddTimeLog(timeLog);
                 return result;
@@ -653,6 +846,52 @@ namespace TimeTracker.ViewModels
                 unsavedTimeLogs.Add(timeLog);
 
                 return null;
+            }
+        }
+
+        private void getTaskList()
+        {
+            ProjectTask projectTask = new ProjectTask();
+            Tasks = projectTask.getTaskByProjectId(SProject.Id);
+        }
+
+        private void Countdown(int count, TimeSpan interval, Action<int> ts)
+        {
+            var dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Interval = interval;
+            dispatcherTimer.Tick += (_, a) =>
+            {
+                if (count-- == 1)
+                {
+                    CanShowScreenshot = false;
+                    dispatcherTimer.Stop();
+                }
+                else
+                {
+                    ts(count);
+                }
+            };
+            ts(count);
+            dispatcherTimer.Start();
+        }
+
+        private void deleteImagePath_Tick(object sender, EventArgs e)
+        {
+            if (File.Exists(DeleteImagePath))
+            {
+                try
+                {
+                    File.Delete(DeleteImagePath);
+                    DeleteImagePath = "";
+                    deleteImagePath.Stop();
+                }
+                catch
+                {
+                }
+            }
+            else
+            {
+                deleteImagePath.Stop();
             }
         }
         #endregion

@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TimeTracker.Views"
-      mc:Ignorable="d" Height="435" Width="350" WindowStartupLocation="CenterScreen"
+      mc:Ignorable="d" Height="470" Width="350" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
       WindowState="Normal"  WindowStyle="SingleBorderWindow"  ResizeMode="CanMinimize"
       Background="{DynamicResource MaterialDesignPaper}"       
@@ -15,10 +15,10 @@
       TextElement.Foreground="{DynamicResource MaterialDesignBody}" Title="{Binding Title}">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
-            <cmd:EventToCommand Command="{Binding CloseCommand}" PassEventArgsToCommand="True" />            
+            <cmd:EventToCommand Command="{Binding CloseCommand}" PassEventArgsToCommand="True" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    
+
     <Window.Resources>
         <Storyboard x:Key="closeStoryBoard">
             <ThicknessAnimation From="50,0,0,0" To="400,0,0,0" Duration="0:0:0.5" Storyboard.TargetName="LogoPanel" Storyboard.TargetProperty="Margin">
@@ -40,30 +40,31 @@
         </Style>
     </Window.Resources>
     <Border BorderBrush="Silver" BorderThickness="1" Margin="5">
-    <Grid Margin="2">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="125"></ColumnDefinition>
-            <ColumnDefinition Width="80"></ColumnDefinition>
-            <ColumnDefinition Width="80"></ColumnDefinition>
-            <ColumnDefinition Width="30"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="0"></RowDefinition>
-            <RowDefinition Height="35"></RowDefinition>
-            <RowDefinition Height="35"></RowDefinition>
+        <Grid Margin="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="125"></ColumnDefinition>
+                <ColumnDefinition Width="80"></ColumnDefinition>
+                <ColumnDefinition Width="80"></ColumnDefinition>
+                <ColumnDefinition Width="30"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0"></RowDefinition>
                 <RowDefinition Height="35"></RowDefinition>
                 <RowDefinition Height="35"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="175"></RowDefinition>            
-            <RowDefinition Height="40"></RowDefinition>
-        </Grid.RowDefinitions>
+                <RowDefinition Height="35"></RowDefinition>
+                <RowDefinition Height="35"></RowDefinition>
+                <RowDefinition Height="35"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="175"></RowDefinition>
+                <RowDefinition Height="40"></RowDefinition>
+            </Grid.RowDefinitions>
 
-        <!--<Label Name="LblTime" Grid.Column="0" Grid.Row="0" FontSize="18"  Grid.ColumnSpan="2" HorizontalContentAlignment="Left" Content="{Binding ProjectName}"></Label>
+            <!--<Label Name="LblTime" Grid.Column="0" Grid.Row="0" FontSize="18"  Grid.ColumnSpan="2" HorizontalContentAlignment="Left" Content="{Binding ProjectName}"></Label>
         <Label Name="LblUser" Grid.Column="1" Grid.Row="0" FontSize="18"  Grid.ColumnSpan="3" HorizontalContentAlignment="Left" Content="{Binding UserName}"/>-->
 
-        <Label Grid.Row="1">Current Session</Label>
+            <Label Grid.Row="1">Current Session</Label>
 
-        <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
+            <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
             <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="120">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="{Binding StartStopButtontext}"/>
@@ -71,12 +72,12 @@
                 </StackPanel>
             </Button>
 
-        <StackPanel Grid.Row="2" Orientation="Vertical">
-            <Label>Today</Label>          
-        </StackPanel>
-        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
-            <Label Content="{Binding CurrentDayTimeTracked}"/>
-        </StackPanel>
+            <StackPanel Grid.Row="2" Orientation="Vertical">
+                <Label>Today</Label>
+            </StackPanel>
+            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
+                <Label Content="{Binding CurrentDayTimeTracked}"/>
+            </StackPanel>
             <Button x:Name="btnReport" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" IsEnabled="{Binding CanSendReport}" HorizontalAlignment="Right" MinWidth="120" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="Report"/>
@@ -84,40 +85,128 @@
                 </StackPanel>
             </Button>
 
-        <StackPanel Grid.Row="3" Orientation="Vertical">
-            <Label>This week</Label>
-        </StackPanel>
-        
-        <StackPanel Grid.Row="3" Grid.Column="1">
+            <StackPanel Grid.Row="3" Orientation="Vertical">
+                <Label>This week</Label>
+            </StackPanel>
+
+            <StackPanel Grid.Row="3" Grid.Column="1">
                 <Label Content="{Binding CurrentWeekTimeTracked}"/>
             </StackPanel>
-        
-        <StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Margin="-45,0,0,0" Visibility="Hidden">
+
+            <!--<StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Margin="-45,0,0,0" Visibility="Hidden">
                <Label>hrs of 168 hrs</Label>
-        </StackPanel>
-        
-        <StackPanel Grid.Row="4" Orientation="Vertical">
-            <Label>This month</Label>
-        </StackPanel>
+        </StackPanel>-->
+            <!--<StackPanel Grid.Row="3" Grid.Column="2" Margin="-45,0,0,0">
+                <Button Grid.Row="3" Grid.Column="2" Width="80" Command="{Binding LogCommand}" Margin="0,0,-40,0">Log</Button>
+            </StackPanel>-->
+            <StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,0,0">
+                <Menu Name="menu1" Grid.Column="2" Grid.ColumnSpan="2">
+                    <MenuItem>
+                        <MenuItem.Icon>
+                            <fa:ImageAwesome Icon="Cog" />
+                        </MenuItem.Icon>
+                        <MenuItem Header="Log" Command="{Binding LogCommand}">
+                        </MenuItem>
+                        <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}"></MenuItem>
+                    </MenuItem>
+                </Menu>
+                <!---->
+            </StackPanel>
+
+            <StackPanel Grid.Row="4" Orientation="Vertical">
+                <Label>This month</Label>
+            </StackPanel>
 
             <StackPanel Grid.Row="4" Grid.Column="1">
                 <Label Content="{Binding CurrentMonthTimeTracked}"/>
             </StackPanel>
+            <StackPanel Grid.Row="4" Grid.Column="2">
+                <!--<Button Grid.Row="4" Grid.Column="2" Width="80" Command="{Binding RefreshCommand}" Margin="0,0,-40,0">Refresh</Button>-->
+            </StackPanel>
 
-            <StackPanel Grid.Row="5" Orientation="Horizontal">
-            <Label>Current Task</Label>
-        </StackPanel>
-        
-        <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3">
+            <StackPanel Grid.Row="5" Orientation="Vertical" Grid.Column="0">
+                <Label>Project</Label>
+            </StackPanel>
+
+            <StackPanel Grid.Row="5" Grid.Column="1">
+                <ComboBox
+                      Name="cmb" IsTextSearchEnabled="True" IsEditable="True"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Top"
+                      Height="35"
+                      ItemsSource="{Binding Path=Projects}"
+                    SelectedItem="{Binding Path=SProject}"
+                    DisplayMemberPath="Name"
+                      Width="80"/>
+            </StackPanel>
+            <StackPanel Grid.Row="5" Grid.Column="2">
+                <!--<ComboBox
+                      Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Top"
+                      Height="35"
+                    IsEnabled="{Binding AllowTaskSelection}"
+                      ItemsSource="{Binding Path=Tasks}"
+                    SelectedItem="{Binding Path=STask}"
+                    DisplayMemberPath="Name"
+                      Width="80"/>-->
+                <Button Grid.Row="5" Grid.Column="2" Width="80" Command="{Binding RefreshCommand}" Margin="0,0,-40,0">Refresh</Button>
+            </StackPanel>
+
+            <StackPanel Grid.Row="6" Orientation="Horizontal">
+                <Label>Current Task</Label>
+            </StackPanel>
+
+            <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3">
                 <TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignTextBox}"  materialDesign:HintAssist.Hint="Enter current task details here!"></TextBox>
-        </StackPanel>      
-        
-        <Border Grid.Row="6"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="5">
-            <Image Source="{Binding CurrentImagePath}">
-        </Image>
-        </Border>
-        <Button Grid.Row="8" Grid.Column="1" Width="80" Command="{Binding LogoutCommand}" Margin="0,0,-40,0">Logout</Button>
+                <!--<ComboBox
+                      Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Top"
+                      Height="35"
+                    IsEnabled="{Binding AllowTaskSelection}"
+                      ItemsSource="{Binding Path=Tasks}"
+                    SelectedItem="{Binding Path=STask}"
+                    DisplayMemberPath="Name"
+                      Width="80"/>-->
+            </StackPanel>
+
+            <Border Grid.Row="7"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="5">
+                <Image Source="{Binding CurrentImagePath}">
+                </Image>
+            </Border>
+            <Button Grid.Row="8" Grid.Column="1" Width="80" Command="{Binding LogoutCommand}" Margin="0,0,-40,0">Logout</Button>
             <Button Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Width="80" Command="{Binding CloseCommand}" Margin="0,0,-25,0">Close</Button>
+            <Popup IsOpen="{Binding CanShowScreenshot}" VerticalOffset="{Binding VerticalOffset}" HorizontalOffset="{Binding HorizontalOffset}" Placement="Top">
+                <Grid Background="White" Margin="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0"></RowDefinition>
+                        <RowDefinition Height="130"></RowDefinition>
+                        <RowDefinition Height="35"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                        <Border BorderThickness="1" BorderBrush="LightGray" Margin="5">
+                            <Image Source="{Binding CurrentImagePath}">
+                            </Image>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="2">
+                        <Button Command="{Binding SaveScreenshotCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Foreground="white">Save</Label>
+                                <Label Foreground="White" Content="{Binding CountdownTimer}"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="2">
+                        <Button Command="{Binding DeleteScreenshotCommand}">Delete</Button>
+                    </StackPanel>
+                </Grid>
+            </Popup>
         </Grid>
     </Border>
 </Window>

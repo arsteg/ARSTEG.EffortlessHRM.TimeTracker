@@ -26,7 +26,7 @@ namespace ApplicationUsedLibrary
                 });
             }
         }
-        public void ApplicationFocusEnd(string appName, string appTitle)
+        public void ApplicationFocusEnd(string appName)
         {
             if (_focusedApplication.ContainsKey(appName))
             {

@@ -64,6 +64,7 @@ namespace TimeTracker.ActivityTracker
         private const int WM_RBUTTONDBLCLK = 0x206;
         private const int WM_MBUTTONDBLCLK = 0x209;
         public const int WH_MOUSE_LL = 14;
+        public const int WM_MOUSEWHEEL = 0x020A;
         public Win32Api.HookProc hProc;
         public MouseHook()
         {
@@ -124,6 +125,11 @@ namespace TimeTracker.ActivityTracker
                             clickCount = 1;
                             MouseUpEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
+                        case WM_MOUSEWHEEL:
+                            button = MouseButtons.Middle;
+                            clickCount = 1;
+                            MouseWheelEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            break;
                     }
 
                     var e = new MouseEventArgs(button, clickCount, point.X, point.Y, 0);
@@ -145,5 +151,8 @@ namespace TimeTracker.ActivityTracker
 
         public delegate void MouseUpHandler(object sender, MouseEventArgs e);
         public event MouseUpHandler MouseUpEvent;
+
+        public delegate void MouseWheelHandler(object sender, MouseEventArgs e);
+        public event MouseWheelHandler MouseWheelEvent;
     }
 }

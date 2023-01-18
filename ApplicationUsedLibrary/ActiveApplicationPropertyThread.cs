@@ -60,6 +60,12 @@ namespace ApplicationUsedLibrary
             if (startThread)
             {
                 activeApplicationInfomationCollector = new ActiveApplicationInfomationCollector();
+                _justSentApplicationName = "";
+                StartEndFocushedApplication();
+            }
+            else
+            {
+                activeApplicationInfomationCollector.ApplicationFocusEnd(_justSentApplicationName);
             }
             stopThread = startThread;
         }
@@ -68,21 +74,7 @@ namespace ApplicationUsedLibrary
         {
             if (stopThread)
             {
-                GetActiveProcess();
-                if (!string.IsNullOrEmpty(_appName))
-                {
-                    if (_justSentApplicationName == "")
-                    {
-                        _justSentApplicationName = _appName;
-                        activeApplicationInfomationCollector.ApplicationFocusStart(_appName, _appTitle);
-                    }
-                    if (_justSentApplicationName != _appName)
-                    {
-                        activeApplicationInfomationCollector.ApplicationFocusEnd(_justSentApplicationName, _appTitle);
-                        activeApplicationInfomationCollector.ApplicationFocusStart(_appName, _appTitle);
-                        _justSentApplicationName = _appName;
-                    }
-                }
+                StartEndFocushedApplication();
             }
         }
 
@@ -116,6 +108,24 @@ namespace ApplicationUsedLibrary
                 {
                     _appTitle = title;
                     _appName = forgroundWindows.MainModule?.ModuleName;
+                }
+            }
+        }
+        private void StartEndFocushedApplication()
+        {
+            GetActiveProcess();
+            if (!string.IsNullOrEmpty(_appName))
+            {
+                if (_justSentApplicationName == "")
+                {
+                    _justSentApplicationName = _appName;
+                    activeApplicationInfomationCollector.ApplicationFocusStart(_appName, _appTitle);
+                }
+                if (_justSentApplicationName != _appName)
+                {
+                    activeApplicationInfomationCollector.ApplicationFocusEnd(_justSentApplicationName);
+                    activeApplicationInfomationCollector.ApplicationFocusStart(_appName, _appTitle);
+                    _justSentApplicationName = _appName;
                 }
             }
         }

@@ -46,7 +46,7 @@ namespace TimeTracker.ViewModels
         private double minutesTracked = 0;
         private int totalMouseClick = 0;
         private int totalKeysPressed = 0;
-        private int totalScrolls = 0;
+        private int totalMouseScrolls = 0;
         MouseHook mh;
         #endregion
 
@@ -80,6 +80,7 @@ namespace TimeTracker.ViewModels
             mh.MouseClickEvent += mh_MouseClickEvent;
             mh.MouseDownEvent += Mh_MouseDownEvent;
             mh.MouseUpEvent += mh_MouseUpEvent;
+            mh.MouseWheelEvent += mh_MouseWheelEvent;
 
             InterceptKeys.OnKeyDown += InterceptKeys_OnKeyDown;
             InterceptKeys.Start();
@@ -89,12 +90,15 @@ namespace TimeTracker.ViewModels
         {
             totalMouseClick++;
         }
-
         private void mh_MouseUpEvent(object sender, System.Windows.Forms.MouseEventArgs e)
         {
         }
         private void mh_MouseClickEvent(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+        }
+        private void mh_MouseWheelEvent(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            totalMouseScrolls++;
         }
 
         private void InterceptKeys_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
@@ -724,7 +728,7 @@ namespace TimeTracker.ViewModels
             task.Wait();
             totalKeysPressed = 0;
             totalMouseClick = 0;
-            totalScrolls = 0;
+            totalMouseScrolls = 0;
             ShowTimeTracked(false);
             ShowCurrentTimeTracked();
             saveDispatcherTimer.Stop();
@@ -887,7 +891,7 @@ namespace TimeTracker.ViewModels
                 filePath = fileName,
                 keysPressed = totalKeysPressed,
                 clicks = totalMouseClick,
-                scrolls = totalScrolls,
+                scrolls = totalMouseScrolls,
                 project = SelectedProject._id
             };
             try
@@ -1064,7 +1068,7 @@ namespace TimeTracker.ViewModels
                 }
                 foreach (var j in ne.Keys)
                 {
-                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {((ne[j].Duration / 1000) / 60)}");
+                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {Math.Round(((ne[j].Duration / 1000) / 60), 2)}");
                 }
 
                 sw.Flush();
@@ -1089,6 +1093,8 @@ namespace TimeTracker.ViewModels
             activeWorker.StopThread(false);
             var focusedApplication = activeWorker.activeApplicationInfomationCollector._focusedApplication;
             TempStoreApplicationUsed(focusedApplication);
+
+            // to do (call AddNewApplication api)
         }
         #endregion
     }

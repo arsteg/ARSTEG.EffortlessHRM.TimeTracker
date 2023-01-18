@@ -1,0 +1,12 @@
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\bin\Debug\net6.0\ApplicationUsedLibrary.deps.json
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\bin\Debug\net6.0\ApplicationUsedLibrary.dll
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\bin\Debug\net6.0\ApplicationUsedLibrary.pdb
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ApplicationUsedLibrary.csproj.AssemblyReference.cache
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ApplicationUsedLibrary.GeneratedMSBuildEditorConfig.editorconfig
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ApplicationUsedLibrary.AssemblyInfoInputs.cache
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ApplicationUsedLibrary.AssemblyInfo.cs
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ApplicationUsedLibrary.csproj.CoreCompileInputs.cache
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ApplicationUsedLibrary.dll
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\refint\ApplicationUsedLibrary.dll
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ApplicationUsedLibrary.pdb
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\ApplicationUsedLibrary\obj\Debug\net6.0\ref\ApplicationUsedLibrary.dll

@@ -56,9 +56,17 @@ namespace BrowserHistoryGatherer.Gathering
             string query = string.Format("SELECT url, title, visit_count, datetime(last_visit_time/1000000-11644473600, 'unixepoch') AS last_visit " +
                                          "FROM {0}", TABLE_NAME);
 
+            string tempPath = Path.GetTempPath();
             foreach (string dbPath in _chromeDatabasePaths)
             {
-                DataTable historyDt = SqlUtils.QueryDataTable(dbPath, query);
+                string tempTarget = Path.Combine(tempPath, "History");
+                if (File.Exists(tempTarget))
+                {
+                    File.Delete(tempTarget);
+                }
+                File.Copy(dbPath, tempTarget, true);
+
+                DataTable historyDt = SqlUtils.QueryDataTable(tempTarget, query);
 
                 foreach (DataRow row in historyDt.Rows)
                 {

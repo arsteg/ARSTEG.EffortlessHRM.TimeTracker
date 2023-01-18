@@ -77,6 +77,50 @@ namespace TimeTracker.Services
             return (res);
         }
 
+        #region "ErrorLog"
+        public void AddErrorLogs(ErrorLog errorLog)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/errorlogs/new");
+            var res = _httpProvider.PostWithTokenAsync<AddErrorLogAPIResult, ErrorLog>(uri, errorLog, GlobalSetting.Instance.LoginResult.token).Result;
+        }
+
+        public async Task<GetErrorLogResult> GetErrorLogs(string userId)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/errorlogs/errorloglist/{userId}");
+            var res = await _httpProvider.GetWithTokenAsync<GetErrorLogResult>(uri, GlobalSetting.Instance.LoginResult.token);
+            return res;
+        }
+        #endregion
+
+        #region "Project And Task"
+
+        public async Task<GetProjectListAPIResult> GetProjectListByUserId(ProjectRequest projectRequest)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/project/projectlistbyuser");
+            var res = await _httpProvider.PostWithTokenAsync<GetProjectListAPIResult, ProjectRequest>(uri, projectRequest, GlobalSetting.Instance.LoginResult.token);
+            return res;
+        }
+        public async Task<GetTaskListAPIResult> GetTaskListByProject(string projectId)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/task/tasklistbyproject/{projectId}");
+            var res = await _httpProvider.GetWithTokenAsync<GetTaskListAPIResult>(uri, GlobalSetting.Instance.LoginResult.token);
+            return res;
+        }
+
+        public async Task<NewTaskResult> AddNewTask(CreateTaskRequest createTaskRequest)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/task/newtask");
+            var res = await _httpProvider.PostWithTokenAsync<NewTaskResult, CreateTaskRequest>(uri, createTaskRequest, GlobalSetting.Instance.LoginResult.token);
+            return res;
+        }
+
+        public async Task<string> AddNewProject(ProjectRequest projectRequest)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/project/newproject");
+            var res = await _httpProvider.PostWithTokenAsync<object, ProjectRequest>(uri, projectRequest, GlobalSetting.Instance.LoginResult.token);
+            return ("");
+        }
+        #endregion
 
         //public async Task<DeviceInstallation> UpdateDevice(DeviceInstallation di)
         //{

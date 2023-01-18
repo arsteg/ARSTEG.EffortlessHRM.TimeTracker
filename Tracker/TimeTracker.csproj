@@ -71,6 +71,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ApplicationUsedLibrary\ApplicationUsedLibrary.csproj" />
     <ProjectReference Include="..\BrowserHistoryGatherer\BrowserHistoryGatherer.csproj" />
   </ItemGroup>
 

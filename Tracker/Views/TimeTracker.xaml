@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TimeTracker.Views"
-      mc:Ignorable="d" Height="470" Width="350" WindowStartupLocation="CenterScreen"
+      mc:Ignorable="d" Height="480" Width="350" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
       WindowState="Normal"  WindowStyle="SingleBorderWindow"  ResizeMode="CanMinimize"
       Background="{DynamicResource MaterialDesignPaper}"       
@@ -44,8 +44,8 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="125"></ColumnDefinition>
                 <ColumnDefinition Width="80"></ColumnDefinition>
-                <ColumnDefinition Width="80"></ColumnDefinition>
-                <ColumnDefinition Width="30"></ColumnDefinition>
+                <ColumnDefinition Width="70"></ColumnDefinition>
+                <ColumnDefinition Width="40"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="0"></RowDefinition>
@@ -96,11 +96,8 @@
             <!--<StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Margin="-45,0,0,0" Visibility="Hidden">
                <Label>hrs of 168 hrs</Label>
         </StackPanel>-->
-            <!--<StackPanel Grid.Row="3" Grid.Column="2" Margin="-45,0,0,0">
-                <Button Grid.Row="3" Grid.Column="2" Width="80" Command="{Binding LogCommand}" Margin="0,0,-40,0">Log</Button>
-            </StackPanel>-->
-            <StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,0,0">
-                <Menu Name="menu1" Grid.Column="2" Grid.ColumnSpan="2">
+            <StackPanel Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="-10,0,0,0">
+                <Menu Name="menu1" Grid.Column="3">
                     <MenuItem>
                         <MenuItem.Icon>
                             <fa:ImageAwesome Icon="Cog" />
@@ -120,37 +117,26 @@
             <StackPanel Grid.Row="4" Grid.Column="1">
                 <Label Content="{Binding CurrentMonthTimeTracked}"/>
             </StackPanel>
-            <StackPanel Grid.Row="4" Grid.Column="2">
-                <!--<Button Grid.Row="4" Grid.Column="2" Width="80" Command="{Binding RefreshCommand}" Margin="0,0,-40,0">Refresh</Button>-->
-            </StackPanel>
-
             <StackPanel Grid.Row="5" Orientation="Vertical" Grid.Column="0">
                 <Label>Project</Label>
             </StackPanel>
 
-            <StackPanel Grid.Row="5" Grid.Column="1">
-                <ComboBox
+            <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2">
+                <ComboBox Grid.Column="1" Grid.ColumnSpan="2"
                       Name="cmb" IsTextSearchEnabled="True" IsEditable="True"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Top"
                       Height="35"
+                       Text="{Binding Path=SelectedProjectName}"
                       ItemsSource="{Binding Path=Projects}"
-                    SelectedItem="{Binding Path=SProject}"
-                    DisplayMemberPath="Name"
-                      Width="80"/>
+                    SelectedItem="{Binding Path=SelectedProject}"
+                    DisplayMemberPath="projectName"
+                      Width="150"/>
             </StackPanel>
-            <StackPanel Grid.Row="5" Grid.Column="2">
-                <!--<ComboBox
-                      Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
-                      HorizontalAlignment="Left"
-                      VerticalAlignment="Top"
-                      Height="35"
-                    IsEnabled="{Binding AllowTaskSelection}"
-                      ItemsSource="{Binding Path=Tasks}"
-                    SelectedItem="{Binding Path=STask}"
-                    DisplayMemberPath="Name"
-                      Width="80"/>-->
-                <Button Grid.Row="5" Grid.Column="2" Width="80" Command="{Binding RefreshCommand}" Margin="0,0,-40,0">Refresh</Button>
+            <StackPanel Grid.Row="5" Grid.Column="3">
+                <Button Grid.Row="5" Grid.Column="3" Width="40" Command="{Binding RefreshCommand}" Margin="0,0,-10,0" IsEnabled="{Binding CanShowRefresh}">
+                    <fa:ImageAwesome Icon="Refresh" />
+                </Button>
             </StackPanel>
 
             <StackPanel Grid.Row="6" Orientation="Horizontal">
@@ -158,17 +144,18 @@
             </StackPanel>
 
             <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3">
-                <TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignTextBox}"  materialDesign:HintAssist.Hint="Enter current task details here!"></TextBox>
-                <!--<ComboBox
+                <!--<TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignTextBox}"  materialDesign:HintAssist.Hint="Enter current task details here!"></TextBox>-->
+                <ComboBox Grid.Column="1" Grid.ColumnSpan="3"
                       Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
                       HorizontalAlignment="Left"
                       VerticalAlignment="Top"
                       Height="35"
+                    Text="{Binding Taskname}"
                     IsEnabled="{Binding AllowTaskSelection}"
                       ItemsSource="{Binding Path=Tasks}"
-                    SelectedItem="{Binding Path=STask}"
-                    DisplayMemberPath="Name"
-                      Width="80"/>-->
+                    SelectedItem="{Binding Path=SelectedTask}"
+                    DisplayMemberPath="taskName"
+                          Width="150"/>
             </StackPanel>
 
             <Border Grid.Row="7"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="5">

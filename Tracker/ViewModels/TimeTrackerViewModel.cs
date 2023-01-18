@@ -21,6 +21,7 @@ using TimeTracker.ActivityTracker;
 using BrowserHistoryGatherer.Data;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Diagnostics;
+using ApplicationUsedLibrary;
 
 namespace TimeTracker.ViewModels
 {
@@ -51,9 +52,7 @@ namespace TimeTracker.ViewModels
         #region constructor
         public TimeTrackerViewModel()
         {
-            var projects = new Project();
-            Projects = projects.getProjects();
-
+            BindProjectList();            
             CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
             StartStopCommand = new RelayCommand(StartStopCommandExecute, CanStartStopCommandExecute);
             EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
@@ -68,7 +67,7 @@ namespace TimeTracker.ViewModels
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             idlTimeDetectionTimer.Tick += IdlTimeDetectionTimer_Tick;
-            idlTimeDetectionTimer.Interval = new TimeSpan(00,2,00);
+            idlTimeDetectionTimer.Interval = new TimeSpan(00, 2, 00);
 
             dispatcherTimer.Interval = TimeSpan.FromMinutes(9);
             UserName = GlobalSetting.Instance.LoginResult.data.user.email;
@@ -231,12 +230,13 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private bool canSendReport=true;
+        private bool canSendReport = true;
 
         public bool CanSendReport
         {
             get { return canSendReport; }
-            set {
+            set
+            {
                 canSendReport = value;
                 OnPropertyChanged(nameof(CanSendReport));
             }
@@ -296,19 +296,30 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private Project _sproject;
-        public Project SProject
+        private Project _selectedproject;
+        public Project SelectedProject
         {
-            get { return _sproject; }
+            get { return _selectedproject; }
             set
             {
-                _sproject = value;
-                OnPropertyChanged("SProject");
+                _selectedproject = value;
+                OnPropertyChanged("SelectedProject");
                 OnPropertyChanged("AllowTaskSelection");
-                if (SProject != null)
+                if (SelectedProject != null)
                 {
                     getTaskList();
                 }
+            }
+        }
+
+        private string _selectedprojectName;
+        public string SelectedProjectName
+        {
+            get { return _selectedprojectName; }
+            set
+            {
+                _selectedprojectName = value;
+                OnPropertyChanged("SelectedProjectName");
             }
         }
 
@@ -323,19 +334,20 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private ProjectTask _stask;
-        public ProjectTask STask
+        private ProjectTask _selectedtask;
+        public ProjectTask SelectedTask
         {
-            get { return _stask; }
+            get { return _selectedtask; }
             set
             {
-                _stask = value;
-                OnPropertyChanged("STask");
+                _selectedtask = value;
+                OnPropertyChanged("SelectedTask");
             }
         }
+
         public bool AllowTaskSelection
         {
-            get { return (SProject != null); }
+            get { return (SelectedProject != null); }
         }
 
         private double verticalOffset = 0;
@@ -359,6 +371,17 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(HorizontalOffset));
             }
         }
+
+        private bool canShowRefresh = true;
+        public bool CanShowRefresh
+        {
+            get { return canShowRefresh; }
+            set
+            {
+                canShowRefresh = value;
+                OnPropertyChanged(nameof(CanShowRefresh));
+            }
+        }
         #endregion
 
         #region commands
@@ -371,6 +394,8 @@ namespace TimeTracker.ViewModels
         public RelayCommand ScreenshotCaptureSoundCommand { get; set; }
         public RelayCommand DeleteScreenshotCommand { get; set; }
         public RelayCommand SaveScreenshotCommand { get; set; }
+
+        ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
 
         #endregion
 
@@ -446,7 +471,7 @@ namespace TimeTracker.ViewModels
             ProgressWidthReport = 30;
             try
             {
-                LogManager.Logger.Info("Sending the report");
+                AddErrorLog("Info", "Sending the report");
                 await Task.Run(() =>
                 {
                     var historyEntries = BrowserHistory.GetHistoryEntries();
@@ -469,7 +494,7 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
-                LogManager.Logger.Error(ex);
+                AddErrorLog("Error", $"Message: {ex?.Message} ex.StackTrace:{ex?.StackTrace} InnerException: {ex?.InnerException?.InnerException}");
                 MessageBox.Show(ex.Message);
             }
             finally
@@ -584,13 +609,31 @@ namespace TimeTracker.ViewModels
         }
         public void RefreshCommandExecute()
         {
-            Project projects = new Project();
-            Projects = projects.getProjectsv1();
+            BindProjectList();
+            Tasks = null;
+            taskName = string.Empty;
+            SelectedTask = null;
         }
-        public void LogCommandExecute()
-        {
-            var file = @$"{Environment.CurrentDirectory}\logs\{DateTime.Today.ToString("yyyyMMdd")}.log";
-            Process.Start(new ProcessStartInfo { FileName = file, UseShellExecute = true });
+        public async void LogCommandExecute()
+        {            
+            var rest = new REST(new HttpProviders());
+            var errorLogList = await rest.GetErrorLogs(GlobalSetting.Instance.LoginResult.data.user.id);
+            if (errorLogList != null && errorLogList?.status.ToUpper() == "SUCCESS" && errorLogList?.data?.errorLogList?.Count > 0)
+            {
+                if (errorLogList.data.errorLogList.Any(e => e.createdOn.Date == DateTime.Now.Date))
+                {
+                    var errors = errorLogList.data.errorLogList.Where(e => e.createdOn.Date == DateTime.Now.Date);
+                    ShowLog(errors);
+                }
+                else
+                {
+                    MessageBox.Show("Log not found");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Log not found");
+            }
         }
         public void ScreenshotCaptureSoundCommandExecute()
         {
@@ -611,7 +654,7 @@ namespace TimeTracker.ViewModels
             DeleteImagePath = CurrentImagePath;
             CurrentImagePath = null;
             saveDispatcherTimer.Stop();
-            CanShowScreenshot= false;
+            CanShowScreenshot = false;
 
             deleteImagePath = new DispatcherTimer();
             deleteImagePath.Tick += new EventHandler(deleteImagePath_Tick);
@@ -631,24 +674,32 @@ namespace TimeTracker.ViewModels
             if (trackerIsOn)
             {
                 StartStopButtontext = "Start";
-                Logger.Info($"stopped at {DateTime.Now}");
+                AddErrorLog("Info", $"stopped at {DateTime.Now}");
                 trackingStopedAt = DateTime.Now;
+                StopApplicationTracker();
             }
             else
             {
-                Logger.Info($"started at {DateTime.Now}");
+                AddErrorLog("Info", $"started at {DateTime.Now}");
                 StartStopButtontext = "Stop";
                 dispatcherTimer.Start();
                 trackingStartedAt = DateTime.Now;
                 minutesTracked = 0;
+                if (SelectedTask == null && taskName.Length > 0)
+                {
+                    CreateNewTask();
+                }
+                StartApplicationTracker();
             }
             trackerIsOn = !trackerIsOn;
+            CanShowRefresh = !trackerIsOn;
             return true;
         }
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             if (trackerIsOn)
             {
+                StopApplicationTracker();
                 var currentMinutes = DateTime.Now.Minute;
                 minutesTracked += 10;
                 var randonTime = (rand.Next(2, 9));
@@ -661,6 +712,7 @@ namespace TimeTracker.ViewModels
                 saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
                 saveDispatcherTimer.Interval = new TimeSpan(0, 0, 10);
                 saveDispatcherTimer.Start();
+                StartApplicationTracker();
             }
         }
 
@@ -678,7 +730,7 @@ namespace TimeTracker.ViewModels
 
         private string CaptureScreen()
         {
-            Logger.Info($"screen captured at: {DateTime.Now}");
+            AddErrorLog("Info", $"screen captured at: {DateTime.Now}");
             currentImagePath = Utilities.TimeManager.CaptureMyScreen();
             if (Properties.Settings.Default.playScreenCaptureSound)
             {
@@ -722,7 +774,7 @@ namespace TimeTracker.ViewModels
                 }
             }
         }
-        public async void getCurrentSavedTime()
+        private async void getCurrentSavedTime()
         {
             timeTrackedSaved = await GetCurrrentdateTimeTracked();
         }
@@ -787,7 +839,6 @@ namespace TimeTracker.ViewModels
         private bool CanStartStopCommandExecute()
         {
             return !string.IsNullOrEmpty(taskName) && taskName.Length > 0;
-            //return STask?.Id > 0;
         }
         private void ShowTimeTracked(bool currentSessionSaved = false)
         {
@@ -849,10 +900,19 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private void getTaskList()
+        private async void getTaskList()
         {
-            ProjectTask projectTask = new ProjectTask();
-            Tasks = projectTask.getTaskByProjectId(SProject.Id);
+            Tasks = null;
+            if (SelectedProject != null && SelectedProject._id.Length > 0)
+            {
+                var rest = new REST(new HttpProviders());
+                var taskList = await rest.GetTaskListByProject(SelectedProject._id);
+
+                if (taskList.status == "success" && taskList.data != null)
+                {
+                    Tasks = taskList.data.taskList;
+                }
+            }
         }
 
         private void Countdown(int count, TimeSpan interval, Action<int> ts)
@@ -893,6 +953,138 @@ namespace TimeTracker.ViewModels
             {
                 deleteImagePath.Stop();
             }
+        }
+
+        private void AddErrorLog(string error, string details)
+        {
+            var rest = new REST(new HttpProviders());
+            rest.AddErrorLogs(new ErrorLog()
+            {
+                error = error,
+                details = details
+            });
+        }
+
+        private async void BindProjectList()
+        {
+            Projects = null;
+            var rest = new REST(new HttpProviders());
+            var projectList = await rest.GetProjectListByUserId(new ProjectRequest
+            {
+                userId = GlobalSetting.Instance.LoginResult.data.user.id
+            });
+
+            if (projectList.status == "success" && projectList.data != null)
+            {
+                Projects = projectList.data.projectList;
+            }
+        }
+
+        private async void CreateNewTask()
+        {
+            var taskUser = new List<TaskUser>();
+            taskUser.Add(new TaskUser()
+            {
+                user = GlobalSetting.Instance.LoginResult.data.user.id
+            });
+            var rest = new REST(new HttpProviders());
+            var newTaskResult = await rest.AddNewTask(new CreateTaskRequest
+            {
+                taskName = taskName,
+                comment = "Created from tracker",
+                project = SelectedProject._id,
+                taskUsers = taskUser
+            });
+
+            if (newTaskResult.status.ToUpper() == "SUCCESS")
+            {
+                SelectedTask = newTaskResult.data.newTask;
+            }
+        }
+
+        private void ShowLog(IEnumerable<ErrorLog> errorLogList)
+        {
+            string tempPath = Path.GetTempPath();
+            string path = Path.Combine(tempPath, $"{DateTime.Today.ToString("yyyyMMdd")}.log");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            try
+            {
+                StreamWriter sw;
+                if (!File.Exists(path))
+                { 
+                    sw = File.CreateText(path); 
+                }
+                else
+                { 
+                    sw = File.AppendText(path); 
+                }
+                foreach (var errorLog in errorLogList)
+                {
+                    sw.WriteLine("{0}", $"{errorLog.createdOn} {errorLog.error} {errorLog.details}");
+                }
+                sw.Flush();
+                sw.Close();
+
+                Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void TempStoreApplicationUsed(Dictionary<string, FocushedApplicationDetails> ne)
+        {
+            string tempPath = Path.GetTempPath();
+            string path = Path.Combine(tempPath, $"{DateTime.Now.ToString("ddMMyyyyHHmmss")}.log");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            try
+            {
+                StreamWriter sw;
+                if (!File.Exists(path))
+                {
+                    sw = File.CreateText(path);
+                }
+                else
+                {
+                    sw = File.AppendText(path);
+                }
+                foreach (var j in ne.Keys)
+                {
+                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {((ne[j].Duration/1000)/60)}");
+                }
+
+                sw.Flush();
+                sw.Close();
+            }
+            catch (Exception ex)
+            {
+                AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void StartApplicationTracker()
+        {
+            System.Threading.Thread activeThread = new System.Threading.Thread(activeWorker.StartThread);
+            activeWorker.StopThread(true);
+            activeThread.Start();
+        }
+
+        private void StopApplicationTracker()
+        {
+            activeWorker.StopThread(false);
+            var focusedApplication = activeWorker.activeApplicationInfomationCollector._focusedApplication;
+            TempStoreApplicationUsed(focusedApplication);
         }
         #endregion
     }

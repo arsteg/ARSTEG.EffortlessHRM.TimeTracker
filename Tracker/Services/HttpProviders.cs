@@ -3,11 +3,13 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTracker.Models;
 
 namespace TimeTracker.Services
 {
@@ -59,13 +61,37 @@ namespace TimeTracker.Services
             }
         }
 
+        public async Task<TResult> GetWithTokenAsync<TResult>(string uri, string token = "")
+        {
+            try
+            {
+                HttpClient httpClient = new HttpClient();
+                httpClient.BaseAddress = new Uri(uri);
+                var cookies = $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
+                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                
+                HttpResponseMessage response = await httpClient.GetAsync(uri);
+                await HandleResponse(response);
+                string serialized = await response.Content.ReadAsStringAsync();
+                TResult result = await Task.Run(() => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings));
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return JsonConvert.DeserializeObject<TResult>(null);
+            }
+        }
+
         public async Task<TResult> PostAsync<TResult,T>(string uri, T data, string token = "")
         {
             try
             {
                 HttpClient httpClient = new HttpClient();
                 httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();                
+                httpClient.DefaultRequestHeaders.Accept.Clear();
                 var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await httpClient.PostAsync(uri, content).ConfigureAwait(false);
                 await HandleResponse(response);
@@ -88,12 +114,14 @@ namespace TimeTracker.Services
         {
             try
             {
+                var cookies = $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
                 HttpClient httpClient = new HttpClient();
                 httpClient.BaseAddress = new Uri(uri);
                 httpClient.DefaultRequestHeaders.Accept.Clear();
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
 
-                 var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = await httpClient.PostAsync(uri, content).ConfigureAwait(false);
                 await HandleResponse(response);

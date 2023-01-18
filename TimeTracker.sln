@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UrlHistoryLibrary", "UrlHis
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserHistoryGatherer", "BrowserHistoryGatherer\BrowserHistoryGatherer.csproj", "{F65BE72A-9936-469B-A79D-6B2080342E62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationUsedLibrary", "ApplicationUsedLibrary\ApplicationUsedLibrary.csproj", "{946C7455-3C44-4BA2-85F0-364D91017579}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{F65BE72A-9936-469B-A79D-6B2080342E62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F65BE72A-9936-469B-A79D-6B2080342E62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F65BE72A-9936-469B-A79D-6B2080342E62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{946C7455-3C44-4BA2-85F0-364D91017579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{946C7455-3C44-4BA2-85F0-364D91017579}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{946C7455-3C44-4BA2-85F0-364D91017579}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{946C7455-3C44-4BA2-85F0-364D91017579}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -21,6 +21,8 @@ namespace TimeTracker.Models
         public int keysPressed { get; set; }
         public int clicks { get; set; }
         public string url { get; set; }
+        public string project { get; set; }
+        public int scrolls { get; set; }
     }
     public class CurrentWeekTotalTime
     {

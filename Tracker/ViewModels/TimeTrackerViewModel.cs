@@ -46,13 +46,14 @@ namespace TimeTracker.ViewModels
         private double minutesTracked = 0;
         private int totalMouseClick = 0;
         private int totalKeysPressed = 0;
+        private int totalScrolls = 0;
         MouseHook mh;
         #endregion
 
         #region constructor
         public TimeTrackerViewModel()
         {
-            BindProjectList();            
+            BindProjectList();
             CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
             StartStopCommand = new RelayCommand(StartStopCommandExecute, CanStartStopCommandExecute);
             EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
@@ -615,7 +616,7 @@ namespace TimeTracker.ViewModels
             SelectedTask = null;
         }
         public async void LogCommandExecute()
-        {            
+        {
             var rest = new REST(new HttpProviders());
             var errorLogList = await rest.GetErrorLogs(GlobalSetting.Instance.LoginResult.data.user.id);
             if (errorLogList != null && errorLogList?.status.ToUpper() == "SUCCESS" && errorLogList?.data?.errorLogList?.Count > 0)
@@ -723,6 +724,7 @@ namespace TimeTracker.ViewModels
             task.Wait();
             totalKeysPressed = 0;
             totalMouseClick = 0;
+            totalScrolls = 0;
             ShowTimeTracked(false);
             ShowCurrentTimeTracked();
             saveDispatcherTimer.Stop();
@@ -878,13 +880,15 @@ namespace TimeTracker.ViewModels
             {
                 user = UserName,
                 date = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day),
-                task = Taskname,
+                task = SelectedTask._id,
                 startTime = DateTime.Now.AddMinutes(-10),
                 endTime = DateTime.Now,
                 fileString = file,
                 filePath = fileName,
                 keysPressed = totalKeysPressed,
-                clicks = totalMouseClick
+                clicks = totalMouseClick,
+                scrolls = totalScrolls,
+                project = SelectedProject._id
             };
             try
             {
@@ -1015,12 +1019,12 @@ namespace TimeTracker.ViewModels
             {
                 StreamWriter sw;
                 if (!File.Exists(path))
-                { 
-                    sw = File.CreateText(path); 
+                {
+                    sw = File.CreateText(path);
                 }
                 else
-                { 
-                    sw = File.AppendText(path); 
+                {
+                    sw = File.AppendText(path);
                 }
                 foreach (var errorLog in errorLogList)
                 {
@@ -1060,7 +1064,7 @@ namespace TimeTracker.ViewModels
                 }
                 foreach (var j in ne.Keys)
                 {
-                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {((ne[j].Duration/1000)/60)}");
+                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {((ne[j].Duration / 1000) / 60)}");
                 }
 
                 sw.Flush();

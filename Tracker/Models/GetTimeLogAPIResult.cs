@@ -8,7 +8,12 @@ namespace TimeTracker.Models
     public class GetTimeLogAPIResult
     {
         public string status { get; set; }
-        public List<TimeLog> data { get; set; }
+        public List<TimeLogBase> data { get; set; }
+    }
+    public class AddTimeLogAPIResult
+    {
+        public string status { get; set; }
+        public TimeLog data { get; set; }
     }
 
     public class AddErrorLogAPIResult

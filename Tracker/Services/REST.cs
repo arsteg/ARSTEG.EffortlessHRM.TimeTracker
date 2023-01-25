@@ -50,10 +50,10 @@ namespace TimeTracker.Services
             return (res);
         }
 
-        public async Task<TimeLog> AddTimeLog(TimeLog timeLog)
+        public async Task<AddTimeLogAPIResult> AddTimeLog(TimeLog timeLog)
         {
             var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/timeLogs");
-            var res = await _httpProvider.PostWithTokenAsync<TimeLog, TimeLog>(uri, timeLog, GlobalSetting.Instance.LoginResult.token);
+            var res = await _httpProvider.PostWithTokenAsync<AddTimeLogAPIResult, TimeLog>(uri, timeLog, GlobalSetting.Instance.LoginResult.token);
             return (res);
         }
 
@@ -119,6 +119,15 @@ namespace TimeTracker.Services
             var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/project/newproject");
             var res = await _httpProvider.PostWithTokenAsync<object, ProjectRequest>(uri, projectRequest, GlobalSetting.Instance.LoginResult.token);
             return ("");
+        }
+        #endregion
+
+        #region "Track Application Website"
+        public async Task<ApplicationLogResult> AddUsedApplicationLog(ApplicationLog applicationLog)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/appWebsite/create");
+            var res = await _httpProvider.PostWithTokenAsync<ApplicationLogResult, ApplicationLog>(uri, applicationLog, GlobalSetting.Instance.LoginResult.token);
+            return res;
         }
         #endregion
 

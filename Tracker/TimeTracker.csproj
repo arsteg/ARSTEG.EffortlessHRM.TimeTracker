@@ -40,6 +40,7 @@
     <PackageReference Include="NLog.Schema" Version="5.0.0-rc2" />
     <PackageReference Include="sendgrid" Version="9.25.1" />
     <PackageReference Include="Simplify.Windows.Forms" Version="1.1.2" />
+    <PackageReference Include="System.Management" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -71,7 +72,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApplicationUsedLibrary\ApplicationUsedLibrary.csproj" />
     <ProjectReference Include="..\BrowserHistoryGatherer\BrowserHistoryGatherer.csproj" />
   </ItemGroup>
 

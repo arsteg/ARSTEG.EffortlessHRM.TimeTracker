@@ -21,7 +21,8 @@ using TimeTracker.ActivityTracker;
 using BrowserHistoryGatherer.Data;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Diagnostics;
-using ApplicationUsedLibrary;
+using TimeTracker.AppUsedTracker;
+using System.Management;
 
 namespace TimeTracker.ViewModels
 {
@@ -34,6 +35,7 @@ namespace TimeTracker.ViewModels
         private DispatcherTimer idlTimeDetectionTimer = new DispatcherTimer();
         private DispatcherTimer saveDispatcherTimer = new DispatcherTimer();
         private DispatcherTimer deleteImagePath = new DispatcherTimer();
+        private DispatcherTimer usedAppDetector = new DispatcherTimer();
 
         private DateTime trackingStartedAt;
         private DateTime trackingStopedAt;
@@ -47,6 +49,7 @@ namespace TimeTracker.ViewModels
         private int totalMouseClick = 0;
         private int totalKeysPressed = 0;
         private int totalMouseScrolls = 0;
+        private string machineId = string.Empty;
         MouseHook mh;
         #endregion
 
@@ -72,7 +75,12 @@ namespace TimeTracker.ViewModels
 
             dispatcherTimer.Interval = TimeSpan.FromMinutes(9);
             UserName = GlobalSetting.Instance.LoginResult.data.user.email;
+
+            usedAppDetector.Tick += new EventHandler(UsedAppDetector_Tick);
+            usedAppDetector.Interval = TimeSpan.FromMinutes(10);
+
             minutesTracked = 0;
+            CreateMachineId();
 
             mh = new MouseHook();
             mh.SetHook();
@@ -681,7 +689,7 @@ namespace TimeTracker.ViewModels
                 StartStopButtontext = "Start";
                 AddErrorLog("Info", $"stopped at {DateTime.Now}");
                 trackingStopedAt = DateTime.Now;
-                StopApplicationTracker();
+                usedAppDetector.Stop();
             }
             else
             {
@@ -695,6 +703,7 @@ namespace TimeTracker.ViewModels
                     CreateNewTask();
                 }
                 StartApplicationTracker();
+                usedAppDetector.Start();
             }
             trackerIsOn = !trackerIsOn;
             CanShowRefresh = !trackerIsOn;
@@ -704,7 +713,6 @@ namespace TimeTracker.ViewModels
         {
             if (trackerIsOn)
             {
-                StopApplicationTracker();
                 var currentMinutes = DateTime.Now.Minute;
                 minutesTracked += 10;
                 var randonTime = (rand.Next(2, 9));
@@ -717,7 +725,6 @@ namespace TimeTracker.ViewModels
                 saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
                 saveDispatcherTimer.Interval = new TimeSpan(0, 0, 10);
                 saveDispatcherTimer.Start();
-                StartApplicationTracker();
             }
         }
 
@@ -780,6 +787,11 @@ namespace TimeTracker.ViewModels
                 }
             }
         }
+        private void UsedAppDetector_Tick(object sender, EventArgs e)
+        {
+            StopApplicationTracker();
+            StartApplicationTracker();
+        }
         private async void getCurrentSavedTime()
         {
             timeTrackedSaved = await GetCurrrentdateTimeTracked();
@@ -812,34 +824,48 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private async Task<TimeSpan> GetCurrrentWeekTimeTracked()
+        private async Task<TimeSpan?> GetCurrrentWeekTimeTracked()
         {
-            var dayOfWeekToday = (int)DateTime.Today.DayOfWeek;
-            var startDateOfWeek = DateTime.Today.AddDays(-1 * (dayOfWeekToday - 1));
-            var totalTime = new TimeSpan();
-            var rest = new REST(new HttpProviders());
-            var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
+            try
             {
-                user = UserName,
-                startDate = new DateTime(startDateOfWeek.Date.Year, startDateOfWeek.Date.Month, startDateOfWeek.Date.Day),
-                endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
-            });
-            totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
-            return totalTime;
+                var dayOfWeekToday = (int)DateTime.Today.DayOfWeek;
+                var startDateOfWeek = DateTime.Today.AddDays(-1 * (dayOfWeekToday - 1));
+                var totalTime = new TimeSpan();
+                var rest = new REST(new HttpProviders());
+                var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
+                {
+                    user = UserName,
+                    startDate = new DateTime(startDateOfWeek.Date.Year, startDateOfWeek.Date.Month, startDateOfWeek.Date.Day),
+                    endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
+                });
+                totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
+                return totalTime;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
-        private async Task<TimeSpan> GetCurrrentMonthTimeTracked()
+        private async Task<TimeSpan?> GetCurrrentMonthTimeTracked()
         {
-            var totalTime = new TimeSpan();
-            var rest = new REST(new HttpProviders());
-            var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
+            try
             {
-                user = UserName,
-                startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, 1),
-                endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
-            });
-            totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
-            return totalTime;
+                var totalTime = new TimeSpan();
+                var rest = new REST(new HttpProviders());
+                var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
+                {
+                    user = UserName,
+                    startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, 1),
+                    endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
+                });
+                totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
+                return totalTime;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         private bool CanStartStopCommandExecute()
@@ -869,9 +895,15 @@ namespace TimeTracker.ViewModels
             var sessionTimeTracked = TimeSpan.FromMinutes(minutesTracked);
             CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
             TimeSpan totalTimeTracked = timeTrackedSaved;
-            CurrentWeekTimeTracked = $" {(currentWeekTimeTracked.Days * 24) + currentWeekTimeTracked.Hours} hrs {currentWeekTimeTracked.Minutes.ToString("00")} m";
+            if (currentWeekTimeTracked != null)
+            {
+                CurrentWeekTimeTracked = $" {(currentWeekTimeTracked?.Days * 24) + currentWeekTimeTracked?.Hours} hrs {currentWeekTimeTracked?.Minutes.ToString("00")} m";
+            }
             var currentMonthTimeTracked = await GetCurrrentMonthTimeTracked();
-            CurrentMonthTimeTracked = $"{(currentMonthTimeTracked.Days * 24) + currentMonthTimeTracked.Hours} hrs {currentMonthTimeTracked.Minutes.ToString("00")} m";
+            if (currentMonthTimeTracked != null)
+            {
+                CurrentMonthTimeTracked = $"{(currentMonthTimeTracked?.Days * 24) + currentMonthTimeTracked?.Hours} hrs {currentMonthTimeTracked?.Minutes.ToString("00")} m";
+            }
         }
 
         private async Task<TimeLog> SaveTimeSlot(string filePath)
@@ -892,18 +924,38 @@ namespace TimeTracker.ViewModels
                 keysPressed = totalKeysPressed,
                 clicks = totalMouseClick,
                 scrolls = totalMouseScrolls,
-                project = SelectedProject._id
+                project = SelectedProject._id,
+                machineId = machineId,
+                makeThisDeviceActive = false
             };
             try
             {
                 var rest = new REST(new HttpProviders());
-                var result = await rest.AddTimeLog(timeLog);
-                return result;
+                var result = rest.AddTimeLog(timeLog).GetAwaiter().GetResult();
+                if (!string.IsNullOrEmpty(result.data.message))
+                {
+                    if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
+                    {
+                        if (MessageBox.Show($"{result.data.message}", "Confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                        {
+                            timeLog.makeThisDeviceActive = true;
+                            result = await rest.AddTimeLog(timeLog);
+                        }
+                        else
+                        {
+                            if (trackerIsOn)
+                            {
+                                StartStopCommandExecute();
+                            }
+                        }
+                    }
+                }
+                return result.data;
             }
             catch (Exception ex)
             {
                 unsavedTimeLogs.Add(timeLog);
-
+                AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
                 return null;
             }
         }
@@ -965,12 +1017,19 @@ namespace TimeTracker.ViewModels
 
         private void AddErrorLog(string error, string details)
         {
-            var rest = new REST(new HttpProviders());
-            rest.AddErrorLogs(new ErrorLog()
+            try
             {
-                error = error,
-                details = details
-            });
+                var rest = new REST(new HttpProviders());
+                rest.AddErrorLogs(new ErrorLog()
+                {
+                    error = error,
+                    details = details
+                });
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private async void BindProjectList()
@@ -1066,11 +1125,21 @@ namespace TimeTracker.ViewModels
                 {
                     sw = File.AppendText(path);
                 }
+                double totalMilisecons = 0;
+                double totalIdleTime = 0;
+                double totalmous = 0;
+                double totalmousesc = 0;
+                double totalKeybo = 0;
                 foreach (var j in ne.Keys)
                 {
-                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {Math.Round(((ne[j].Duration / 1000) / 60), 2)}");
+                    totalMilisecons += ne[j].Duration;
+                    totalIdleTime += ne[j].TotalIdletime;
+                    totalmous += ne[j].TotalMouseClick;
+                    totalmousesc += ne[j].TotalMouseScrolls;
+                    totalKeybo += ne[j].TotalKeysPressed;
+                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {ne[j].Duration} # Keycount # {ne[j].TotalKeysPressed} # Mouse Count # {ne[j].TotalMouseClick} # Scroll Count # {ne[j].TotalMouseScrolls} # total Inactive # {ne[j].TotalIdletime}");
                 }
-
+                sw.WriteLine("{0}", $" totalMilisecons {totalMilisecons} # totalIdleTime {totalIdleTime} # mouse {totalmous} # mousescro {totalmousesc} # keyboard {totalKeybo}");
                 sw.Flush();
                 sw.Close();
             }
@@ -1088,13 +1157,80 @@ namespace TimeTracker.ViewModels
             activeThread.Start();
         }
 
-        private void StopApplicationTracker()
+        private async void StopApplicationTracker()
         {
             activeWorker.StopThread(false);
             var focusedApplication = activeWorker.activeApplicationInfomationCollector._focusedApplication;
             TempStoreApplicationUsed(focusedApplication);
+            if (focusedApplication != null)
+            {
+                foreach (var key in focusedApplication?.Keys)
+                {
+                    await AddUsedApplicationLog(new ApplicationLog
+                    {
+                        appWebsite = key,
+                        type = "App",
+                        ApplicationTitle = focusedApplication[key].AppTitle,
+                        projectReference = SelectedProject._id,
+                        userReference = GlobalSetting.Instance.LoginResult.data.user.id,
+                        date = DateTime.Now,
+                        inactive = focusedApplication[key].TotalIdletime,
+                        keyboardStrokes = focusedApplication[key].TotalKeysPressed,
+                        mouseClicks = focusedApplication[key].TotalMouseClick,
+                        scrollingNumber = focusedApplication[key].TotalMouseScrolls,
+                        ModuleName = SelectedProject.projectName,
+                        TimeSpent = focusedApplication[key].Duration,
+                        total = focusedApplication[key].Duration
+                    });
+                }
+            }
+        }
 
-            // to do (call AddNewApplication api)
+        private async Task AddUsedApplicationLog(ApplicationLog applicationLog)
+        {
+            try
+            {
+                var rest = new REST(new HttpProviders());
+                var usedApp = await rest.AddUsedApplicationLog(applicationLog);
+            }
+            catch (Exception ex)
+            {
+                AddErrorLog("Error AddUsedApplicationLog", $"Message: {ex?.Message} ex.StackTrace:{ex?.StackTrace} InnerException: {ex?.InnerException?.InnerException}");
+            }
+        }
+
+        private void CreateMachineId()
+        {
+            machineId = string.Empty;
+            var win32Processor = new ManagementObjectSearcher("SELECT * FROM Win32_Processor");
+            var win32BaseBoard = new ManagementObjectSearcher("SELECT * FROM Win32_BaseBoard");
+            //var win32DiskDrive = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
+
+            foreach (var processor in win32Processor.Get())
+            {
+                if (!string.IsNullOrEmpty(Convert.ToString(processor["ProcessorId"])))
+                {
+                    machineId = processor["ProcessorId"].ToString();
+                    break;
+                }
+            }
+
+            foreach (var baseboard in win32BaseBoard.Get())
+            {
+                if (!string.IsNullOrEmpty(Convert.ToString(baseboard.GetPropertyValue("SerialNumber"))))
+                {
+                    machineId += baseboard.GetPropertyValue("SerialNumber").ToString();
+                    break;
+                }
+            }
+            //foreach (var baseboard in win32DiskDrive.Get())
+            //{
+            //    if (!string.IsNullOrEmpty(Convert.ToString(baseboard.GetPropertyValue("SerialNumber"))))
+            //    {
+            //        machineId += baseboard.GetPropertyValue("SerialNumber").ToString();
+            //        break;
+            //    }
+            //}
         }
         #endregion
     }

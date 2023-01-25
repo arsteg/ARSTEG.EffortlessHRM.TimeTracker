@@ -5,24 +5,30 @@ using System.Text;
 
 namespace TimeTracker.Models
 {
-    public class TimeLog
+    public class TimeLogBase
     {
         public string _id { get; set; }
         public string user { get; set; }
-        public string task { get; set; }
-        public DateTime? StartDate { get; set; }
 
         [DataType(DataType.DateTime)]
         public DateTime date { get; set; }
         public DateTime startTime { get; set; }
         public DateTime endTime { get; set; }
         public string filePath { get; set; }
-        public string fileString { get; set; }
         public int keysPressed { get; set; }
         public int clicks { get; set; }
         public string url { get; set; }
-        public string project { get; set; }
         public int scrolls { get; set; }
+    }
+    public class TimeLog : TimeLogBase
+    {
+        public string task { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string fileString { get; set; }
+        public string project { get; set; }
+        public string machineId { get; set; }
+        public bool makeThisDeviceActive { get; set; }
+        public string message { get; set; }
     }
     public class CurrentWeekTotalTime
     {
@@ -78,5 +84,9 @@ namespace TimeTracker.Models
         public string user { get; set; }
     }
 
+    //public class ProjectTasks
+    //{
+
+    //}
 
 }

@@ -7,7 +7,7 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
+using SystemWindows = System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using TimeTracker.Models;
@@ -23,6 +23,7 @@ using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Diagnostics;
 using TimeTracker.AppUsedTracker;
 using System.Management;
+using System.Windows.Forms;
 
 namespace TimeTracker.ViewModels
 {
@@ -56,7 +57,6 @@ namespace TimeTracker.ViewModels
         #region constructor
         public TimeTrackerViewModel()
         {
-            BindProjectList();
             CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
             StartStopCommand = new RelayCommand(StartStopCommandExecute, CanStartStopCommandExecute);
             EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
@@ -66,6 +66,7 @@ namespace TimeTracker.ViewModels
             ScreenshotCaptureSoundCommand = new RelayCommand(ScreenshotCaptureSoundCommandExecute);
             DeleteScreenshotCommand = new RelayCommand(DeleteScreenshotCommandExecute);
             SaveScreenshotCommand = new RelayCommand(SaveScreenshotCommandExecute);
+            OpenDashboardCommand = new RelayCommand(OpenDashboardCommandExecute);
 
 
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -92,6 +93,8 @@ namespace TimeTracker.ViewModels
 
             InterceptKeys.OnKeyDown += InterceptKeys_OnKeyDown;
             InterceptKeys.Start();
+
+            BindProjectList();
         }
 
         private void Mh_MouseDownEvent(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -407,6 +410,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand ScreenshotCaptureSoundCommand { get; set; }
         public RelayCommand DeleteScreenshotCommand { get; set; }
         public RelayCommand SaveScreenshotCommand { get; set; }
+        public RelayCommand OpenDashboardCommand { get; set; }
 
         ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
 
@@ -424,7 +428,7 @@ namespace TimeTracker.ViewModels
                 }
                 else
                 {
-                    Application.Current.Shutdown();
+                    checkForUnsavedLog();
                 }
             }
             else
@@ -436,7 +440,7 @@ namespace TimeTracker.ViewModels
                 }
                 else
                 {
-                    Application.Current.Shutdown();
+                    checkForUnsavedLog();
                 }
             }
         }
@@ -515,7 +519,6 @@ namespace TimeTracker.ViewModels
                 ProgressWidthReport = 0;
             }
         }
-
         private string GetEMailBody(List<HistoryEntry> historyEntries)
         {
             try
@@ -604,7 +607,6 @@ namespace TimeTracker.ViewModels
                 return "";
             }
         }
-
         private static string getFileName(int r, int c, List<string> files)
         {
             var result = "";
@@ -678,6 +680,11 @@ namespace TimeTracker.ViewModels
         {
             CanShowScreenshot = false;
         }
+        public void OpenDashboardCommandExecute()
+        {
+            string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/screenshots";
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
         #endregion
 
         #region Private Methods
@@ -727,7 +734,6 @@ namespace TimeTracker.ViewModels
                 saveDispatcherTimer.Start();
             }
         }
-
         private void saveTimeSlot_Tick(object sender, EventArgs e)
         {
             CanShowScreenshot = false;
@@ -740,7 +746,6 @@ namespace TimeTracker.ViewModels
             ShowCurrentTimeTracked();
             saveDispatcherTimer.Stop();
         }
-
         private string CaptureScreen()
         {
             AddErrorLog("Info", $"screen captured at: {DateTime.Now}");
@@ -751,9 +756,6 @@ namespace TimeTracker.ViewModels
             }
             CanShowScreenshot = true;
             Countdown(10, TimeSpan.FromSeconds(1), cur => CountdownTimer = "(" + cur + ")".ToString());
-            var screen = SystemParameters.WorkArea;
-            VerticalOffset = (screen.Height - 200);
-            HorizontalOffset = (screen.Width);
             return currentImagePath;
         }
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
@@ -891,14 +893,11 @@ namespace TimeTracker.ViewModels
         private async void ShowCurrentTimeTracked()
         {
             var currentWeekTimeTracked = await GetCurrrentWeekTimeTracked();
-
-            var sessionTimeTracked = TimeSpan.FromMinutes(minutesTracked);
-            CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
-            TimeSpan totalTimeTracked = timeTrackedSaved;
             if (currentWeekTimeTracked != null)
             {
                 CurrentWeekTimeTracked = $" {(currentWeekTimeTracked?.Days * 24) + currentWeekTimeTracked?.Hours} hrs {currentWeekTimeTracked?.Minutes.ToString("00")} m";
             }
+
             var currentMonthTimeTracked = await GetCurrrentMonthTimeTracked();
             if (currentMonthTimeTracked != null)
             {
@@ -930,13 +929,26 @@ namespace TimeTracker.ViewModels
             };
             try
             {
+
+                if (!CheckInternetConnectivity.IsConnectedToInternet())
+                {
+                    AddErrorLog("Info", $"Please check your internet connectivity.");
+                    unsavedTimeLogs.Add(timeLog);
+                    Task.Run(() =>
+                    {
+                        MessageBox.Show("Please check your internet connectivity.");
+                    });
+                    return null;
+                }
                 var rest = new REST(new HttpProviders());
                 var result = rest.AddTimeLog(timeLog).GetAwaiter().GetResult();
+                AddErrorLog("Info", $"machineId {machineId} Message {result?.data?.message ?? ""}");
                 if (!string.IsNullOrEmpty(result.data.message))
                 {
                     if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
                     {
-                        if (MessageBox.Show($"{result.data.message}", "Confirmation", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                        var isConfirm = MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo);
+                        if (isConfirm == DialogResult.Yes)
                         {
                             timeLog.makeThisDeviceActive = true;
                             result = await rest.AddTimeLog(timeLog);
@@ -950,11 +962,21 @@ namespace TimeTracker.ViewModels
                         }
                     }
                 }
+                else
+                {
+                    var tempUnsavedTimeLogs = unsavedTimeLogs;
+                    foreach (var unsavedTimeLog in tempUnsavedTimeLogs.ToArray())
+                    {
+                        AddErrorLog("Info", $"Save unsaved log from SaveTimeSlot");
+                        var unsavedLogResult = await rest.AddTimeLog(unsavedTimeLog);
+                        unsavedTimeLogs.Remove(unsavedTimeLog);
+                    }
+                    tempUnsavedTimeLogs = null;
+                }
                 return result.data;
             }
             catch (Exception ex)
             {
-                unsavedTimeLogs.Add(timeLog);
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
                 return null;
             }
@@ -1231,6 +1253,54 @@ namespace TimeTracker.ViewModels
             //        break;
             //    }
             //}
+        }
+
+        private async Task checkForUnsavedLog()
+        {
+            if (unsavedTimeLogs?.Count > 0)
+            {
+                var isConfirm = MessageBox.Show($"There are some logs saved locally. Do you want to save this to the server before closing the application? Otherwise, the data will be lost.", "Confirmation", MessageBoxButtons.YesNo);
+                if (isConfirm == DialogResult.Yes)
+                {
+                    if (!CheckInternetConnectivity.IsConnectedToInternet())
+                    {
+                        MessageBox.Show("This needs an active internet connection");
+                        
+                    }
+                    var rest = new REST(new HttpProviders());
+
+                    var tempUnsavedTimeLogs = unsavedTimeLogs;
+                    foreach (var unsavedTimeLog in tempUnsavedTimeLogs.ToArray())
+                    {
+                        var result = await rest.AddTimeLog(unsavedTimeLog);
+                        AddErrorLog("Info saved from checkForUnsavedLog()", $"machineId {machineId} Message {result?.data?.message ?? ""}");
+                        if (!string.IsNullOrEmpty(result?.data?.message))
+                        {
+                            if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
+                            {
+                                if (MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                {
+                                    unsavedTimeLog.makeThisDeviceActive = true;
+                                    result = await rest.AddTimeLog(unsavedTimeLog);
+                                }
+                            }
+                        }
+                        unsavedTimeLogs.Remove(unsavedTimeLog);
+                    }
+                    SystemWindows.Application.Current.Shutdown();
+                    
+                }
+                else
+                {
+                    SystemWindows.Application.Current.Shutdown();
+                    
+                }
+            }
+            else
+            {
+                SystemWindows.Application.Current.Shutdown();
+                
+            }
         }
         #endregion
     }

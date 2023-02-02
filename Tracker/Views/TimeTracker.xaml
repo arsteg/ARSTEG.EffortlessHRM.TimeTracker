@@ -102,6 +102,7 @@
                         <MenuItem.Icon>
                             <fa:ImageAwesome Icon="Cog" />
                         </MenuItem.Icon>
+                        <MenuItem Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
                         <MenuItem Header="Log" Command="{Binding LogCommand}">
                         </MenuItem>
                         <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}"></MenuItem>
@@ -164,7 +165,8 @@
             </Border>
             <Button Grid.Row="8" Grid.Column="1" Width="80" Command="{Binding LogoutCommand}" Margin="0,0,-40,0">Logout</Button>
             <Button Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Width="80" Command="{Binding CloseCommand}" Margin="0,0,-25,0">Close</Button>
-            <Popup IsOpen="{Binding CanShowScreenshot}" VerticalOffset="{Binding VerticalOffset}" HorizontalOffset="{Binding HorizontalOffset}" Placement="Top">
+            <!--<Popup IsOpen="{Binding CanShowScreenshot}" VerticalOffset="{Binding VerticalOffset}" HorizontalOffset="{Binding HorizontalOffset}" Placement="Top">-->
+            <Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}" Placement="Absolute">
                 <Grid Background="White" Margin="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="100"></ColumnDefinition>

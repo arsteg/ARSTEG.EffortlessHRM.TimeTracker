@@ -3,6 +3,8 @@ using GalaSoft.MvvmLight.Views;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Windows;
@@ -16,6 +18,7 @@ namespace TimeTracker.ViewModels
     public class LoginViewModel:ViewModelBase
     {
         #region private members
+        private IConfiguration configuration;
         #endregion
 
         #region constructor
@@ -23,12 +26,15 @@ namespace TimeTracker.ViewModels
         {
             LoginCommand = new RelayCommand(LoginCommandExecute);
             CloseCommand = new RelayCommand(CloseCommandExecute);
+            OpenForgotPasswordCommand = new RelayCommand(OpenForgotPasswordCommandExecute);
+            configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
         }
         #endregion
 
         #region commands
         public RelayCommand LoginCommand { get; set; }
         public RelayCommand CloseCommand { get; set; }
+        public RelayCommand OpenForgotPasswordCommand { get; set; }
 
         #endregion
 
@@ -130,6 +136,11 @@ namespace TimeTracker.ViewModels
         {
             Application.Current.Shutdown();
         }
-        #endregion 
+        public void OpenForgotPasswordCommandExecute()
+        {
+            string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/forgotPassword";
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+        #endregion
     }
 }

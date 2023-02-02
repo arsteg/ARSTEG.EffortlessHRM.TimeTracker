@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -22,6 +23,7 @@ namespace TimeTracker.Views
         public TimeTracker()
         {
             InitializeComponent();
+            UpdatePopupPosition();
             System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
             ni.Icon = new System.Drawing.Icon(@$"{System.AppDomain.CurrentDomain.BaseDirectory}\Media\Images\logo.ico");
             ni.Visible = true;
@@ -29,18 +31,21 @@ namespace TimeTracker.Views
                 delegate (object sender, EventArgs args)
                 {
                     this.Show();
-                    this.WindowState = System.Windows.WindowState.Normal;
+                    this.WindowState = WindowState.Normal;
                 };
             //SetTheme();
 
         }
         protected override void OnStateChanged(EventArgs e)
         {
-            if (WindowState == System.Windows.WindowState.Minimized)
+            if (WindowState == WindowState.Minimized)
+            {
                 this.Hide();
+            }
             base.OnStateChanged(e);
+            UpdatePopupPosition();
         }
-        
+
         // Minimize to system tray when application is closed.
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -53,5 +58,18 @@ namespace TimeTracker.Views
             base.OnClosing(e);
         }
 
+        private void UpdatePopupPosition()
+        {
+            var screenWidth = SystemParameters.WorkArea.Width;
+            var screenHeight = SystemParameters.WorkArea.Height;
+            var popupWidth = popupControl.ActualWidth;
+            var popupHeight = popupControl.ActualHeight;
+
+            popupControl.PlacementRectangle = new Rect(
+              screenWidth + 140,
+              screenHeight - popupHeight,
+              popupWidth,
+              popupHeight);
+        }
     }
 }

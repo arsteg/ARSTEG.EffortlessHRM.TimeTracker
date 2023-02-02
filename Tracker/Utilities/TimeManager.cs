@@ -25,6 +25,13 @@ namespace TimeTracker.Utilities
             Bitmap bitmap;
             string result = null;
 
+            ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+            var myEncoder =
+                 System.Drawing.Imaging.Encoder.Quality;
+            var myEncoderParameters = new EncoderParameters(1);
+            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 75L);
+            myEncoderParameters.Param[0] = myEncoderParameter;
+
             bitmap = new Bitmap((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight, PixelFormat.Format32bppArgb);
 
             using (Graphics g = Graphics.FromImage(bitmap))
@@ -44,7 +51,7 @@ namespace TimeTracker.Utilities
                 }
                 var fileName = $@"{DateTime.Now.ToString("HH-mm")}.jpg";
                 result = @$"{folderPath}\{fileName}";
-                bitmap.Save(result);
+                bitmap.Save(result, jpgEncoder, myEncoderParameters);
             }
             catch (Exception)
             {
@@ -54,6 +61,18 @@ namespace TimeTracker.Utilities
                 DeleteObject(handle);
             }
             return result;
+        }
+        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
         }
     }
 }

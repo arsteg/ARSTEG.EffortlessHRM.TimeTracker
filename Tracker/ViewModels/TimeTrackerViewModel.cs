@@ -1265,7 +1265,7 @@ namespace TimeTracker.ViewModels
                     if (!CheckInternetConnectivity.IsConnectedToInternet())
                     {
                         MessageBox.Show("This needs an active internet connection");
-                        
+                        return;
                     }
                     var rest = new REST(new HttpProviders());
 

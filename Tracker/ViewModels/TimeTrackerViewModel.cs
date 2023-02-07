@@ -1071,18 +1071,21 @@ namespace TimeTracker.ViewModels
 
         private async void CreateNewTask()
         {
-            var taskUser = new List<TaskUser>();
-            taskUser.Add(new TaskUser()
-            {
-                user = GlobalSetting.Instance.LoginResult.data.user.id
-            });
+
+            var taskUsers = new string[] { GlobalSetting.Instance.LoginResult.data.user.id };
             var rest = new REST(new HttpProviders());
             var newTaskResult = await rest.AddNewTask(new CreateTaskRequest
             {
                 taskName = taskName,
                 comment = "Created from tracker",
                 project = SelectedProject._id,
-                taskUsers = taskUser
+                taskUsers = taskUsers,
+                description = null,
+                endDate = null,
+                priority = null,
+                startDate = DateTime.UtcNow,
+                startTime = DateTime.UtcNow,
+                taskAttachments = null
             });
 
             if (newTaskResult.status.ToUpper() == "SUCCESS")
@@ -1183,7 +1186,6 @@ namespace TimeTracker.ViewModels
         {
             activeWorker.StopThread(false);
             var focusedApplication = activeWorker.activeApplicationInfomationCollector._focusedApplication;
-            TempStoreApplicationUsed(focusedApplication);
             if (focusedApplication != null)
             {
                 foreach (var key in focusedApplication?.Keys)
@@ -1288,18 +1290,18 @@ namespace TimeTracker.ViewModels
                         unsavedTimeLogs.Remove(unsavedTimeLog);
                     }
                     SystemWindows.Application.Current.Shutdown();
-                    
+
                 }
                 else
                 {
                     SystemWindows.Application.Current.Shutdown();
-                    
+
                 }
             }
             else
             {
                 SystemWindows.Application.Current.Shutdown();
-                
+
             }
         }
         #endregion

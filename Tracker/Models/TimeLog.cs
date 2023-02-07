@@ -60,14 +60,14 @@ namespace TimeTracker.Models
     public class CreateTaskRequest
     {
         public string taskName { get; set; }
-        public string startDate { get; set; }
-        public string endDate { get; set; }
-        public string startTime { get; set; }
+        public DateTime startDate { get; set; }
+        public DateTime? endDate { get; set; }
+        public DateTime startTime { get; set; }
         public string description { get; set; }
         public string comment { get; set; }
         public string priority { get; set; }
         public string project { get; set; }
-        public List<TaskUser> taskUsers { get; set; }
+        public string[] taskUsers { get; set; }
         public List<TaskAttachment> taskAttachments { get; set; }
     }
 
@@ -83,10 +83,5 @@ namespace TimeTracker.Models
     {
         public string user { get; set; }
     }
-
-    //public class ProjectTasks
-    //{
-
-    //}
 
 }

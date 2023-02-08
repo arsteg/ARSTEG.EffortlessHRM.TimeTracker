@@ -59,10 +59,10 @@
                 <Label Grid.Row="1">Current Session</Label>
 
                 <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
-                <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="120">
+                <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="120" Foreground="White">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="{Binding StartStopButtontext}"/>
-                        <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Foreground="White"/>
+                        <Label Content="{Binding StartStopButtontext}" Foreground="White"/>
+                        <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}"/>
                     </StackPanel>
                 </Button>
 

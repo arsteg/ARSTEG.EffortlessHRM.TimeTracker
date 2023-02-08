@@ -78,5 +78,10 @@ namespace TimeTracker.Views
             Left = Left + e.HorizontalChange;
             Top = Top + e.VerticalChange;
         }
+
+        private void btnActionMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
     }
 }

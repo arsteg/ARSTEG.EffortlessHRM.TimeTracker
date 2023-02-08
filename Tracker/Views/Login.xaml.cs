@@ -12,6 +12,7 @@ using System.Windows.Shapes;
 using System.Windows.Navigation;
 using TimeTracker.ViewModels;
 using System.Threading;
+using System.Windows.Controls.Primitives;
 
 namespace TimeTracker.Views
 {
@@ -34,8 +35,8 @@ namespace TimeTracker.Views
             }
             if (Properties.Settings.Default.userPassword != string.Empty)
             {                
-                this.txtPassword.Password = Properties.Settings.Default.userPassword;
-                this.chkRememberMe.IsChecked = true;
+               // this.txtPassword.Password = Properties.Settings.Default.userPassword;
+               // this.chkRememberMe.IsChecked = true;
             }
         }
 
@@ -44,5 +45,34 @@ namespace TimeTracker.Views
             if (this.DataContext != null)
             { ((LoginViewModel)this.DataContext).Password = ((PasswordBox)sender).Password; }
         }
+
+
+        private void CheckBoxChanged(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void BtnActionMinimize_OnClick(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void BtnActionSystemInformation_OnClick(object sender, RoutedEventArgs e)
+        {
+            //var systemInformationWindow = new SystemInformationWindow();
+            //systemInformationWindow.Show();
+        }
+
+        private void btnActionClose_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void Thumb_OnDragDelta(object sender, DragDeltaEventArgs e)
+        {
+            Left = Left + e.HorizontalChange;
+            Top = Top + e.VerticalChange;
+        }
+
     }
 }

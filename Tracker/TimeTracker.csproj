@@ -47,6 +47,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Icons\employees-server.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Media\Audio\screencaptureSound.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -69,6 +72,8 @@
     <Folder Include="Database\" />
     <Folder Include="Data\" />
     <Folder Include="Media\Audio\" />
+    <Folder Include="Icons\" />
+    <Folder Include="Styles\" />
   </ItemGroup>
 
   <ItemGroup>

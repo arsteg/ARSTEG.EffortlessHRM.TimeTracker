@@ -49,7 +49,7 @@ namespace TimeTracker.Utilities
                 {
                     System.IO.Directory.CreateDirectory(folderPath);
                 }
-                var fileName = $@"{DateTime.Now.ToString("HH-mm")}.jpg";
+                var fileName = $@"{DateTime.UtcNow.ToString("HH-mm")}.jpg";
                 result = @$"{folderPath}\{fileName}";
                 bitmap.Save(result, jpgEncoder, myEncoderParameters);
             }

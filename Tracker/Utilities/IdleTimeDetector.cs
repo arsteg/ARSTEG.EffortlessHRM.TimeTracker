@@ -29,7 +29,7 @@ namespace TimeTracker.Utilities
 
             return new IdleTimeInfo
             {
-                LastInputTime = DateTime.Now.AddMilliseconds(-1 * idleTicks),
+                LastInputTime = DateTime.UtcNow.AddMilliseconds(-1 * idleTicks),
                 IdleTime = new TimeSpan(0, 0, 0, 0, idleTicks),
                 SystemUptimeMilliseconds = systemUptime,
             };

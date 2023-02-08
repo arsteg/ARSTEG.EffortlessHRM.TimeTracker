@@ -3,16 +3,15 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:TimeTracker.Views"
-      mc:Ignorable="d" Height="480" Width="350" WindowStartupLocation="CenterScreen"
+      xmlns:local="clr-namespace:TimeTracker"
+      mc:Ignorable="d" Height="470" Width="320" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
-      WindowState="Normal"  WindowStyle="SingleBorderWindow"  ResizeMode="CanMinimize"
-      Background="{DynamicResource MaterialDesignPaper}"       
-      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      WindowState="Normal"
       xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
       xmlns:cmd="http://www.galasoft.ch/mvvmlight"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
-      TextElement.Foreground="{DynamicResource MaterialDesignBody}" Title="{Binding Title}">
+        Background="Transparent" AllowsTransparency="True" WindowStyle="None" ResizeMode="NoResize"
+      Title="{Binding Title}">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
             <cmd:EventToCommand Command="{Binding CloseCommand}" PassEventArgsToCommand="True" />
@@ -20,182 +19,174 @@
     </i:Interaction.Triggers>
 
     <Window.Resources>
-        <Storyboard x:Key="closeStoryBoard">
-            <ThicknessAnimation From="50,0,0,0" To="400,0,0,0" Duration="0:0:0.5" Storyboard.TargetName="LogoPanel" Storyboard.TargetProperty="Margin">
-                <ThicknessAnimation.EasingFunction>
-                    <BackEase Amplitude="0.15" EasingMode="EaseOut"/>
-                </ThicknessAnimation.EasingFunction>
-            </ThicknessAnimation>
-            <DoubleAnimation From="1" To="0" Duration="0:0:0.35" Storyboard.TargetName="LogoPanel" Storyboard.TargetProperty="Opacity"/>
-        </Storyboard>
-        <Style TargetType="{x:Type ItemsControl}">
-            <Setter Property="ItemsPanel">
-                <Setter.Value>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"
-                            IsItemsHost="True"/>
-                    </ItemsPanelTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <local:ValueConverter x:Key="ValueConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
-    <Border BorderBrush="Silver" BorderThickness="1" Margin="5">
-        <Grid Margin="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="125"></ColumnDefinition>
-                <ColumnDefinition Width="80"></ColumnDefinition>
-                <ColumnDefinition Width="70"></ColumnDefinition>
-                <ColumnDefinition Width="40"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
+
+    <Border Style="{StaticResource CoreBorderStyle}" Background="{DynamicResource WindowBackgroundBrush}" >
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="0"></RowDefinition>
-                <RowDefinition Height="35"></RowDefinition>
-                <RowDefinition Height="35"></RowDefinition>
-                <RowDefinition Height="35"></RowDefinition>
-                <RowDefinition Height="35"></RowDefinition>
-                <RowDefinition Height="35"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="175"></RowDefinition>
-                <RowDefinition Height="40"></RowDefinition>
+                <RowDefinition Height="40"/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
-
-            <!--<Label Name="LblTime" Grid.Column="0" Grid.Row="0" FontSize="18"  Grid.ColumnSpan="2" HorizontalContentAlignment="Left" Content="{Binding ProjectName}"></Label>
-        <Label Name="LblUser" Grid.Column="1" Grid.Row="0" FontSize="18"  Grid.ColumnSpan="3" HorizontalContentAlignment="Left" Content="{Binding UserName}"/>-->
-
-            <Label Grid.Row="1">Current Session</Label>
-
-            <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
-            <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="120">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="{Binding StartStopButtontext}"/>
-                    <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Foreground="White"/>
+            <Grid Grid.Row="0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Height="30">
+                    <Path Width="12" Height="12" Margin="5,0,5,0" Stretch="Fill" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{StaticResource ThemeColorBrush}" Data="F1 M 25,27L 46,19L 46,22.25L 28.5,29L 31.75,31.25L 51,23.75L 51,48.5L 31.75,57L 25,52L 25,27 Z "/>
+                    <TextBlock Foreground="{StaticResource ThemeColorBrush}" Text="Effortless HRM- Time Tracker" FontSize="16" Margin="8,2,0,0" FontWeight="Normal" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe WP" />
                 </StackPanel>
-            </Button>
+                <Thumb Opacity="0" Background="Transparent" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
+            </Grid>
 
-            <StackPanel Grid.Row="2" Orientation="Vertical">
-                <Label>Today</Label>
-            </StackPanel>
-            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
-                <Label Content="{Binding CurrentDayTimeTracked}"/>
-            </StackPanel>
-            <Button x:Name="btnReport" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" IsEnabled="{Binding CanSendReport}" HorizontalAlignment="Right" MinWidth="120" Visibility="Collapsed">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="Report"/>
-                    <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthReport}" Foreground="White"/>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="125"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="70"></ColumnDefinition>
+                    <ColumnDefinition Width="40"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0"></RowDefinition>
+                    <RowDefinition Height="35"></RowDefinition>
+                    <RowDefinition Height="35"></RowDefinition>
+                    <RowDefinition Height="35"></RowDefinition>
+                    <RowDefinition Height="35"></RowDefinition>
+                    <RowDefinition Height="35"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="175"></RowDefinition>
+                    <RowDefinition Height="40"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="1">Current Session</Label>
+
+                <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
+                <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="120">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="{Binding StartStopButtontext}"/>
+                        <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel Grid.Row="2" Orientation="Vertical">
+                    <Label>Today</Label>
                 </StackPanel>
-            </Button>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical">
+                    <Label Content="{Binding CurrentDayTimeTracked}"/>
+                </StackPanel>
+                <Button x:Name="btnReport" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding EODReportsCommand}" IsEnabled="{Binding CanSendReport}" HorizontalAlignment="Right" MinWidth="120" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Report"/>
+                        <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthReport}" Foreground="White"/>
+                    </StackPanel>
+                </Button>
 
-            <StackPanel Grid.Row="3" Orientation="Vertical">
-                <Label>This week</Label>
-            </StackPanel>
+                <StackPanel Grid.Row="3" Orientation="Vertical">
+                    <Label>This week</Label>
+                </StackPanel>
 
-            <StackPanel Grid.Row="3" Grid.Column="1">
-                <Label Content="{Binding CurrentWeekTimeTracked}"/>
-            </StackPanel>
+                <StackPanel Grid.Row="3" Grid.Column="1">
+                    <Label Content="{Binding CurrentWeekTimeTracked}"/>
+                </StackPanel>
 
-            <!--<StackPanel Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Margin="-45,0,0,0" Visibility="Hidden">
-               <Label>hrs of 168 hrs</Label>
-        </StackPanel>-->
-            <StackPanel Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="-10,0,0,0">
-                <Menu Name="menu1" Grid.Column="3">
-                    <MenuItem>
-                        <MenuItem.Icon>
-                            <fa:ImageAwesome Icon="Cog" />
-                        </MenuItem.Icon>
-                        <MenuItem Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
-                        <MenuItem Header="Log" Command="{Binding LogCommand}">
+                <StackPanel Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0,0,0">
+                    <Menu Name="menu1" Grid.Column="3" Background="Transparent">
+                        <MenuItem Background="White">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="Cog" />
+                            </MenuItem.Icon>
+                            <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
+                            <MenuItem Header="Log" Command="{Binding LogCommand}">
+                            </MenuItem>
+                            <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}"></MenuItem>
                         </MenuItem>
-                        <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}"></MenuItem>
-                    </MenuItem>
-                </Menu>
-                <!---->
-            </StackPanel>
+                    </Menu>
+                    <!---->
+                </StackPanel>
 
-            <StackPanel Grid.Row="4" Orientation="Vertical">
-                <Label>This month</Label>
-            </StackPanel>
+                <StackPanel Grid.Row="4" Orientation="Vertical">
+                    <Label>This month</Label>
+                </StackPanel>
 
-            <StackPanel Grid.Row="4" Grid.Column="1">
-                <Label Content="{Binding CurrentMonthTimeTracked}"/>
-            </StackPanel>
-            <StackPanel Grid.Row="5" Orientation="Vertical" Grid.Column="0">
-                <Label>Project</Label>
-            </StackPanel>
+                <StackPanel Grid.Row="4" Grid.Column="1">
+                    <Label Content="{Binding CurrentMonthTimeTracked}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="5" Orientation="Vertical" Grid.Column="0">
+                    <Label>Project</Label>
+                </StackPanel>
 
-            <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2">
-                <ComboBox Grid.Column="1" Grid.ColumnSpan="2"
+                <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,0">
+                    <ComboBox Grid.Column="1" Grid.ColumnSpan="2" Style="{StaticResource RubyCombobox}"
                       Name="cmb" IsTextSearchEnabled="True" IsEditable="True"
                       HorizontalAlignment="Left"
-                      VerticalAlignment="Top"
-                      Height="35"
+                      
                        Text="{Binding Path=SelectedProjectName}"
                       ItemsSource="{Binding Path=Projects}"
                     SelectedItem="{Binding Path=SelectedProject}"
                     DisplayMemberPath="projectName"
                       Width="150"/>
-            </StackPanel>
-            <StackPanel Grid.Row="5" Grid.Column="3">
-                <Button Grid.Row="5" Grid.Column="3" Width="40" Command="{Binding RefreshCommand}" Margin="0,0,-10,0" IsEnabled="{Binding CanShowRefresh}">
-                    <fa:ImageAwesome Icon="Refresh" />
-                </Button>
-            </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Row="5" Grid.Column="3">
+                    <Button Grid.Row="5" Grid.Column="3" Command="{Binding RefreshCommand}" BorderThickness="0" Background="Transparent" Margin="10,-2,0,0" Visibility="{Binding CanShowRefresh}">
+                        <fa:ImageAwesome Icon="Refresh" Width="15"/>
+                    </Button>
+                </StackPanel>
 
-            <StackPanel Grid.Row="6" Orientation="Horizontal">
-                <Label>Current Task</Label>
-            </StackPanel>
+                <StackPanel Grid.Row="6" Orientation="Horizontal">
+                    <Label>Current Task</Label>
+                </StackPanel>
 
-            <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3">
-                <!--<TextBox Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignTextBox}"  materialDesign:HintAssist.Hint="Enter current task details here!"></TextBox>-->
-                <ComboBox Grid.Column="1" Grid.ColumnSpan="3"
+                <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,5,0,5">
+                    <ComboBox Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource RubyCombobox}"
                       Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
                       HorizontalAlignment="Left"
-                      VerticalAlignment="Top"
-                      Height="35"
+                      
+                      
                     Text="{Binding Taskname}"
                     IsEnabled="{Binding AllowTaskSelection}"
                       ItemsSource="{Binding Path=Tasks}"
                     SelectedItem="{Binding Path=SelectedTask}"
                     DisplayMemberPath="taskName"
                           Width="150"/>
-            </StackPanel>
+                </StackPanel>
 
-            <Border Grid.Row="7"  Grid.ColumnSpan="4" BorderThickness="1" BorderBrush="LightGray" Margin="5">
-                <Image Source="{Binding CurrentImagePath}">
-                </Image>
-            </Border>
-            <Button Grid.Row="8" Grid.Column="1" Width="80" Command="{Binding LogoutCommand}" Margin="0,0,-40,0">Logout</Button>
-            <Button Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Width="80" Command="{Binding CloseCommand}" Margin="0,0,-25,0">Close</Button>
-            <!--<Popup IsOpen="{Binding CanShowScreenshot}" VerticalOffset="{Binding VerticalOffset}" HorizontalOffset="{Binding HorizontalOffset}" Placement="Top">-->
-            <Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}" Placement="Absolute">
-                <Grid Background="White" Margin="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="0"></RowDefinition>
-                        <RowDefinition Height="130"></RowDefinition>
-                        <RowDefinition Height="35"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-                        <Border BorderThickness="1" BorderBrush="LightGray" Margin="5">
-                            <Image Source="{Binding CurrentImagePath}">
-                            </Image>
-                        </Border>
-                    </StackPanel>
-                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="2">
-                        <Button Command="{Binding SaveScreenshotCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <Label Foreground="white">Save</Label>
-                                <Label Foreground="White" Content="{Binding CountdownTimer}"/>
+                <Border Grid.Row="7"  Grid.ColumnSpan="4" Style="{StaticResource CoreBorderStyle}" Margin="5">
+                    <Rectangle RadiusX="7" RadiusY="7">
+                        <Rectangle.Fill>
+                            <ImageBrush ImageSource="{Binding CurrentImagePath}"/>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Border>
+                <Button Grid.Row="8" Grid.Column="1" Width="60" Command="{Binding LogoutCommand}" Margin="0,0,0,0">Logout</Button>
+                <Button Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Width="60" Command="{Binding CloseCommand}" Margin="0,0,0,0">Close</Button>
+                <Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}" AllowsTransparency="True" Placement="Absolute">
+                    <Border Style="{StaticResource CoreBorderStyle}" Background="{DynamicResource WindowBackgroundBrush}" >
+                        <Grid Background="White" Margin="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"></ColumnDefinition>
+                                <ColumnDefinition Width="100"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="0"></RowDefinition>
+                                <RowDefinition Height="130"></RowDefinition>
+                                <RowDefinition Height="35"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                                <Image Source="{Binding CurrentImagePath}"></Image>
                             </StackPanel>
-                        </Button>
-                    </StackPanel>
-                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="2">
-                        <Button Command="{Binding DeleteScreenshotCommand}">Delete</Button>
-                    </StackPanel>
-                </Grid>
-            </Popup>
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="2">
+                                <Button Command="{Binding SaveScreenshotCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Foreground="white">Save</Label>
+                                        <Label Foreground="White" Content="{Binding CountdownTimer}"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="2">
+                                <Button Command="{Binding DeleteScreenshotCommand}">Delete</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Popup>
+            </Grid>
         </Grid>
     </Border>
 </Window>

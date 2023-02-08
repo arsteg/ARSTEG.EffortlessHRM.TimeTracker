@@ -388,8 +388,8 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private bool canShowRefresh = true;
-        public bool CanShowRefresh
+        private string canShowRefresh = "Visible";
+        public string CanShowRefresh
         {
             get { return canShowRefresh; }
             set
@@ -635,9 +635,9 @@ namespace TimeTracker.ViewModels
             var errorLogList = await rest.GetErrorLogs(GlobalSetting.Instance.LoginResult.data.user.id);
             if (errorLogList != null && errorLogList?.status.ToUpper() == "SUCCESS" && errorLogList?.data?.errorLogList?.Count > 0)
             {
-                if (errorLogList.data.errorLogList.Any(e => e.createdOn.Date == DateTime.Now.Date))
+                if (errorLogList.data.errorLogList.Any(e => e.createdOn.Date == DateTime.UtcNow.Date))
                 {
-                    var errors = errorLogList.data.errorLogList.Where(e => e.createdOn.Date == DateTime.Now.Date);
+                    var errors = errorLogList.data.errorLogList.Where(e => e.createdOn.Date == DateTime.UtcNow.Date);
                     ShowLog(errors);
                 }
                 else
@@ -694,16 +694,16 @@ namespace TimeTracker.ViewModels
             if (trackerIsOn)
             {
                 StartStopButtontext = "Start";
-                AddErrorLog("Info", $"stopped at {DateTime.Now}");
-                trackingStopedAt = DateTime.Now;
+                AddErrorLog("Info", $"stopped at {DateTime.UtcNow}");
+                trackingStopedAt = DateTime.UtcNow;
                 usedAppDetector.Stop();
             }
             else
             {
-                AddErrorLog("Info", $"started at {DateTime.Now}");
+                AddErrorLog("Info", $"started at {DateTime.UtcNow}");
                 StartStopButtontext = "Stop";
                 dispatcherTimer.Start();
-                trackingStartedAt = DateTime.Now;
+                trackingStartedAt = DateTime.UtcNow;
                 minutesTracked = 0;
                 if (SelectedTask == null && taskName.Length > 0)
                 {
@@ -713,14 +713,14 @@ namespace TimeTracker.ViewModels
                 usedAppDetector.Start();
             }
             trackerIsOn = !trackerIsOn;
-            CanShowRefresh = !trackerIsOn;
+            CanShowRefresh = trackerIsOn ? "Hidden" : "Visible";
             return true;
         }
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             if (trackerIsOn)
             {
-                var currentMinutes = DateTime.Now.Minute;
+                var currentMinutes = DateTime.UtcNow.Minute;
                 minutesTracked += 10;
                 var randonTime = (rand.Next(2, 9));
                 double forTimerInterval = ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime) - currentMinutes;
@@ -748,7 +748,7 @@ namespace TimeTracker.ViewModels
         }
         private string CaptureScreen()
         {
-            AddErrorLog("Info", $"screen captured at: {DateTime.Now}");
+            AddErrorLog("Info", $"screen captured at: {DateTime.UtcNow}");
             currentImagePath = Utilities.TimeManager.CaptureMyScreen();
             if (Properties.Settings.Default.playScreenCaptureSound)
             {
@@ -807,7 +807,7 @@ namespace TimeTracker.ViewModels
                 var result = await rest.GetTimeLogs(new TimeLog()
                 {
                     user = UserName,
-                    date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day)
+                    date = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)
                 });
 
                 if (result.data != null)
@@ -830,7 +830,7 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                var dayOfWeekToday = (int)DateTime.Today.DayOfWeek;
+                var dayOfWeekToday = (int)DateTime.UtcNow.DayOfWeek;
                 var startDateOfWeek = DateTime.Today.AddDays(-1 * (dayOfWeekToday - 1));
                 var totalTime = new TimeSpan();
                 var rest = new REST(new HttpProviders());
@@ -838,7 +838,7 @@ namespace TimeTracker.ViewModels
                 {
                     user = UserName,
                     startDate = new DateTime(startDateOfWeek.Date.Year, startDateOfWeek.Date.Month, startDateOfWeek.Date.Day),
-                    endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
+                    endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day),
                 });
                 totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
                 return totalTime;
@@ -858,8 +858,8 @@ namespace TimeTracker.ViewModels
                 var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
                 {
                     user = UserName,
-                    startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, 1),
-                    endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Date.Month, DateTime.Now.Date.Day),
+                    startDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, 1),
+                    endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day),
                 });
                 totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
                 return totalTime;
@@ -910,14 +910,14 @@ namespace TimeTracker.ViewModels
             Byte[] bytes = File.ReadAllBytes(filePath);
             String file = Convert.ToBase64String(bytes);
             var fileName = Path.GetFileName(filePath);
-            var currentDate = DateTime.Now;
+            var currentDate = DateTime.UtcNow;
             var timeLog = new TimeLog()
             {
                 user = UserName,
                 date = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day),
                 task = SelectedTask._id,
-                startTime = DateTime.Now.AddMinutes(-10),
-                endTime = DateTime.Now,
+                startTime = DateTime.UtcNow.AddMinutes(-10),
+                endTime = DateTime.UtcNow,
                 fileString = file,
                 filePath = fileName,
                 keysPressed = totalKeysPressed,
@@ -1116,7 +1116,7 @@ namespace TimeTracker.ViewModels
                 }
                 foreach (var errorLog in errorLogList)
                 {
-                    sw.WriteLine("{0}", $"{errorLog.createdOn} {errorLog.error} {errorLog.details}");
+                    sw.WriteLine("{0}", $"{errorLog.createdOn.ToLocalTime()} {errorLog.error} {errorLog.details}");
                 }
                 sw.Flush();
                 sw.Close();
@@ -1197,7 +1197,7 @@ namespace TimeTracker.ViewModels
                         ApplicationTitle = focusedApplication[key].AppTitle,
                         projectReference = SelectedProject._id,
                         userReference = GlobalSetting.Instance.LoginResult.data.user.id,
-                        date = DateTime.Now,
+                        date = DateTime.UtcNow,
                         inactive = focusedApplication[key].TotalIdletime,
                         keyboardStrokes = focusedApplication[key].TotalKeysPressed,
                         mouseClicks = focusedApplication[key].TotalMouseClick,

@@ -35,8 +35,8 @@ namespace TimeTracker.Views
             }
             if (Properties.Settings.Default.userPassword != string.Empty)
             {                
-               // this.txtPassword.Password = Properties.Settings.Default.userPassword;
-               // this.chkRememberMe.IsChecked = true;
+                this.txtPassword.Password = Properties.Settings.Default.userPassword;
+                this.chkRememberMe.IsChecked = true;
             }
         }
 

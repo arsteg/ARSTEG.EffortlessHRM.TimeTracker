@@ -3,6 +3,7 @@
     <Style TargetType="Border" x:Key="CoreBorderStyle">
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeColorBrush}"></Setter>
             <Setter Property="BorderThickness" Value="1"></Setter>
+        <Setter Property="CornerRadius" Value="7"></Setter>
         </Style>
 
         <Style x:Key="CoreHeaderStyle" TargetType="Grid">

@@ -16,7 +16,7 @@ namespace TimeTracker.AppUsedTracker
         }
         public void ApplicationFocusStart(string appName, string appTitle)
         {
-            _startTime = DateTime.Now;
+            _startTime = DateTime.UtcNow;
             if (!_focusedApplication.ContainsKey(appName))
             {
                 _focusedApplication.Add(appName, new FocushedApplicationDetails
@@ -35,7 +35,7 @@ namespace TimeTracker.AppUsedTracker
             if (_focusedApplication.ContainsKey(appName))
             {
                 //end the timer and update the seconds
-                TimeSpan elapsed = DateTime.Now - _startTime;
+                TimeSpan elapsed = DateTime.UtcNow - _startTime;
                 _focusedApplication[appName].Duration = Convert.ToDouble(_focusedApplication[appName].Duration + elapsed.TotalMilliseconds);
                 _focusedApplication[appName].TotalMouseClick += TotalMouseClick;
                 _focusedApplication[appName].TotalKeysPressed += TotalKeysPressed;

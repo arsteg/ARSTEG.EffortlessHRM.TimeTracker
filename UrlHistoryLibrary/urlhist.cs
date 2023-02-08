@@ -145,7 +145,7 @@ namespace UrlHistoryLibrary
 				}
 				catch (Exception)
 				{
-					return DateTime.Now;
+					return DateTime.UtcNow;
 				}
 			}
 		}

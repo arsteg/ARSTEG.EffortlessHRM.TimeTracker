@@ -37,7 +37,7 @@
             </Grid>
             <Grid Grid.Row="0" Grid.Column="1">
                 <Button x:Name="btnActionClose" BorderThickness="0" Background="Transparent" Click="btnActionClose_Click" Margin="0,-12,-12,0">
-                    <fa:ImageAwesome Icon="Close" Height="25" Foreground="Red"/>
+                    <Label Content="X" FontWeight="Bold" FontSize="16"></Label>
                 </Button>                
             </Grid>
             <Grid Grid.Row="1" Grid.ColumnSpan="2">

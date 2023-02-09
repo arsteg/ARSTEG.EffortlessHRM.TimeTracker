@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TimeTracker"
-      mc:Ignorable="d" Height="470" Width="320" WindowStartupLocation="CenterScreen"
+      mc:Ignorable="d" Height="435" Width="320" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
       WindowState="Normal"
       xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
@@ -21,6 +21,13 @@
     <Window.Resources>
         <local:ValueConverter x:Key="ValueConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style TargetType="Button" x:Key="RoundButton">
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5" />
+                </Style>
+            </Style.Resources>
+        </Style>
     </Window.Resources>
 
     <Border Style="{StaticResource CoreBorderStyle}" Background="{DynamicResource WindowBackgroundBrush}" >
@@ -41,7 +48,7 @@
                 <Thumb Opacity="0" Background="Transparent" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
             </Grid>
             <Grid Grid.Row="0" Grid.Column="1" Margin="0,5,10,5">
-                <Button Name="btnActionMinimize" Click="btnActionMinimize_Click" BorderThickness="0" Background="{StaticResource ControlHeaderBackgroundPressdBrush}">
+                <Button Name="btnActionMinimize" Click="btnActionMinimize_Click" BorderThickness="0" Background="{StaticResource ControlHeaderBackgroundPressdBrush}" Style="{DynamicResource RoundButton}">
                     <fa:ImageAwesome Icon="WindowMinimize" Height="5" Foreground="{StaticResource MainBlackFontColor}"/>
                 </Button>
             </Grid>
@@ -55,26 +62,40 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0"></RowDefinition>
-                    <RowDefinition Height="35"></RowDefinition>
-                    <RowDefinition Height="35"></RowDefinition>
-                    <RowDefinition Height="35"></RowDefinition>
-                    <RowDefinition Height="35"></RowDefinition>
-                    <RowDefinition Height="35"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="175"></RowDefinition>
-                    <RowDefinition Height="40"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="1">Current Session</Label>
 
                 <Label  Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}"/>
-                <Button Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="120" Foreground="White">
+                <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" >
+                <Button Command="{Binding StartStopCommand}" HorizontalAlignment="Right" MinWidth="80" Foreground="White" >
                     <StackPanel Orientation="Horizontal">
                         <Label Content="{Binding StartStopButtontext}" Foreground="White"/>
                         <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}"/>
                     </StackPanel>
                 </Button>
-
+                    <StackPanel>
+                        <Menu Name="menu1" Grid.Column="3" Background="Transparent">
+                            <MenuItem Background="White">
+                                <MenuItem.Icon>
+                                    <fa:ImageAwesome Icon="Cog" />
+                                </MenuItem.Icon>
+                                <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
+                                <MenuItem Header="Log" Command="{Binding LogCommand}">
+                                </MenuItem>
+                                <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}"></MenuItem>
+                            </MenuItem>
+                        </Menu>                        
+                    </StackPanel>
+                </StackPanel>
                 <StackPanel Grid.Row="2" Orientation="Vertical">
                     <Label>Today</Label>
                 </StackPanel>
@@ -94,22 +115,7 @@
 
                 <StackPanel Grid.Row="3" Grid.Column="1">
                     <Label Content="{Binding CurrentWeekTimeTracked}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="15,0,0,0">
-                    <Menu Name="menu1" Grid.Column="3" Background="Transparent">
-                        <MenuItem Background="White">
-                            <MenuItem.Icon>
-                                <fa:ImageAwesome Icon="Cog" />
-                            </MenuItem.Icon>
-                            <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
-                            <MenuItem Header="Log" Command="{Binding LogCommand}">
-                            </MenuItem>
-                            <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}"></MenuItem>
-                        </MenuItem>
-                    </Menu>
-                    <!---->
-                </StackPanel>
+                </StackPanel>               
 
                 <StackPanel Grid.Row="4" Orientation="Vertical">
                     <Label>This month</Label>

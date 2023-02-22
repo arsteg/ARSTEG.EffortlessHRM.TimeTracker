@@ -84,4 +84,10 @@ namespace TimeTracker.Models
         public string user { get; set; }
     }
 
+    public class TaskRequest
+    {
+        public string userId { get; set; }
+        public string projectId { get; set; }
+    }
+
 }

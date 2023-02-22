@@ -988,11 +988,24 @@ namespace TimeTracker.ViewModels
             if (SelectedProject != null && SelectedProject._id.Length > 0)
             {
                 var rest = new REST(new HttpProviders());
-                var taskList = await rest.GetTaskListByProject(SelectedProject._id);
+                var taskList = await rest.GetTaskListByProject(new TaskRequest()
+                {
+                    projectId = SelectedProject._id,
+                    userId = GlobalSetting.Instance.LoginResult.data.user.id
+                });
 
                 if (taskList.status == "success" && taskList.data != null)
                 {
-                    Tasks = taskList.data.taskList;
+                    var projectTaskList = new List<ProjectTask>();
+                    taskList.data.ForEach(t=>
+                    {
+                        projectTaskList.Add(new ProjectTask()
+                        {
+                            taskName = t.Name,
+                            _id = t.id
+                        });
+                    });
+                    Tasks = projectTaskList;
                 }
             }
         }

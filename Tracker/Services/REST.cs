@@ -100,10 +100,10 @@ namespace TimeTracker.Services
             var res = await _httpProvider.PostWithTokenAsync<GetProjectListAPIResult, ProjectRequest>(uri, projectRequest, GlobalSetting.Instance.LoginResult.token);
             return res;
         }
-        public async Task<GetTaskListAPIResult> GetTaskListByProject(string projectId)
+        public async Task<GetTaskListAPIResult> GetTaskListByProject(TaskRequest taskRequest)
         {
-            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/task/tasklistbyproject/{projectId}");
-            var res = await _httpProvider.GetWithTokenAsync<GetTaskListAPIResult>(uri, GlobalSetting.Instance.LoginResult.token);
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/task/getUserTaskListByProject");
+            var res = await _httpProvider.PostWithTokenAsync<GetTaskListAPIResult, TaskRequest>(uri, taskRequest, GlobalSetting.Instance.LoginResult.token);
             return res;
         }
 

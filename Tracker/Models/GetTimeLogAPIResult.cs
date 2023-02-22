@@ -52,7 +52,13 @@ namespace TimeTracker.Models
     public class GetTaskListAPIResult
     {
         public string status { get; set; }
-        public ProjectTaskList data { get; set; }
+        public List<TaskList> data { get; set; }
+    }
+
+    public class TaskList
+    {
+        public string id { get; set; }
+        public string Name { get; set; }
     }
 
     public class ProjectTask

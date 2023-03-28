@@ -76,6 +76,7 @@ namespace TimeTracker.ViewModels
 
             dispatcherTimer.Interval = TimeSpan.FromMinutes(9);
             UserName = GlobalSetting.Instance.LoginResult.data.user.email;
+            UserId = GlobalSetting.Instance.LoginResult.data.user.id;
 
             usedAppDetector.Tick += new EventHandler(UsedAppDetector_Tick);
             usedAppDetector.Interval = TimeSpan.FromMinutes(10);
@@ -221,6 +222,17 @@ namespace TimeTracker.ViewModels
             {
                 userName = value;
                 OnPropertyChanged(nameof(UserName));
+            }
+        }
+
+        private String userId;
+        public string UserId
+        {
+            get { return userId; }
+            set
+            {
+                userId = value;
+                OnPropertyChanged(nameof(UserId));
             }
         }
 
@@ -806,7 +818,7 @@ namespace TimeTracker.ViewModels
                 var rest = new REST(new HttpProviders());
                 var result = await rest.GetTimeLogs(new TimeLog()
                 {
-                    user = UserName,
+                    user = UserId,
                     date = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)
                 });
 
@@ -836,7 +848,7 @@ namespace TimeTracker.ViewModels
                 var rest = new REST(new HttpProviders());
                 var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
                 {
-                    user = UserName,
+                    user = UserId,
                     startDate = new DateTime(startDateOfWeek.Date.Year, startDateOfWeek.Date.Month, startDateOfWeek.Date.Day),
                     endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day),
                 });
@@ -857,7 +869,7 @@ namespace TimeTracker.ViewModels
                 var rest = new REST(new HttpProviders());
                 var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
                 {
-                    user = UserName,
+                    user = UserId,
                     startDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, 1),
                     endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day),
                 });
@@ -913,7 +925,7 @@ namespace TimeTracker.ViewModels
             var currentDate = DateTime.UtcNow;
             var timeLog = new TimeLog()
             {
-                user = UserName,
+                user = UserId,
                 date = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day),
                 task = SelectedTask._id,
                 startTime = DateTime.UtcNow.AddMinutes(-10),

@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace TimeTracker.Models
@@ -8,7 +9,7 @@ namespace TimeTracker.Models
     public class GetTimeLogAPIResult
     {
         public string status { get; set; }
-        public List<TimeLogBase> data { get; set; }
+        public List<TimeLogBaseResponse> data { get; set; }
     }
     public class AddTimeLogAPIResult
     {
@@ -85,5 +86,30 @@ namespace TimeTracker.Models
     {
         public string status { get; set; }
         public ErrorLogList data { get; set; }
+    }
+
+    public class TimeLogBaseResponse
+    {
+        public string _id { get; set; }
+        public User user { get; set; }
+
+        [DataType(DataType.DateTime)]
+        public DateTime date { get; set; }
+        public DateTime startTime { get; set; }
+        public DateTime endTime { get; set; }
+        public string filePath { get; set; }
+        public int keysPressed { get; set; }
+        public int clicks { get; set; }
+        public string url { get; set; }
+        public int scrolls { get; set; }
+    }
+    public class User
+    {
+        public string _id { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public Company company { get; set; }
+        public object role { get; set; }
+        public string id { get; set; }
     }
 }

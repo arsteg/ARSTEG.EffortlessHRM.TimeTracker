@@ -797,6 +797,7 @@ namespace TimeTracker.ViewModels
                     {
                         CanSendReport = false;
                         dispatcherTimer.IsEnabled = true;
+                        getCurrentSavedTime();
                     }
                 }
             }
@@ -1110,7 +1111,8 @@ namespace TimeTracker.ViewModels
                 priority = null,
                 startDate = DateTime.UtcNow,
                 startTime = DateTime.UtcNow,
-                taskAttachments = null
+                taskAttachments = null,
+                title = "Task"
             });
 
             if (newTaskResult.status.ToUpper() == "SUCCESS")

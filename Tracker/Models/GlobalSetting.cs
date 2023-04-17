@@ -12,7 +12,7 @@ namespace TimeTracker.Models
         //public const string apiBaseUrl = "https://mysterious-brushlands-61431.herokuapp.com";
         //public const string apiBaseUrl = "http://localhost:8080";
         //public const string apiBaseUrl = "https://arstegeffortlesshrmapi.azurewebsites.net";
-        public const string apiBaseUrl = "https://effortlesshrmapi.azurewebsites.net/";
+        public const string apiBaseUrl = "https://effortlesshrmapi.azurewebsites.net";
         //public const string apiBaseUrl = "http://arstegeffortlesshrmapi-dev.us-east-1.elasticbeanstalk.com";
 
 

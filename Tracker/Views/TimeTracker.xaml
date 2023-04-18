@@ -40,20 +40,20 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
-            <Grid Grid.Row="0" Grid.Column="0">
+            <Grid Grid.Row="0" Grid.Column="0" Background="#EFEFEF">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" Height="30">
                     <Path Width="12" Height="12" Margin="5,0,5,0" Stretch="Fill" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{StaticResource ThemeColorBrush}" Data="F1 M 25,27L 46,19L 46,22.25L 28.5,29L 31.75,31.25L 51,23.75L 51,48.5L 31.75,57L 25,52L 25,27 Z "/>
                     <TextBlock Foreground="{StaticResource ThemeColorBrush}" Text="Effortless HRM- Time Tracker" FontSize="16" Margin="8,2,0,0" FontWeight="Normal" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Segoe WP" />
                 </StackPanel>
                 <Thumb Opacity="0" Background="Transparent" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
             </Grid>
-            <Grid Grid.Row="0" Grid.Column="1" Margin="0,5,10,5">
+            <Grid Grid.Row="0" Grid.Column="1" Margin="2,2,2,2" Background="#EFEFEF">
                 <Button Name="btnActionMinimize" Click="btnActionMinimize_Click" BorderThickness="0" Background="{StaticResource ControlHeaderBackgroundPressdBrush}" Style="{DynamicResource RoundButton}">
                     <fa:ImageAwesome Icon="WindowMinimize" Height="5" Foreground="{StaticResource MainBlackFontColor}"/>
                 </Button>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.ColumnSpan="2">
+            <Grid Grid.Row="1" Grid.ColumnSpan="2" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="125"></ColumnDefinition>
                     <ColumnDefinition Width="80"></ColumnDefinition>

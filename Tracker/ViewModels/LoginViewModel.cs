@@ -125,7 +125,7 @@ namespace TimeTracker.ViewModels
             }
             catch(Exception ex)
             {
-                MessageBox.Show("Something went wrong, Please try again");                
+                MessageBox.Show($"Something went wrong, Please try again.\n {ex.InnerException.Message}");                
             }
             finally
             {

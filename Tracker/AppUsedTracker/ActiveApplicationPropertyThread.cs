@@ -155,17 +155,23 @@ namespace TimeTracker.AppUsedTracker
         }
         private void GetActiveProcess()
         {
-            Process[] AllProcess = Process.GetProcesses();
-            string title = GetActiveWindowTitle();
-            
-            if (!string.IsNullOrEmpty(title))
+            try
             {
-                var forgroundWindows = AllProcess.Where(p => p.MainWindowTitle == title).FirstOrDefault();
-                if (forgroundWindows != null)
+                Process[] AllProcess = Process.GetProcesses();
+                string title = GetActiveWindowTitle();
+
+                if (!string.IsNullOrEmpty(title))
                 {
-                    _appTitle = title;
-                    _appName = forgroundWindows.MainModule?.ModuleName;
+                    var forgroundWindows = AllProcess.Where(p => p.MainWindowTitle == title).FirstOrDefault();
+                    if (forgroundWindows != null)
+                    {
+                        _appTitle = title;
+                        _appName = forgroundWindows.MainModule?.ModuleName;
+                    }
                 }
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex.Message);
             }
         }
         private void StartEndFocushedApplication()

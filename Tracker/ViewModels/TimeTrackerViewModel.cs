@@ -24,6 +24,11 @@ using System.Diagnostics;
 using TimeTracker.AppUsedTracker;
 using System.Management;
 using System.Windows.Forms;
+using System.Drawing;
+using Newtonsoft.Json;
+using System.Net.WebSockets;
+using System.Threading;
+using TimeTracker.Views;
 
 namespace TimeTracker.ViewModels
 {
@@ -37,6 +42,8 @@ namespace TimeTracker.ViewModels
         private DispatcherTimer saveDispatcherTimer = new DispatcherTimer();
         private DispatcherTimer deleteImagePath = new DispatcherTimer();
         private DispatcherTimer usedAppDetector = new DispatcherTimer();
+
+        private DispatcherTimer shareLiveScreen = new DispatcherTimer();
 
         private DateTime trackingStartedAt;
         private DateTime trackingStopedAt;
@@ -81,6 +88,9 @@ namespace TimeTracker.ViewModels
             usedAppDetector.Tick += new EventHandler(UsedAppDetector_Tick);
             usedAppDetector.Interval = TimeSpan.FromMinutes(10);
 
+            shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
+            shareLiveScreen.Interval = TimeSpan.FromMilliseconds(500);
+
             minutesTracked = 0;
             CreateMachineId();
 
@@ -96,6 +106,9 @@ namespace TimeTracker.ViewModels
             InterceptKeys.Start();
 
             BindProjectList();
+
+            ConnectWebSocket();
+
         }
 
         private void Mh_MouseDownEvent(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -211,6 +224,17 @@ namespace TimeTracker.ViewModels
             {
                 currentMonthTimeTracked = value;
                 OnPropertyChanged(nameof(CurrentMonthTimeTracked));
+            }
+        }
+
+        private String videoImage;
+        public string VideoImage
+        {
+            get { return videoImage; }
+            set
+            {
+                videoImage = value;
+                OnPropertyChanged(nameof(videoImage));
             }
         }
 
@@ -1010,7 +1034,7 @@ namespace TimeTracker.ViewModels
                 if (taskList.status == "success" && taskList.data != null)
                 {
                     var projectTaskList = new List<ProjectTask>();
-                    taskList.data.ForEach(t=>
+                    taskList.data.ForEach(t =>
                     {
                         projectTaskList.Add(new ProjectTask()
                         {
@@ -1330,6 +1354,78 @@ namespace TimeTracker.ViewModels
                 SystemWindows.Application.Current.Shutdown();
 
             }
+        }
+
+        private async void ShareLiveScreen_Tick(object sender, EventArgs e)
+        {
+            Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            using (Graphics g = Graphics.FromImage(screenshot))
+            {
+                g.CopyFromScreen(Screen.PrimaryScreen.Bounds.X, Screen.PrimaryScreen.Bounds.Y, 0, 0, screenshot.Size);
+            }
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                var rest = new REST(new HttpProviders());
+
+                screenshot.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+
+                await rest.sendLiveScreenData(new LiveImageRequest
+                {
+                    fileString = Convert.ToBase64String(stream.ToArray())
+                });
+            }
+        }
+        #endregion
+
+
+        #region "Web socket"
+        
+        private readonly ClientWebSocket webSocket = new ClientWebSocket();
+
+        private async Task ConnectWebSocket()
+        {
+            //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/63f846e32ff78af44d597cbc"), CancellationToken.None);
+            //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/62dfa8d13babb9ac2072863c"), CancellationToken.None);
+            await webSocket.ConnectAsync(new Uri($"ws://localhost:8081/{userId}"), CancellationToken.None);
+
+            // Start listening for incoming WebSocket messages
+            ListenForWebSocketMessages();
+        }
+
+        private async void ListenForWebSocketMessages()
+        {
+            try
+            {
+                var buffer = new byte[1024 * 4];
+
+                while (webSocket.State == WebSocketState.Open)
+                {
+                    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        //break;
+                    }
+
+                    if (result.MessageType == WebSocketMessageType.Text)
+                    {
+                        // Parse incoming message to determine event to trigger
+                        var eventData = JsonConvert.DeserializeObject<EventData>(Encoding.UTF8.GetString(buffer, 0, result.Count));
+
+                        if (eventData.EventName == "startlivepreview" && eventData.UserId == UserId)
+                        {
+                            shareLiveScreen.Start();
+                        }
+                        else
+                        {
+                            shareLiveScreen.Stop();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { }
         }
         #endregion
     }

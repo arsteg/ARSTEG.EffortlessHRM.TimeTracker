@@ -110,6 +110,38 @@ namespace TimeTracker.Services
             }
         }
 
+        public async Task PostAsyncWithVoid<T>(string uri, T data, string token = "")
+        {
+            try
+            {
+                var cookies = $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
+                HttpClient httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(100);
+                httpClient.BaseAddress = new Uri(uri);
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+                try
+                {
+                    await httpClient.PostAsync(uri, content);
+                }
+                catch (Exception ex)
+                {
+
+                }
+                //HttpResponseMessage response = await httpClient.PostAsync(uri, content).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<TResult> PostWithTokenAsync<TResult, T>(string uri, T data, string token)
         {
             try

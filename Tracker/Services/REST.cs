@@ -253,5 +253,11 @@ namespace TimeTracker.Services
         //    return res;
         //}
 
+        public async Task sendLiveScreenData(LiveImageRequest timeLog)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/liveTracking/save");
+            await _httpProvider.PostAsyncWithVoid<LiveImageRequest>(uri, timeLog, GlobalSetting.Instance.LoginResult.token);
+        }
+
     }
 }

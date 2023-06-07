@@ -23,4 +23,10 @@ namespace TimeTracker.Models
         public string email { get; set; }
         public string role { get; set; }
     }
+
+    public class EventData
+    {
+        public string EventName { get; set; }
+        public string UserId { get; set; }
+    }
 }

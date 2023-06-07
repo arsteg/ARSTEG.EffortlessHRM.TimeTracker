@@ -91,4 +91,15 @@ namespace TimeTracker.Models
         public string projectId { get; set; }
     }
 
+
+    public class LiveImageRequest
+    {
+        public string fileString { get; set; }
+    }
+
+    public class LiveImageResponse
+    {
+        public string status { get; set; }
+        public string data { get; set; }
+    }
 }

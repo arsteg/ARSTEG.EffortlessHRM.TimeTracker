@@ -170,6 +170,7 @@
                         </Rectangle.Fill>
                     </Rectangle>
                 </Border>
+                <Label Grid.Row="8" Grid.Column="0" Content="{Binding VideoImage}"/>
                 <Button Grid.Row="8" Grid.Column="1" Width="60" Command="{Binding LogoutCommand}" Margin="0,0,0,0">Logout</Button>
                 <Button Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Width="60" Command="{Binding CloseCommand}" Margin="0,0,0,0">Close</Button>
                 <Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}" AllowsTransparency="True" Placement="Absolute">

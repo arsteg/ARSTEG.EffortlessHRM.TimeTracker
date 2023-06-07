@@ -1,8 +1,12 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net.WebSockets;
 using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -24,6 +28,7 @@ namespace TimeTracker.Views
         public TimeTracker()
         {
             InitializeComponent();
+
             UpdatePopupPosition();
             System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
             ni.Icon = new System.Drawing.Icon(@$"{System.AppDomain.CurrentDomain.BaseDirectory}\Media\Images\logo.ico");
@@ -83,5 +88,6 @@ namespace TimeTracker.Views
         {
             this.WindowState = WindowState.Minimized;
         }
+
     }
 }

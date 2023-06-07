@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 using System.Net.WebSockets;
 using System.Threading;
 using TimeTracker.Views;
+using System.Timers;
 
 namespace TimeTracker.ViewModels
 {
@@ -1414,9 +1415,15 @@ namespace TimeTracker.ViewModels
                         // Parse incoming message to determine event to trigger
                         var eventData = JsonConvert.DeserializeObject<EventData>(Encoding.UTF8.GetString(buffer, 0, result.Count));
 
+                        Thread thread = new Thread(() =>
+                        {
+                            DispatcherTimerThread(shareLiveScreen);
+                        });
+
                         if (eventData.EventName == "startlivepreview" && eventData.UserId == UserId)
                         {
-                            shareLiveScreen.Start();
+                            thread.Start();
+                            //shareLiveScreen.Start();
                         }
                         else
                         {
@@ -1426,6 +1433,15 @@ namespace TimeTracker.ViewModels
                 }
             }
             catch (Exception ex) { }
+        }
+
+        private static void DispatcherTimerThread(DispatcherTimer shareLiveScreen)
+        {
+            // Start the timer
+            shareLiveScreen.Start();
+
+            // Keep the thread alive so that the timer can continue executing
+            Dispatcher.Run();
         }
         #endregion
     }

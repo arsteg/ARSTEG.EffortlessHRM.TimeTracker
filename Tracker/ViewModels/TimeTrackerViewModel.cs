@@ -90,7 +90,7 @@ namespace TimeTracker.ViewModels
             usedAppDetector.Interval = TimeSpan.FromMinutes(10);
 
             shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
-            shareLiveScreen.Interval = TimeSpan.FromMilliseconds(500);
+            shareLiveScreen.Interval = TimeSpan.FromMilliseconds(2000);
 
             minutesTracked = 0;
             CreateMachineId();
@@ -1427,6 +1427,8 @@ namespace TimeTracker.ViewModels
                         }
                         else
                         {
+                            Dispatcher.ExitAllFrames();
+                            thread.Suspend();
                             shareLiveScreen.Stop();
                         }
                     }

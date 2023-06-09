@@ -1427,8 +1427,7 @@ namespace TimeTracker.ViewModels
                         }
                         else
                         {
-                            Dispatcher.ExitAllFrames();
-                            thread.Suspend();
+                            //Dispatcher.ExitAllFrames();
                             shareLiveScreen.Stop();
                         }
                     }

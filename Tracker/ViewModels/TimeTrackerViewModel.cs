@@ -1128,7 +1128,7 @@ namespace TimeTracker.ViewModels
             var newTaskResult = await rest.AddNewTask(new CreateTaskRequest
             {
                 taskName = taskName,
-                comment = "Created from tracker",
+                comment = "Created by TimeTracker",                
                 project = SelectedProject._id,
                 taskUsers = taskUsers,
                 description = null,
@@ -1137,7 +1137,8 @@ namespace TimeTracker.ViewModels
                 startDate = DateTime.UtcNow,
                 startTime = DateTime.UtcNow,
                 taskAttachments = null,
-                title = "Task"
+                title = "Task",
+                status= "In Progress"
             });
 
             if (newTaskResult.status.ToUpper() == "SUCCESS")

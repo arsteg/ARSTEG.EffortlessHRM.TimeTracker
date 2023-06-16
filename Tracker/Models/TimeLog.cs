@@ -70,6 +70,7 @@ namespace TimeTracker.Models
         public string[] taskUsers { get; set; }
         public List<TaskAttachment> taskAttachments { get; set; }
         public string title { get; set; }
+        public string status { get; set; } 
     }
 
     public class TaskAttachment

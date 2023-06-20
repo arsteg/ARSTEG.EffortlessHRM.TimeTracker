@@ -59,7 +59,7 @@ namespace TimeTracker.Models
     public class TaskList
     {
         public string id { get; set; }
-        public string Name { get; set; }
+        public string taskName { get; set; }
     }
 
     public class ProjectTask

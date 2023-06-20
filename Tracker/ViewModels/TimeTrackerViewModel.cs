@@ -1039,7 +1039,7 @@ namespace TimeTracker.ViewModels
                     {
                         projectTaskList.Add(new ProjectTask()
                         {
-                            taskName = t.Name,
+                            taskName = t.taskName,
                             _id = t.id
                         });
                     });

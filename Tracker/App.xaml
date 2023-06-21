@@ -7,7 +7,7 @@
     <Application.Resources>
         <vm:ViewModelLocator x:Key="Locator" xmlns:vm="clr-namespace:TimeTracker.ViewModels"/>
         <Style x:Key="titleText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontSize" Value="32"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="#ffffff"/>
@@ -210,8 +210,8 @@
         </Style>
 
         <Style x:Key="imgClose" TargetType="Image">
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
             
@@ -225,11 +225,12 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        
         <Style x:Key="imgMinimize" TargetType="Image">
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>            
+            <Setter Property="HorizontalAlignment" Value="Right"/>            
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="RenderTransform">

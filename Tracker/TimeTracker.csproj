@@ -2,12 +2,20 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Icons\close.png" />
+    <None Remove="Icons\email.png" />
+    <None Remove="Icons\facebook.png" />
+    <None Remove="Icons\gears.png" />
+    <None Remove="Icons\google.png" />
+    <None Remove="Icons\linkedIn.png" />
+    <None Remove="Icons\lock.png" />
+    <None Remove="Icons\minimize.png" />
     <None Remove="Media\Images\logo.png" />
   </ItemGroup>
 
@@ -72,12 +80,36 @@
     <Folder Include="Database\" />
     <Folder Include="Data\" />
     <Folder Include="Media\Audio\" />
-    <Folder Include="Icons\" />
     <Folder Include="Styles\" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BrowserHistoryGatherer\BrowserHistoryGatherer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\close.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\email.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\facebook.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\gears.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\google.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\linkedIn.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\lock.png" />
+    <Resource Include="Icons\minimize.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

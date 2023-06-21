@@ -66,7 +66,7 @@ namespace TimeTracker.ViewModels
         public TimeTrackerViewModel()
         {
             CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
-            StartStopCommand = new RelayCommand(StartStopCommandExecute, CanStartStopCommandExecute);
+            StartStopCommand = new RelayCommand(StartStopCommandExecute);
             EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
             RefreshCommand = new RelayCommand(RefreshCommandExecute);
@@ -493,6 +493,11 @@ namespace TimeTracker.ViewModels
         }
         public async void StartStopCommandExecute()
         {
+            if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
+            {
+                MessageBox.Show("No task selected", "Task selection", MessageBoxButtons.OK);
+                return;
+            }            
             ProgressWidthStart = 30;
             try
             {

@@ -34,7 +34,7 @@ namespace TimeTracker.Views
                 ((LoginViewModel)this.DataContext).UserName = Properties.Settings.Default.userName;                
             }
             if (Properties.Settings.Default.userPassword != string.Empty)
-            {                
+            {
                 this.txtPassword.Password = Properties.Settings.Default.userPassword;
                 this.chkRememberMe.IsChecked = true;
             }
@@ -42,6 +42,15 @@ namespace TimeTracker.Views
 
         private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
+            if (!string.IsNullOrEmpty(txtPassword.Password) && txtPassword.Password.Length > 0)
+            {
+                passwordHint.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                passwordHint.Visibility = Visibility.Visible;
+            }
+
             if (this.DataContext != null)
             { ((LoginViewModel)this.DataContext).Password = ((PasswordBox)sender).Password; }
         }
@@ -74,5 +83,33 @@ namespace TimeTracker.Views
             Top = Top + e.VerticalChange;
         }
 
+        private void textEmail_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            txtUsername.Focus();
+        }
+
+        private void txtUsername_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if(!string.IsNullOrEmpty(txtUsername.Text) && txtUsername.Text.Length > 0)
+            {
+                textEmail.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                textEmail.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            txtPassword.Focus();
+        }
+
+        private void Border_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left) {
+                this.DragMove();
+            }
+        }
     }
 }

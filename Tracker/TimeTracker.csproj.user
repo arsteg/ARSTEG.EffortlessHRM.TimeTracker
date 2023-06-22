@@ -10,11 +10,17 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\ProductiveApplication.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\TimeTracker.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\ProductiveApplication.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\TimeTracker.xaml">
       <SubType>Designer</SubType>
     </Page>

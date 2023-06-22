@@ -106,8 +106,18 @@
                         <ColumnDefinition Width="5*"/>
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Today:" Style="{StaticResource textBlock}"/>
+                    <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" Name="txt1Username" Text="{Binding CurrentDayTimeTracked,StringFormat=HH:mm}" IsReadOnly="True"/>
+                </Grid>
+                
+                <Grid Margin="0 10 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="This week:" Style="{StaticResource textBlock}"/>
-                    <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" Name="txt1Username" Text="{Binding CurrentWeekTimeTracked}" IsReadOnly="True"/>
+                    <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" Text="{Binding CurrentWeekTimeTracked}" IsReadOnly="True"/>
                 </Grid>
 
                 <Grid Margin="0 10 0 0">
@@ -165,7 +175,7 @@
                             <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Rectangle RadiusX="7" RadiusY="7" Height="190" Width="400">
+                        <Rectangle RadiusX="7" RadiusY="7" Height="160" Width="400">
                             <Rectangle.Fill>
                                 <ImageBrush ImageSource="{Binding CurrentImagePath}"/>
                             </Rectangle.Fill>

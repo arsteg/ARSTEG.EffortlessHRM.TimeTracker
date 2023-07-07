@@ -88,6 +88,21 @@ namespace TimeTracker.Models
         public ErrorLogList data { get; set; }
     }
 
+    public class ProductivityAppResult
+    {
+        public string status { get; set; }
+        public List<ProductivityModel> data { get; set; }
+    }
+
+    public class ProductivityAppDeleteResult
+    {
+        public string status { get; set; }
+        public ProductivityModel data { get; set; }
+    }
+
+    public class ProductivityAppAddResult: ProductivityAppDeleteResult 
+    { 
+    }
     public class TimeLogBaseResponse
     {
         public string _id { get; set; }

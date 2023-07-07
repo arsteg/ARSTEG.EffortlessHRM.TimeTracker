@@ -75,7 +75,7 @@ namespace TimeTracker.ViewModels
             DeleteScreenshotCommand = new RelayCommand(DeleteScreenshotCommandExecute);
             SaveScreenshotCommand = new RelayCommand(SaveScreenshotCommandExecute);
             OpenDashboardCommand = new RelayCommand(OpenDashboardCommandExecute);
-
+            ProductivityApplicationCommand = new RelayCommand(ProductivityApplicationCommandExecute);
 
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
@@ -448,6 +448,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand DeleteScreenshotCommand { get; set; }
         public RelayCommand SaveScreenshotCommand { get; set; }
         public RelayCommand OpenDashboardCommand { get; set; }
+        public RelayCommand ProductivityApplicationCommand { get; set; }
 
         ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
 
@@ -726,6 +727,11 @@ namespace TimeTracker.ViewModels
         {
             string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/screenshots";
             Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+        public void ProductivityApplicationCommandExecute()
+        {
+            GlobalSetting.Instance.ProductivityAppsSettings = new TimeTracker.Views.ProductivityAppsSettings();
+            GlobalSetting.Instance.ProductivityAppsSettings.Show();
         }
         #endregion
 

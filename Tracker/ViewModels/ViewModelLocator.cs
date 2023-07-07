@@ -17,6 +17,7 @@ namespace TimeTracker.ViewModels
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);            
             SimpleIoc.Default.Register<TimeTrackerViewModel>();
             SimpleIoc.Default.Register<LoginViewModel>();
+            SimpleIoc.Default.Register<ProductivityAppsSettingsViewModel>();
         }
 
         public TimeTrackerViewModel TimeTracker
@@ -32,6 +33,14 @@ namespace TimeTracker.ViewModels
             get
             {
                 return ServiceLocator.Current.GetInstance<LoginViewModel>();
+            }
+        }
+
+        public ProductivityAppsSettingsViewModel ProductivityAppsSettings
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<ProductivityAppsSettingsViewModel>();
             }
         }
 

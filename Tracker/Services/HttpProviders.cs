@@ -171,6 +171,30 @@ namespace TimeTracker.Services
             }
         }
 
+        public async Task<TResult> DeleteWithTokenAsync<TResult>(string uri, string token)
+        {
+            try
+            {
+                var cookies = $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
+                HttpClient httpClient = new HttpClient();
+                httpClient.BaseAddress = new Uri(uri);
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
+                HttpResponseMessage response = await httpClient.DeleteAsync(uri).ConfigureAwait(false);
+                await HandleResponse(response);
+                string serialized = await response.Content.ReadAsStringAsync();
+
+                TResult result = await Task.Run(() =>
+                 JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings));
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
         public async Task PostAsync(string uri, string ApiKey, string token = "")
         {
             try

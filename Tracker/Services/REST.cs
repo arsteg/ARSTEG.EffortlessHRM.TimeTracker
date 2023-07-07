@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using TimeTracker.Models;
@@ -258,6 +259,57 @@ namespace TimeTracker.Services
             var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/liveTracking/save");
             await _httpProvider.PostAsyncWithVoid<LiveImageRequest>(uri, timeLog, GlobalSetting.Instance.LoginResult.token);
         }
+
+        #region Productivity Applications
+
+        public  async Task<ProductivityAppResult> GetProductivityApps(string url)
+        {
+            ProductivityAppResult res = new ProductivityAppResult();
+            try
+            {
+                HttpClient client = new HttpClient();
+                var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
+                res = await _httpProvider.GetWithTokenAsync<ProductivityAppResult>(uri, GlobalSetting.Instance.LoginResult.token);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return res;
+        }
+        public async Task<ProductivityAppAddResult> AddProductivityApps(string url, ProductivityModel productivityModel)
+        {
+            ProductivityAppAddResult res = new ProductivityAppAddResult();
+            try
+            {
+                HttpClient client = new HttpClient();
+                var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
+                res = await _httpProvider.PostWithTokenAsync<ProductivityAppAddResult, ProductivityModel>(uri, productivityModel, GlobalSetting.Instance.LoginResult.token);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return res;
+        }
+
+        public async Task<ProductivityAppDeleteResult> DeleteProductivityApp(string id)
+        {
+            ProductivityAppDeleteResult res = new ProductivityAppDeleteResult();
+            try
+            {
+                HttpClient client = new HttpClient();
+                var uri = CombineUri(GlobalSetting.apiBaseUrl,id);
+                res = await _httpProvider.DeleteWithTokenAsync<ProductivityAppDeleteResult>(uri, GlobalSetting.Instance.LoginResult.token);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return res;
+        }
+
+        #endregion
 
     }
 }

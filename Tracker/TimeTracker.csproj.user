@@ -10,7 +10,10 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Views\ProductiveApplication.xaml.cs">
+    <Compile Update="Views\ProductiveApplicationSampleUICode.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\ProductivityAppsSettings.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\TimeTracker.xaml.cs">
@@ -18,7 +21,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\ProductiveApplication.xaml">
+    <Page Update="Views\ProductiveApplicationSampleUICode.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\ProductivityAppsSettings.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\TimeTracker.xaml">

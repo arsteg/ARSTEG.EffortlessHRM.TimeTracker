@@ -94,7 +94,10 @@
                                 <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
                                 <MenuItem Header="Log" Command="{Binding LogCommand}">
                                 </MenuItem>
-                                <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}"></MenuItem>
+                                <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}">                                    
+                                </MenuItem>
+                                <MenuItem Header="Productivity Applications" Command="{Binding ProductivityApplicationCommand}">
+                                </MenuItem>
                             </MenuItem>
                         </Menu>
                     </StackPanel>                    

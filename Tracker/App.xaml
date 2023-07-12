@@ -747,7 +747,7 @@
         <Style x:Key="textBlockGridTitle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Panel.ZIndex" Value="1"/>
-            <Setter Property="Foreground" Value="#3AB19B"/>
+            <Setter Property="Foreground" Value="#424242"/>
             <Setter Property="Width" Value="300"/>
             <Setter Property="TextAlignment" Value="Left"/>            
         </Style>

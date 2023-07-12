@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"        
         xmlns:Icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:converters="clr-namespace:TimeTracker.Converters"
         FocusManager.FocusedElement="{Binding ElementName=txtUsername}" 
         WindowStartupLocation="CenterScreen"  
         DataContext="{Binding ProductivityAppsSettings, Source={StaticResource Locator}}"
@@ -16,6 +17,9 @@
         Title="Productive Applications" Height="500" Width="800" Background="Transparent">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:StatusPendingToVisibilityConverter x:Key="statusPendingToVisibilityConverter" />
+        <converters:StatusApprovedToVisibilityConverter x:Key="statusApprovedToVisibilityConverter" />
+        <converters:StatusRejectedToVisibilityConverter x:Key="statusRejectedToVisibilityConverter" />
     </Window.Resources>
     <Border Background="#eff2f7" CornerRadius="30" MouseDown="Border_MouseDown" MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
@@ -52,109 +56,122 @@
                 <Grid Grid.Row="5" Margin="0 20 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>                        
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Column="0" HorizontalAlignment="Left">
-                        <TextBlock Style="{StaticResource   textBlockGridTitle }" HorizontalAlignment="Left" Text="Running Applications" Margin="10 0 0 10"/>
-                        <Border BorderThickness="1"  BorderBrush="LightGray" CornerRadius="15" Margin="5 0,0 0">                        
-                            <DataGrid  RowStyle="{DynamicResource DataGridRowStyle1}"                           
+                    <TextBlock Style="{StaticResource   textBlockGridTitle }" HorizontalAlignment="Left" Text="Running Applications" Margin="10 0 0 10"/>
+                    <Border Grid.Row="1" BorderThickness="1"  BorderBrush="LightGray" CornerRadius="15" Margin="5 0,0 0">
+                        <DataGrid  RowStyle="{DynamicResource DataGridRowStyle1}"                           
                           x:Name="runningProcessesDatagrid" 
                           CellStyle="{StaticResource DataGridCellStyle1}"
                           ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle1}" 
                           ItemsSource="{Binding RunningProcesses}" 
                           Style="{StaticResource DataGridStyle1}">
-                        <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="" IsReadOnly="True" Width="10">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Border Width="25" Height="25" CornerRadius="50" Margin="0 0 10 0" Background="{Binding BgColor}">
-                                                <TextBlock Text="..." VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="White" Margin="0 0 0 1"/>
-                                            </Border>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="" IsReadOnly="True" Width="10">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="25" Height="25" CornerRadius="50" Margin="0 0 10 0" Background="{Binding BgColor}">
+                                                    <TextBlock Text="..." VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="White" Margin="0 0 0 1"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Name" IsReadOnly="True" Width="*"  Binding="{Binding key}"/>
-                            <DataGridTextColumn Header="Title" IsReadOnly="True" Width="*" Binding="{Binding name}"/>
-                            <DataGridTemplateColumn Width="auto" Header="Action">                                    
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
+                                <DataGridTextColumn Header="Name" IsReadOnly="True" Width="*"  Binding="{Binding key}"/>
+                                <DataGridTextColumn Header="Title" IsReadOnly="True" Width="*" Binding="{Binding name}"/>
+                                <DataGridTemplateColumn Width="auto" Header="Action">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
                                                 <Button Style="{StaticResource gridEditButton}" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, 
                                                 Path=DataContext.AddApplication}" CommandParameter="{Binding key}">
                                                     <Icons:PackIconMaterial Kind="ArrowRight"  Style="{StaticResource gridButtonIcon}"/>
-                                                    
-                                                </Button>                                                
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
 
-                        </DataGrid.Columns>
-                    </DataGrid>                        
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </Border>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Left">
-                        <TextBlock Style="{StaticResource   textBlockGridTitle }" HorizontalAlignment="Left" Text="Selected Productivity Applications" Margin="10 0 0 10"/>
-                        <Border BorderThickness="1"  BorderBrush="LightGray" CornerRadius="15" Margin="0 0,5 0">
+                    <TextBlock Grid.Column="1" Style="{StaticResource   textBlockGridTitle }" HorizontalAlignment="Left" Text="Selected Productivity Applications" Margin="10 0 0 10"/>
+                    <Border Grid.Row="1" Grid.Column="1" BorderThickness="1"  BorderBrush="LightGray" CornerRadius="15" Margin="0 0,5 0">
                         <DataGrid Grid.Column="1" RowStyle="{DynamicResource DataGridRowStyle1}"                           
                           x:Name="membersDatagrid" 
                           CellStyle="{StaticResource DataGridCellStyle1}"
                           ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle1}" 
                           ItemsSource="{Binding ProductivityApps}" 
                           Style="{StaticResource DataGridStyle1}">
-                        <DataGrid.Columns>
+                            <DataGrid.Columns>
 
-                            <DataGridTemplateColumn Header="" IsReadOnly="True" Width="10">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Border Width="25" Height="25" CornerRadius="50" Margin="0 0 10 0" Background="{Binding BgColor}">
-                                                <TextBlock Text="..." VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="White" Margin="0 0 0 1"/>
-                                            </Border>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="" IsReadOnly="True" Width="10">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="25" Height="25" CornerRadius="50" Margin="0 0 10 0" Background="{Binding BgColor}">
+                                                    <TextBlock Text="..." VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="White" Margin="0 0 0 1"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Name" IsReadOnly="True" Width="*"  Binding="{Binding key}"/>
-                            <DataGridTextColumn Header="Title" IsReadOnly="True" Width="*" Binding="{Binding name}"/>
+                                <DataGridTextColumn Header="Name" IsReadOnly="True" Width="*"  Binding="{Binding key}"/>
+                                
 
-                            <DataGridTemplateColumn Header="Approved" Width="auto" >
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <CheckBox Style="{StaticResource CheckBoxStyle1}" 
-                                                IsChecked="{Binding IsApproved}" IsEnabled="False">
-                                            </CheckBox>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Width="auto" Header="Action">    
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Button Style="{StaticResource gridRemoveButton}" 
+                                <DataGridTemplateColumn Header="Status" Width="68" >
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Icons:PackIconMaterial Kind="ThumbUp" Style="{StaticResource gridButtonIcon}" Foreground="Green" 
+                                                Visibility="{Binding status, Converter={StaticResource statusApprovedToVisibilityConverter}}">
+                                                    <Icons:PackIconMaterial.ToolTip>
+                                                        <ToolTip Content="Approved" />
+                                                    </Icons:PackIconMaterial.ToolTip>
+                                                </Icons:PackIconMaterial>
+
+                                                <Icons:PackIconMaterial Kind="ThumbDown" Style="{StaticResource gridButtonIcon}" Foreground="Red"
+                                                 Visibility="{Binding status, Converter={StaticResource statusRejectedToVisibilityConverter}}">
+                                                    <Icons:PackIconMaterial.ToolTip>
+                                                        <ToolTip Content="Rejected" />
+                                                    </Icons:PackIconMaterial.ToolTip>
+                                                </Icons:PackIconMaterial>
+
+                                                <Icons:PackIconMaterial Kind="ThumbsUpDown" Style="{StaticResource gridButtonIcon}" Foreground="Gray"
+                                                Visibility="{Binding status, Converter={StaticResource statusPendingToVisibilityConverter}}">
+                                                    <Icons:PackIconMaterial.ToolTip>
+                                                        <ToolTip Content="pending" />
+                                                    </Icons:PackIconMaterial.ToolTip>
+                                                </Icons:PackIconMaterial>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Act" Width="60">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Style="{StaticResource gridRemoveButton}" 
                                                 Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, 
                                                 Path=DataContext.DeleteApplication}" CommandParameter="{Binding _id}">
-                                                        <Icons:PackIconMaterial Kind="DeleteOutline" Style="{StaticResource gridButtonIcon}"/>
-                                                    </Button>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                                                    <Icons:PackIconMaterial Kind="DeleteOutline" Style="{StaticResource gridButtonIcon}"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </Border>
-                    </StackPanel>
-                </Grid>                
-               
+                </Grid>
             </Grid>
         </Grid>
     </Border>

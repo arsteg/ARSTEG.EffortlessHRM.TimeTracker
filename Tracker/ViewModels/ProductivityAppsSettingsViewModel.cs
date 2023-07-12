@@ -143,6 +143,8 @@ namespace TimeTracker.ViewModels
                     this.RunningProcesses.Add(process);
                 }
             }
+            this.productivityApps.Clear();
+            await this.getProductivityApps();
         }
         private async void AddApplicationExecute(string key)
         {
@@ -151,7 +153,7 @@ namespace TimeTracker.ViewModels
             {
                 model = this.RunningProcesses.Where(x => x.key == key).FirstOrDefault();
                 model.isApproved = false;
-                model.isProductive = true;
+                model.status = "pending";
                 model.icon = model.key;
                 var rest = new REST(new HttpProviders());
                 var result = await rest.AddProductivityApps($"api/v1/appWebsite/productivity", model);

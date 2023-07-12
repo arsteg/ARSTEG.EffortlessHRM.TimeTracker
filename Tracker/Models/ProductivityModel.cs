@@ -12,7 +12,7 @@ namespace TimeTracker.Models
         public string icon { get; set; }                
         public string key { get; set; }                
         public string name { get; set; }
-        public bool? isProductive { get; set; }
+        public string status  { get; set; }
         public bool? isApproved { get; set; }                
         public DateTime CreatedOn { get; set; }                
         public DateTime UpdatedOn { get; set; }

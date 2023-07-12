@@ -41,8 +41,8 @@
                 <ColumnDefinition Width="25"/>
                 <ColumnDefinition Width="25"/>
             </Grid.ColumnDefinitions>
-            <Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="btnActionMinimize_Click"/>
-            <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgClose}" MouseLeftButtonDown="btnActionMinimize_Click"/>
+            <Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="BtnActionMinimize_OnClick"/>
+            <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgClose}" MouseLeftButtonDown="btnActionClose_Click"/>
         </Grid>
         <Thumb Opacity="100" Background="Red" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
 

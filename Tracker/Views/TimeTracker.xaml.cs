@@ -103,10 +103,6 @@ namespace TimeTracker.Views
         {
             Application.Current.Shutdown();
         }
-
-        private void btnActionMinimize_Click(object sender, MouseButtonEventArgs e)
-        {
-
-        }
+        
     }
 }

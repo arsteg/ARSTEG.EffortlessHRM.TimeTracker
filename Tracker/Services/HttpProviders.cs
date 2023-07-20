@@ -267,17 +267,22 @@ namespace TimeTracker.Services
         }
         private async Task HandleResponse(HttpResponseMessage response)
         {
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.StatusCode == HttpStatusCode.Forbidden ||
-                    response.StatusCode == HttpStatusCode.Unauthorized)
+                if (!response.IsSuccessStatusCode)
                 {
-                    throw new ServiceAuthenticationException(content);
-                }
+                    var content = await response.Content.ReadAsStringAsync();
 
-                throw new HttpRequestExceptionEx(response.StatusCode, content);
+                    if (response.StatusCode == HttpStatusCode.Forbidden ||
+                        response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        throw new ServiceAuthenticationException(content);
+                    }
+
+                    throw new HttpRequestExceptionEx(response.StatusCode, content);
+                }
+            }
+            catch (Exception ex) { 
             }
         }
 

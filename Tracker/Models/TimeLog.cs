@@ -67,7 +67,8 @@ namespace TimeTracker.Models
         public string comment { get; set; }
         public string priority { get; set; }
         public string project { get; set; }
-        public string[] taskUsers { get; set; }
+        public string[] taskUsers { get; set; }        
+        public string user { get; set; }
         public List<TaskAttachment> taskAttachments { get; set; }
         public string title { get; set; }
         public string status { get; set; } 

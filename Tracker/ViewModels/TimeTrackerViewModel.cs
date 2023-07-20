@@ -78,6 +78,7 @@ namespace TimeTracker.ViewModels
             OpenDashboardCommand = new RelayCommand(OpenDashboardCommandExecute);
             ProductivityApplicationCommand = new RelayCommand(ProductivityApplicationCommandExecute);
             TaskCompleteCommand = new RelayCommand(TaskCompleteCommandExecute);
+            CreateNewTaskCommand = new RelayCommand(CreateNewTaskCommandExecute);
 
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
@@ -454,6 +455,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand OpenDashboardCommand { get; set; }
         public RelayCommand ProductivityApplicationCommand { get; set; }
         public RelayCommand TaskCompleteCommand { get; set; }
+        public RelayCommand CreateNewTaskCommand { get; set; }
 
 
         ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
@@ -759,6 +761,27 @@ namespace TimeTracker.ViewModels
                 {
                     MessageBox.Show("Task has been marked as completed", "Task completion", MessageBoxButtons.OK);
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                ProgressWidthStart = 0;
+            }
+        }
+        public async void CreateNewTaskCommandExecute()
+        {
+            if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
+            {
+                MessageBox.Show("Please specify task details", "Task creation", MessageBoxButtons.OK);
+                return;
+            }
+            ProgressWidthStart = 30;
+            try
+            {
+                CreateNewTask();                
             }
             catch (Exception ex)
             {
@@ -1179,6 +1202,7 @@ namespace TimeTracker.ViewModels
                 comment = "Created by TimeTracker",                
                 project = SelectedProject._id,
                 taskUsers = taskUsers,
+                user= GlobalSetting.Instance.LoginResult.data.user.id,
                 description = null,
                 endDate = null,
                 priority = null,

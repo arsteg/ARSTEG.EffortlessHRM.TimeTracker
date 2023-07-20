@@ -169,14 +169,26 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" x:Name="lblTask" Text="Task:" Style="{StaticResource textBlock}"/>
-                    <StackPanel Grid.Column="1">
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <ComboBox Grid.Column="1" Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
                       HorizontalAlignment="Left" Text="{Binding Taskname}"
                     IsEnabled="{Binding AllowTaskSelection}"
                       ItemsSource="{Binding Path=Tasks}"
                     SelectedItem="{Binding Path=SelectedTask}"
-                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200"/>
+                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200">
+                            <ComboBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding CreateNewTaskCommand}"/>
+                            </ComboBox.InputBindings>
+                        </ComboBox>                        
+                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Margin="0 -20 0 0" Height="15" Width="15">
+                            <Icons:PackIconMaterial Kind="Creation"  Style="{StaticResource gridButtonIcon}" Foreground="Blue">
+                                <Icons:PackIconMaterial.ToolTip>
+                                    <ToolTip Content="Create a new task" />
+                                </Icons:PackIconMaterial.ToolTip>
+                            </Icons:PackIconMaterial>
+                        </Button>
                     </StackPanel>
+                    
                     <StackPanel  Grid.Column="2" Margin="0,0,0,0">
                         <Button Command="{Binding TaskCompleteCommand}" BorderThickness="0" Background="Transparent" Width="15">
                             <Icons:PackIconMaterial Kind="MarkerCheck"  Style="{StaticResource gridButtonIcon}" Foreground="Green">

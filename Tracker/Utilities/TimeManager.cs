@@ -101,7 +101,7 @@ namespace TimeTracker.Utilities
                 handle = bitmap.GetHbitmap();
                 var createdImage = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty,
                     BitmapSizeOptions.FromEmptyOptions());
-                var folderPath = Path.Combine(Environment.CurrentDirectory, DateTime.Now.ToString("yyyy-MM-dd"));
+                var folderPath = Path.Combine(Path.Combine(Environment.CurrentDirectory,"Screenshots"), DateTime.Now.ToString("yyyy-MM-dd"));
                 if (!Directory.Exists(folderPath))
                 {
                     Directory.CreateDirectory(folderPath);
@@ -131,6 +131,16 @@ namespace TimeTracker.Utilities
                 }
             }
             return null;
+        }
+
+        public static void ClearScreenshotsFolder()
+        {
+            var folderPath = Path.Combine(Environment.CurrentDirectory, "Screenshots");
+            if (Directory.Exists(folderPath))
+            {
+                System.IO.DirectoryInfo directory = new System.IO.DirectoryInfo(folderPath);
+                directory.Delete(true);
+            }
         }
     }
 }

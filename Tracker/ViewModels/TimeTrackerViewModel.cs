@@ -112,6 +112,8 @@ namespace TimeTracker.ViewModels
 
             ConnectWebSocket();
 
+            DeleteTempFolder();
+
         }
 
         private void Mh_MouseDownEvent(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -1423,6 +1425,11 @@ namespace TimeTracker.ViewModels
                     fileString = Convert.ToBase64String(stream.ToArray())
                 });
             }
+        }
+        
+        private void DeleteTempFolder()
+        {
+            TimeManager.ClearScreenshotsFolder();
         }
         #endregion
 

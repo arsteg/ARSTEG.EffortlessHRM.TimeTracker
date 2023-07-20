@@ -280,5 +280,32 @@ namespace TimeTracker.Services
                 throw new HttpRequestExceptionEx(response.StatusCode, content);
             }
         }
+
+        public async Task<TResult> PutWithTokenAsync<TResult, T>(string uri, T data, string token)
+        {
+            try
+            {
+                var cookies = $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
+                HttpClient httpClient = new HttpClient();
+                httpClient.BaseAddress = new Uri(uri);
+                httpClient.DefaultRequestHeaders.Accept.Clear();
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await httpClient.PutAsync(uri, content).ConfigureAwait(false);
+                await HandleResponse(response);
+                string serialized = await response.Content.ReadAsStringAsync();
+
+                TResult result = await Task.Run(() =>
+                 JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings));
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }

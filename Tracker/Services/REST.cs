@@ -4,6 +4,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -120,6 +121,12 @@ namespace TimeTracker.Services
             var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/project/newproject");
             var res = await _httpProvider.PostWithTokenAsync<object, ProjectRequest>(uri, projectRequest, GlobalSetting.Instance.LoginResult.token);
             return ("");
+        }
+        public async Task<NewTaskResult> CompleteATask(string taskId, ExpandoObject status)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/task/update/{taskId}");
+            var res = await _httpProvider.PutWithTokenAsync<NewTaskResult, ExpandoObject>(uri, status, GlobalSetting.Instance.LoginResult.token);
+            return res;
         }
         #endregion
 

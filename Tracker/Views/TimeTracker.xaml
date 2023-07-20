@@ -6,6 +6,7 @@
       xmlns:local="clr-namespace:TimeTracker"
       mc:Ignorable="d" Height="500" Width="800" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
+      xmlns:Icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
       WindowState="Normal"
       xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
       xmlns:cmd="http://www.galasoft.ch/mvvmlight"
@@ -89,7 +90,8 @@
                         <Menu Name="menu1" Grid.Column="2" Background="Transparent">
                             <MenuItem Background="White">
                                 <MenuItem.Icon>
-                                    <Image Source="/icons/gears.png"/>
+                                    <Icons:PackIconMaterial Kind="Menu"  Style="{StaticResource gridButtonIcon}" Foreground="Green">                                        
+                                    </Icons:PackIconMaterial>
                                 </MenuItem.Icon>
                                 <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
                                 <MenuItem Header="Log" Command="{Binding LogCommand}">
@@ -149,9 +151,13 @@
                     SelectedItem="{Binding Path=SelectedProject}"
                     DisplayMemberPath="projectName" Style="{StaticResource comboBox}" MinWidth="200"/>
                     </StackPanel>
-                    <StackPanel  Grid.Column="2" Margin="0,5,0,0">
+                    <StackPanel  Grid.Column="2" Margin="0,0,0,0">
                         <Button Command="{Binding RefreshCommand}" BorderThickness="0" Background="Transparent">
-                            <fa:ImageAwesome Icon="Refresh" Width="15"/>
+                            <Icons:PackIconMaterial Kind="Refresh" Style="{StaticResource gridButtonIcon}" Foreground="Green">
+                                <Icons:PackIconMaterial.ToolTip>
+                                    <ToolTip Content="Refresh" />
+                                </Icons:PackIconMaterial.ToolTip>
+                            </Icons:PackIconMaterial>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -170,6 +176,15 @@
                       ItemsSource="{Binding Path=Tasks}"
                     SelectedItem="{Binding Path=SelectedTask}"
                     DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200"/>
+                    </StackPanel>
+                    <StackPanel  Grid.Column="2" Margin="0,0,0,0">
+                        <Button Command="{Binding TaskCompleteCommand}" BorderThickness="0" Background="Transparent" Width="15">
+                            <Icons:PackIconMaterial Kind="MarkerCheck"  Style="{StaticResource gridButtonIcon}" Foreground="Green">
+                                <Icons:PackIconMaterial.ToolTip>
+                                    <ToolTip Content="Mark Completed" />
+                                </Icons:PackIconMaterial.ToolTip>
+                            </Icons:PackIconMaterial>
+                        </Button>
                     </StackPanel>
                 </Grid>
                 <Border BorderThickness="1" BorderBrush="#acb0af" Margin="5,5,5,0" CornerRadius="5">

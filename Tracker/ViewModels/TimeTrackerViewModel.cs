@@ -30,6 +30,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using TimeTracker.Views;
 using System.Timers;
+using System.Dynamic;
 
 namespace TimeTracker.ViewModels
 {
@@ -76,6 +77,7 @@ namespace TimeTracker.ViewModels
             SaveScreenshotCommand = new RelayCommand(SaveScreenshotCommandExecute);
             OpenDashboardCommand = new RelayCommand(OpenDashboardCommandExecute);
             ProductivityApplicationCommand = new RelayCommand(ProductivityApplicationCommandExecute);
+            TaskCompleteCommand = new RelayCommand(TaskCompleteCommandExecute);
 
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
@@ -449,6 +451,8 @@ namespace TimeTracker.ViewModels
         public RelayCommand SaveScreenshotCommand { get; set; }
         public RelayCommand OpenDashboardCommand { get; set; }
         public RelayCommand ProductivityApplicationCommand { get; set; }
+        public RelayCommand TaskCompleteCommand { get; set; }
+
 
         ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
 
@@ -732,6 +736,36 @@ namespace TimeTracker.ViewModels
         {
             GlobalSetting.Instance.ProductivityAppsSettings = new TimeTracker.Views.ProductivityAppsSettings();
             GlobalSetting.Instance.ProductivityAppsSettings.Show();
+        } 
+        public async void TaskCompleteCommandExecute()
+        {
+
+            if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
+            {
+                MessageBox.Show("No task selected", "Task selection", MessageBoxButtons.OK);
+                return;
+            }
+            ProgressWidthStart = 30;
+            try
+            {
+                var rest = new REST(new HttpProviders());
+
+                dynamic task = new ExpandoObject();
+                task.status = "Done";
+                var result = await rest.CompleteATask(SelectedTask._id, task);
+                if (result.data != null)
+                {
+                    MessageBox.Show("Task has been marked as completed", "Task completion", MessageBoxButtons.OK);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                ProgressWidthStart = 0;
+            }
         }
         #endregion
 
@@ -1047,7 +1081,8 @@ namespace TimeTracker.ViewModels
                 {
                     var projectTaskList = new List<ProjectTask>();
                     taskList.data.ForEach(t =>
-                    {
+                    {                        
+                        if(t.status.ToLower()!="closed" && t.status.ToLower() != "done")
                         projectTaskList.Add(new ProjectTask()
                         {
                             taskName = t.taskName,

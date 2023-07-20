@@ -60,6 +60,8 @@ namespace TimeTracker.Models
     {
         public string id { get; set; }
         public string taskName { get; set; }
+        public string status { get; set; }
+
     }
 
     public class ProjectTask

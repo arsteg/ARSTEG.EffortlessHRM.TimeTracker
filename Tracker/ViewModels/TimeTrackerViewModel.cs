@@ -760,6 +760,10 @@ namespace TimeTracker.ViewModels
                 if (result.data != null)
                 {
                     MessageBox.Show("Task has been marked as completed", "Task completion", MessageBoxButtons.OK);
+                    if (SelectedProject != null)
+                    {
+                        getTaskList();
+                    }
                 }
             }
             catch (Exception ex)

@@ -17,3 +17,5 @@
 *.dll
 *.props
 *.cache
+TimeTracker.Installer/Debug/setup.exe
+*.msi

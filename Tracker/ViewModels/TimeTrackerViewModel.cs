@@ -1106,10 +1106,10 @@ namespace TimeTracker.ViewModels
                     userId = GlobalSetting.Instance.LoginResult.data.user.id
                 });
 
-                if (taskList.status == "success" && taskList.data != null)
+                if (taskList.status == "success" && taskList.taskList != null)
                 {
                     var projectTaskList = new List<ProjectTask>();
-                    taskList.data.ForEach(t =>
+                    taskList.taskList.ForEach(t =>
                     {                        
                         if(t.status.ToLower()!="closed" && t.status.ToLower() != "done")
                         projectTaskList.Add(new ProjectTask()

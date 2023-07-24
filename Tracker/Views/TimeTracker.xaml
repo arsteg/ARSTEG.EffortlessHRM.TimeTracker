@@ -175,7 +175,7 @@
                     IsEnabled="{Binding AllowTaskSelection}"
                       ItemsSource="{Binding Path=Tasks}"
                     SelectedItem="{Binding Path=SelectedTask}"
-                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200">
+                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200" MaxWidth="200">
                             <ComboBox.InputBindings>
                                 <KeyBinding Key="Enter" Command="{Binding CreateNewTaskCommand}"/>
                             </ComboBox.InputBindings>

@@ -53,7 +53,8 @@ namespace TimeTracker.Models
     public class GetTaskListAPIResult
     {
         public string status { get; set; }
-        public List<TaskList> data { get; set; }
+        public List<TaskList> taskList { get; set; }
+        public int taskCount { get; set; }
     }
 
     public class TaskList

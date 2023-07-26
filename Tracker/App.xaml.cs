@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using TimeTracker.Models;
 
 namespace TimeTracker
 {
@@ -29,6 +30,9 @@ namespace TimeTracker
             }
 
             base.OnStartup(e);
+            // Set the ShutdownMode to OnExplicitShutdown
+            this.ShutdownMode = ShutdownMode.OnExplicitShutdown;           
+
         }
     }
 }

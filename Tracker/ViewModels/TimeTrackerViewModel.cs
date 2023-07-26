@@ -59,8 +59,9 @@ namespace TimeTracker.ViewModels
         private int totalMouseClick = 0;
         private int totalKeysPressed = 0;
         private int totalMouseScrolls = 0;
-        private string machineId = string.Empty;
+        private string machineId = string.Empty;        
         MouseHook mh;
+        public event EventHandler RequestClose;
         #endregion
 
         #region constructor
@@ -136,7 +137,10 @@ namespace TimeTracker.ViewModels
         {
             totalKeysPressed++;
         }
-
+        private void OnRequestClose()
+        {
+            RequestClose?.Invoke(this, EventArgs.Empty);
+        }
 
         #endregion
 
@@ -496,9 +500,15 @@ namespace TimeTracker.ViewModels
             {
                 StartStopCommandExecute();
             }
-            var login = new TimeTracker.Views.Login();
-            login.Show();
-            GlobalSetting.Instance.TimeTracker.Close();
+            if (GlobalSetting.Instance.TimeTracker != null)
+            {
+                GlobalSetting.Instance.TimeTracker.Close();
+                GlobalSetting.Instance.TimeTracker=null;
+            }
+            
+            GlobalSetting.Instance.TimeTracker = new TimeTracker.Views.Login(false);
+            GlobalSetting.Instance.TimeTracker.Show();            
+            // Close the window.
         }
         public async void StartStopCommandExecute()
         {
@@ -829,20 +839,27 @@ namespace TimeTracker.ViewModels
         }
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            if (trackerIsOn)
+            try
             {
-                var currentMinutes = DateTime.UtcNow.Minute;
-                minutesTracked += 10;
-                var randonTime = (rand.Next(2, 9));
-                double forTimerInterval = ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime) - currentMinutes;
-                dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
-                var filepath = CaptureScreen();
-                CurrentImagePath = filepath;
+                if (trackerIsOn)
+                {
+                    var currentMinutes = DateTime.UtcNow.Minute;
+                    minutesTracked += 10;
+                    var randonTime = (rand.Next(2, 9));
+                    double forTimerInterval = ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime) - currentMinutes;
+                    dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
+                    var filepath = CaptureScreen();
+                    CurrentImagePath = filepath;
 
-                saveDispatcherTimer = new DispatcherTimer();
-                saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
-                saveDispatcherTimer.Interval = new TimeSpan(0, 0, 10);
-                saveDispatcherTimer.Start();
+                    saveDispatcherTimer = new DispatcherTimer();
+                    saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
+                    saveDispatcherTimer.Interval = new TimeSpan(0, 0, 10);
+                    saveDispatcherTimer.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
             }
         }
         private void saveTimeSlot_Tick(object sender, EventArgs e)
@@ -1096,30 +1113,40 @@ namespace TimeTracker.ViewModels
 
         private async void getTaskList()
         {
-            Tasks = null;
-            if (SelectedProject != null && SelectedProject._id.Length > 0)
+            ProgressWidthStart = 30;
+            try
             {
-                var rest = new REST(new HttpProviders());
-                var taskList = await rest.GetTaskListByProject(new TaskRequest()
+                Tasks = null;
+                if (SelectedProject != null && SelectedProject._id.Length > 0)
                 {
-                    projectId = SelectedProject._id,
-                    userId = GlobalSetting.Instance.LoginResult.data.user.id
-                });
-
-                if (taskList.status == "success" && taskList.taskList != null)
-                {
-                    var projectTaskList = new List<ProjectTask>();
-                    taskList.taskList.ForEach(t =>
-                    {                        
-                        if(t.status.ToLower()!="closed" && t.status.ToLower() != "done")
-                        projectTaskList.Add(new ProjectTask()
-                        {
-                            taskName = t.taskName,
-                            _id = t.id
-                        });
+                    var rest = new REST(new HttpProviders());
+                    var taskList = await rest.GetTaskListByProject(new TaskRequest()
+                    {
+                        projectId = SelectedProject._id,
+                        userId = GlobalSetting.Instance.LoginResult.data.user.id
                     });
-                    Tasks = projectTaskList;
+
+                    if (taskList.status == "success" && taskList.taskList != null)
+                    {
+                        var projectTaskList = new List<ProjectTask>();
+                        taskList.taskList.ForEach(t =>
+                        {
+                            if (t.status.ToLower() != "closed" && t.status.ToLower() != "done")
+                                projectTaskList.Add(new ProjectTask()
+                                {
+                                    taskName = t.taskName,
+                                    _id = t.id
+                                });
+                        });
+                        Tasks = projectTaskList;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+            }
+            finally {
+                ProgressWidthStart = 0;
             }
         }
 
@@ -1429,7 +1456,7 @@ namespace TimeTracker.ViewModels
             }
             else
             {
-                SystemWindows.Application.Current.Shutdown();
+                //SystemWindows.Application.Current.Shutdown();
 
             }
         }

@@ -21,9 +21,16 @@ namespace TimeTracker.Views
     /// </summary>
     public partial class Login : Window
     {
+        private bool automaticLogin = true;
         public Login()
         {
             InitializeComponent();
+            this.Loaded += Login_Loaded;
+        }
+        public Login(bool automaticLogin=true)
+        {
+            InitializeComponent();
+            this.automaticLogin = automaticLogin;
             this.Loaded += Login_Loaded;
         }
 
@@ -37,6 +44,10 @@ namespace TimeTracker.Views
             {
                 this.txtPassword.Password = Properties.Settings.Default.userPassword;
                 this.chkRememberMe.IsChecked = true;
+            }
+            if (this.automaticLogin)
+            {
+                ((LoginViewModel)this.DataContext).LoginCommandExecute();
             }
         }
 

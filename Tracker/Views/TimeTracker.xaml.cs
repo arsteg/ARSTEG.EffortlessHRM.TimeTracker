@@ -17,6 +17,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TimeTracker.ViewModels;
+using TimeTracker.Models;
 
 namespace TimeTracker.Views
 {
@@ -39,8 +41,7 @@ namespace TimeTracker.Views
                     this.Show();
                     this.WindowState = WindowState.Normal;
                 };
-            //SetTheme();
-
+            //SetTheme();            
         }
         protected override void OnStateChanged(EventArgs e)
         {
@@ -102,7 +103,6 @@ namespace TimeTracker.Views
         private void btnActionClose_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
-        }
-        
+        }        
     }
 }

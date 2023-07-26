@@ -109,10 +109,27 @@ namespace TimeTracker.ViewModels
 
                 if (result.status == "success")
                 {
+                    if (GlobalSetting.Instance.TimeTracker != null)
+                    {
+                        GlobalSetting.Instance.TimeTracker.Close();
+                        GlobalSetting.Instance.TimeTracker = null;
+                    }
+
                     GlobalSetting.Instance.LoginResult = result;
                     GlobalSetting.Instance.TimeTracker = new TimeTracker.Views.TimeTracker();
                     GlobalSetting.Instance.TimeTracker.Show();
                     Application.Current.MainWindow.Close();
+                                                            
+                    if (rememberMe)
+                    {
+                        Properties.Settings.Default.userName = UserName;
+                        Properties.Settings.Default.userPassword = Password;                        
+                    }
+                    else {
+                        Properties.Settings.Default.userName = "";
+                        Properties.Settings.Default.userPassword = "";                        
+                    }
+                    Properties.Settings.Default.Save();
                 }
                 else
                 {
@@ -125,7 +142,7 @@ namespace TimeTracker.ViewModels
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Something went wrong, Please try again.\n {ex.InnerException.Message}");                
+                MessageBox.Show($"Something went wrong, Please try again.\n {ex.InnerException?.Message}");                
             }
             finally
             {

@@ -85,7 +85,7 @@
                             <ColumnDefinition Width="1*"/>                            
                     </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Current Session:" Style="{StaticResource textBlock}"/>
-                    <TextBox  Grid.Column="1" Style="{StaticResource textValueBox}" Name="txtUsername" Text="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}" IsReadOnly="True"/>
+                    <TextBox  Grid.Column="1" Style="{StaticResource textValueBox}" Name="txtUsername" Text="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}" IsReadOnly="True" Width="auto"/>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,5,0,0" HorizontalAlignment="Right">                        
                         <Menu Name="menu1" Grid.Column="2" Background="Transparent">
                             <MenuItem Background="White">
@@ -112,7 +112,10 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="Today:" Style="{StaticResource textBlock}"/>
-                    <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" Name="txt1Username" Text="{Binding CurrentDayTimeTracked,StringFormat=HH:mm}" IsReadOnly="True"/>
+                    <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" 
+                             Name="txt1Username" 
+                             Text="{Binding CurrentDayTimeTracked,StringFormat=HH:mm}" 
+                             IsReadOnly="True" Width="auto"/>
                 </Grid>
                 
                 <Grid Margin="0 10 0 0">
@@ -122,7 +125,9 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="This week:" Style="{StaticResource textBlock}"/>
-                    <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" Text="{Binding CurrentWeekTimeTracked}" IsReadOnly="True"/>
+                    <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" 
+                             Text="{Binding CurrentWeekTimeTracked,StringFormat=HH:mm}" 
+                             IsReadOnly="True" Width="auto"/>
                 </Grid>
 
                 <Grid Margin="0 10 0 0">
@@ -133,7 +138,8 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="This month:" Style="{StaticResource textBlock}"/>
                     <TextBox Grid.Column="1" Style="{StaticResource textValueBox}" 
-                             Text="{Binding CurrentMonthTimeTracked}" IsReadOnly="True"/>
+                             Text="{Binding CurrentMonthTimeTracked}" 
+                             IsReadOnly="True" Width="auto"/>
                 </Grid>
                 
                 <Grid Margin="0 10 0 0">

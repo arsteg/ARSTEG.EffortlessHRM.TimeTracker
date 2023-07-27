@@ -46,7 +46,7 @@
             <StackPanel VerticalAlignment="Center">
                 <TextBlock Text="Sign Up" Style="{StaticResource titleText}"></TextBlock>
                 <TextBlock Text="Enter your personal info and create new account to connect us" Style="{StaticResource normalText}" Opacity="0.8" Margin="20 30"></TextBlock>
-                <Button Content="Sign Up" Style="{StaticResource button}"></Button>
+                <Button Content="Sign Up" Style="{StaticResource button}" Command="{Binding OpenSignUpPageCommand}"></Button>
             </StackPanel>
         </Grid>
         <Border Background="#ffffff" Grid.Column="1" CornerRadius="0 10 1 0" MouseDown="Border_MouseDown">
@@ -56,13 +56,13 @@
                     <fa:ImageAwesome Icon="Refresh" Spin="True" Height="25" Width="{Binding ProgressWidth}" Foreground="#3AB19B" Margin="5 0 0 0" />
                 </StackPanel>                
                 <StackPanel Orientation="Horizontal" Margin="0 20" HorizontalAlignment="Center">
-                    <Button Style="{StaticResource buttonCircle}">
+                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenGooglePageCommand}">
                         <Image  Source="/icons/google.png" Height="20"/>
                     </Button>
-                    <Button Style="{StaticResource buttonCircle}">
+                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenFaceBookPageCommand}">
                         <Image Source="/icons/facebook.png" Height="20"/>
                     </Button>
-                    <Button Style="{StaticResource buttonCircle}">
+                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenLinkedInPageCommand}">
                         <Image Source="/icons/linkedin.png" Height="20"/>
                     </Button>                
                 </StackPanel>
@@ -100,7 +100,8 @@
                           IsChecked="{Binding RememberMe}" Style="{StaticResource textCheckBox}"/>
                     </Grid>                    
                 </Border>
-                <Button x:Name="btnLogOn" Content="Sign In" Style="{StaticResource mainButton}" Command="{Binding LoginCommand}" />
+                <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource normalText}" Foreground="red" Margin="0 15 0 15"/>
+                <Button x:Name="btnLogOn" Content="Sign In" Style="{StaticResource mainButton}" Command="{Binding LoginCommand}" IsEnabled="{Binding EnableLoginButton}"/>                
             </StackPanel>
         </Border>
     </Grid>  

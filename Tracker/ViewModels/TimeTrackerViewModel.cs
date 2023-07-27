@@ -68,8 +68,7 @@ namespace TimeTracker.ViewModels
         public TimeTrackerViewModel()
         {
             CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
-            StartStopCommand = new RelayCommand(StartStopCommandExecute);
-            EODReportsCommand = new RelayCommand(EODReportsCommandExecute);
+            StartStopCommand = new RelayCommand(StartStopCommandExecute);            
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
             RefreshCommand = new RelayCommand(RefreshCommandExecute);
             LogCommand = new RelayCommand(LogCommandExecute);
@@ -444,6 +443,17 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(CanShowRefresh));
             }
         }
+
+        private string errorMessage = "";
+        public string ErrorMessage
+        {
+            get { return errorMessage; }
+            set
+            {
+                errorMessage = value;
+                OnPropertyChanged(nameof(ErrorMessage));
+            }
+        }
         #endregion
 
         #region commands
@@ -473,7 +483,7 @@ namespace TimeTracker.ViewModels
             {
                 if (trackerIsOn)
                 {
-                    MessageBox.Show("Please stop the tracker before closing the application.");
+                    ErrorMessage = "Please stop the tracker before closing the application.";
                     return;
                 }
                 else
@@ -485,7 +495,7 @@ namespace TimeTracker.ViewModels
             {
                 if (trackerIsOn)
                 {
-                    MessageBox.Show("Please stop the tracker before closing the application.");
+                    ErrorMessage = "Please stop the tracker before closing the application.";
                     args.Cancel = true;
                 }
                 else
@@ -514,7 +524,7 @@ namespace TimeTracker.ViewModels
         {
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                MessageBox.Show("No task selected", "Task selection", MessageBoxButtons.OK);
+                ErrorMessage = "No task selected";
                 return;
             }            
             ProgressWidthStart = 30;
@@ -543,131 +553,8 @@ namespace TimeTracker.ViewModels
             {
                 ProgressWidthStart = 0;
             }
-        }
-        public async void EODReportsCommandExecute()
-        {
-            ProgressWidthReport = 30;
-            try
-            {
-                AddErrorLog("Info", "Sending the report");
-                await Task.Run(() =>
-                {
-                    var historyEntries = BrowserHistory.GetHistoryEntries();
-                    EmailService emailService = new EmailService();
-                    var sendGridKey = configuration.GetSection("AppSettings:SendGridKey").Value;
-                    var senderEmail = configuration.GetSection("AppSettings:SenderEmail").Value;
-                    var emailReceiver = GlobalSetting.EmailReceiver;
-                    var subject = $"Daily Report - {GlobalSetting.Instance.LoginResult.data.user.email}";
-                    var msgbody = GetEMailBody(historyEntries);
-                    if (msgbody != "" && msgbody != null)
-                    {
-                        var receivers = emailReceiver.Split(",");
-                        foreach (var receiver in receivers)
-                        {
-                            var result = emailService.SendEmailAsyncToRecipientUsingSendGrid(sendGridKey, senderEmail, receiver, "", "", subject, msgbody).GetAwaiter().GetResult();
-                        }
-                        MessageBox.Show("Report has been emailed.");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                AddErrorLog("Error", $"Message: {ex?.Message} ex.StackTrace:{ex?.StackTrace} InnerException: {ex?.InnerException?.InnerException}");
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                ProgressWidthReport = 0;
-            }
-        }
-        private string GetEMailBody(List<HistoryEntry> historyEntries)
-        {
-            try
-            {
-                var totalTimeTracked = GetCurrrentdateTimeTracked().Result;
-
-                var imageshtml = "";
-
-                imageshtml += $"<div><hr></div>";
-
-                imageshtml += $"<div>Total time tracked {totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes} minutes</div>";
-
-                imageshtml += $"<div><hr></div>";
-
-                imageshtml += "<div><strong> Screenshots Taken</strong></div>";
-
-                imageshtml += $"<div><hr></div>";
-
-                var folderPath = @$"{Environment.CurrentDirectory}\{DateTime.Now.ToString("yyyy-MM-dd")}";
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
-                var files = System.IO.Directory.GetFiles(folderPath).ToList();
-                var html = imageshtml;
-                html += @"<table border=1>";
-                for (int i = 0; i < 24; i++)
-                {
-                    html += "<tr>";
-                    html += $"<td>{i.ToString("00")}:{00}</td>";
-                    for (int j = 0; j < 6; j++)
-                    {
-                        var file = getFileName(i, j, files);
-                        if (file != "")
-                        {
-                            var filename = Path.GetFileName(file);
-                            var imageContent = File.ReadAllBytes(file);
-                            var htmlImg = @$"<div><img src='cid:{filename}' alt='Captured image file' height='200' width='200'/></div>";
-                            html += $"<td style='min- idth:50px'> {htmlImg} </td>";
-                        }
-                        else
-                        {
-                            html += $"<td style='min-width:150px'></td>";
-                        }
-                    }
-                    html += "</tr>";
-                }
-
-                html += @"<h3>Browsing History</h3>";
-
-                html += @"</table>";
-
-                html += @"<table border=1>";
-
-                html += "<tr>";
-
-                html += $"<th>Title</th>";
-
-                html += $"<th>Uri</th>";
-
-                html += $"<th>Visit Count </th>";
-
-                html += "</tr>";
-
-
-                foreach (var historyEntry in historyEntries)
-                {
-                    html += "<tr>";
-
-                    html += $"<td> {historyEntry.Title} </td>";
-
-                    html += $"<td> {historyEntry.Uri} </td>";
-
-                    html += $"<td> {historyEntry.VisitCount} </td>";
-
-                    html += "</tr>";
-                }
-                html += @"</table>";
-
-
-                return $"<html><body>{html}</body></html>";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return "";
-            }
-        }
+        }        
+        
         private static string getFileName(int r, int c, List<string> files)
         {
             var result = "";
@@ -703,12 +590,12 @@ namespace TimeTracker.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("Log not found");
+                    ErrorMessage ="Log not found";
                 }
             }
             else
             {
-                MessageBox.Show("Log not found");
+                ErrorMessage = "Log not found";
             }
         }
         public void ScreenshotCaptureSoundCommandExecute()
@@ -756,7 +643,7 @@ namespace TimeTracker.ViewModels
 
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                MessageBox.Show("No task selected", "Task selection", MessageBoxButtons.OK);
+                ErrorMessage = "No task selected";
                 return;
             }
             ProgressWidthStart = 30;
@@ -769,7 +656,7 @@ namespace TimeTracker.ViewModels
                 var result = await rest.CompleteATask(SelectedTask._id, task);
                 if (result.data != null)
                 {
-                    MessageBox.Show("Task has been marked as completed", "Task completion", MessageBoxButtons.OK);
+                    ErrorMessage = "Task has been marked as completed";
                     if (SelectedProject != null)
                     {
                         getTaskList();
@@ -789,7 +676,7 @@ namespace TimeTracker.ViewModels
         {
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                MessageBox.Show("Please specify task details", "Task creation", MessageBoxButtons.OK);
+                ErrorMessage = "Please specify task details";
                 return;
             }
             ProgressWidthStart = 30;
@@ -1061,11 +948,11 @@ namespace TimeTracker.ViewModels
 
                 if (!CheckInternetConnectivity.IsConnectedToInternet())
                 {
-                    AddErrorLog("Info", $"Please check your internet connectivity.");
+                    ErrorMessage = $"Please check your internet connectivity.";
                     unsavedTimeLogs.Add(timeLog);
                     Task.Run(() =>
                     {
-                        MessageBox.Show("Please check your internet connectivity.");
+                        ErrorMessage = "Please check your internet connectivity.";
                     });
                     return null;
                 }
@@ -1123,7 +1010,9 @@ namespace TimeTracker.ViewModels
                     var taskList = await rest.GetTaskListByProject(new TaskRequest()
                     {
                         projectId = SelectedProject._id,
-                        userId = GlobalSetting.Instance.LoginResult.data.user.id
+                        userId = GlobalSetting.Instance.LoginResult.data.user.id,
+                        skip="0",
+                        next="99999999"
                     });
 
                     if (taskList.status == "success" && taskList.taskList != null)
@@ -1422,7 +1311,7 @@ namespace TimeTracker.ViewModels
                 {
                     if (!CheckInternetConnectivity.IsConnectedToInternet())
                     {
-                        MessageBox.Show("This needs an active internet connection");
+                        ErrorMessage = "This needs an active internet connection";
                         return;
                     }
                     var rest = new REST(new HttpProviders());

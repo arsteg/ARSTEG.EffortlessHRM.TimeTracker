@@ -91,6 +91,9 @@ namespace TimeTracker.Models
     {
         public string userId { get; set; }
         public string projectId { get; set; }
+        public string skip{ get; set; }
+        public string next { get; set; }
+
     }
 
 

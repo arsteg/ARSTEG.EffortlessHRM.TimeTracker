@@ -2,6 +2,7 @@
 using GalaSoft.MvvmLight.Views;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -27,6 +28,10 @@ namespace TimeTracker.ViewModels
             LoginCommand = new RelayCommand(LoginCommandExecute);
             CloseCommand = new RelayCommand(CloseCommandExecute);
             OpenForgotPasswordCommand = new RelayCommand(OpenForgotPasswordCommandExecute);
+            OpenSignUpPageCommand = new RelayCommand(OpenSignUpPageCommandExecute);
+            OpenFaceBookPageCommand = new RelayCommand(OpenFaceBookPageCommandExecute);
+            OpenGooglePageCommand = new RelayCommand(OpenGooglePageCommandExecute);
+            OpenLinkedInPageCommand = new RelayCommand(OpenLinkedInPageCommandExecute);            
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
         }
         #endregion
@@ -35,6 +40,10 @@ namespace TimeTracker.ViewModels
         public RelayCommand LoginCommand { get; set; }
         public RelayCommand CloseCommand { get; set; }
         public RelayCommand OpenForgotPasswordCommand { get; set; }
+        public RelayCommand OpenSignUpPageCommand { get; set; }
+        public RelayCommand OpenFaceBookPageCommand { get; set; }
+        public RelayCommand OpenGooglePageCommand { get; set; }
+        public RelayCommand OpenLinkedInPageCommand { get; set; }
 
         #endregion
 
@@ -83,6 +92,16 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        private bool enableLoginButton= false;
+        public bool EnableLoginButton
+        {
+            get { return enableLoginButton; }
+            set
+            {
+                enableLoginButton = value;
+                OnPropertyChanged(nameof(EnableLoginButton));               
+            }
+        }
 
         private int progressWidth =   0;
         public int ProgressWidth
@@ -95,6 +114,17 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        private string  errorMessage= ""  ;
+        public string ErrorMessage
+        {
+            get { return errorMessage; }
+            set
+            {
+                errorMessage = value;
+                OnPropertyChanged(nameof(ErrorMessage));               
+            }
+        }
+
         #endregion
 
         #region public methods
@@ -102,6 +132,7 @@ namespace TimeTracker.ViewModels
             try
             {
                 ProgressWidth = 30;
+                ErrorMessage = "";
 
                  var rest = new REST(new HttpProviders());
 
@@ -133,20 +164,21 @@ namespace TimeTracker.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("Invalid credentials, Please try again");
+                    ErrorMessage ="Invalid credentials, Please try again";
                 }
             }
             catch(ServiceAuthenticationException ex)
             {
-                MessageBox.Show("Invalid credentials, Please try again");
+                ErrorMessage = "Invalid credentials, Please try again";
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Something went wrong, Please try again.\n {ex.InnerException?.Message}");                
+                ErrorMessage = $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";                
             }
             finally
             {
                 ProgressWidth = 0;
+                EnableLoginButton = true;
             }
         }
         public void CloseCommandExecute()
@@ -157,6 +189,26 @@ namespace TimeTracker.ViewModels
         {
             string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/forgotPassword";
             Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+        public void OpenSignUpPageCommandExecute()
+        {
+            string url = configuration.GetSection("SignUpUrl").Value;
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });            
+        }
+        public void OpenGooglePageCommandExecute()
+        {
+            string url = configuration.GetSection("GooglePage").Value;
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+        public void OpenFaceBookPageCommandExecute()
+        {
+            string url = configuration.GetSection("FacebookPage").Value;
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+        public void OpenLinkedInPageCommandExecute()
+        {
+            string url = configuration.GetSection("linkedInPage").Value;
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });            
         }
         #endregion
     }

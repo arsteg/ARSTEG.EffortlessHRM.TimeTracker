@@ -362,7 +362,7 @@ namespace TimeTracker.ViewModels
         {
             get { return _selectedproject; }
             set
-            {
+            {                
                 _selectedproject = value;
                 OnPropertyChanged("SelectedProject");
                 OnPropertyChanged("AllowTaskSelection");
@@ -378,7 +378,7 @@ namespace TimeTracker.ViewModels
         {
             get { return _selectedprojectName; }
             set
-            {
+            {                
                 _selectedprojectName = value;
                 OnPropertyChanged("SelectedProjectName");
             }
@@ -483,19 +483,20 @@ namespace TimeTracker.ViewModels
             {
                 if (trackerIsOn)
                 {
-                    ErrorMessage = "Please stop the tracker before closing the application.";
+                    ShowErrorMessage("Please stop the tracker before closing the application.");
                     return;
                 }
                 else
                 {
                     checkForUnsavedLog();
+                    SystemWindows.Application.Current.Shutdown();
                 }
             }
             else
             {
                 if (trackerIsOn)
                 {
-                    ErrorMessage = "Please stop the tracker before closing the application.";
+                    ShowErrorMessage("Please stop the tracker before closing the application.");
                     args.Cancel = true;
                 }
                 else
@@ -521,10 +522,10 @@ namespace TimeTracker.ViewModels
             // Close the window.
         }
         public async void StartStopCommandExecute()
-        {
+        {            
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                ErrorMessage = "No task selected";
+                ShowErrorMessage("No task selected");
                 return;
             }            
             ProgressWidthStart = 30;
@@ -590,12 +591,12 @@ namespace TimeTracker.ViewModels
                 }
                 else
                 {
-                    ErrorMessage ="Log not found";
+                    ShowErrorMessage("Log not found");
                 }
             }
             else
             {
-                ErrorMessage = "Log not found";
+                ShowErrorMessage("Log not found");
             }
         }
         public void ScreenshotCaptureSoundCommandExecute()
@@ -643,7 +644,7 @@ namespace TimeTracker.ViewModels
 
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                ErrorMessage = "No task selected";
+                ShowErrorMessage("No task selected");
                 return;
             }
             ProgressWidthStart = 30;
@@ -656,10 +657,10 @@ namespace TimeTracker.ViewModels
                 var result = await rest.CompleteATask(SelectedTask._id, task);
                 if (result.data != null)
                 {
-                    ErrorMessage = "Task has been marked as completed";
+                    ShowErrorMessage("Task has been marked as completed");
                     if (SelectedProject != null)
-                    {
-                        getTaskList();
+                    {                        
+                        await getTaskList();
                     }
                 }
             }
@@ -676,7 +677,7 @@ namespace TimeTracker.ViewModels
         {
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                ErrorMessage = "Please specify task details";
+                ShowErrorMessage("Please specify task details");
                 return;
             }
             ProgressWidthStart = 30;
@@ -727,7 +728,7 @@ namespace TimeTracker.ViewModels
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             try
-            {
+            {                
                 if (trackerIsOn)
                 {
                     var currentMinutes = DateTime.UtcNow.Minute;
@@ -774,7 +775,7 @@ namespace TimeTracker.ViewModels
             return currentImagePath;
         }
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
-        {
+        {            
             if (trackerIsOn || userIsInactive)
             {
                 var idleTime = IdleTimeDetector.GetIdleTimeInfo();
@@ -948,11 +949,11 @@ namespace TimeTracker.ViewModels
 
                 if (!CheckInternetConnectivity.IsConnectedToInternet())
                 {
-                    ErrorMessage = $"Please check your internet connectivity.";
+                    ShowErrorMessage($"Please check your internet connectivity.");
                     unsavedTimeLogs.Add(timeLog);
                     Task.Run(() =>
                     {
-                        ErrorMessage = "Please check your internet connectivity.";
+                        ShowErrorMessage("Please check your internet connectivity.");
                     });
                     return null;
                 }
@@ -998,7 +999,7 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private async void getTaskList()
+        private async Task getTaskList()
         {
             ProgressWidthStart = 30;
             try
@@ -1311,7 +1312,7 @@ namespace TimeTracker.ViewModels
                 {
                     if (!CheckInternetConnectivity.IsConnectedToInternet())
                     {
-                        ErrorMessage = "This needs an active internet connection";
+                        ShowErrorMessage("This needs an active internet connection");
                         return;
                     }
                     var rest = new REST(new HttpProviders());
@@ -1342,12 +1343,7 @@ namespace TimeTracker.ViewModels
                     SystemWindows.Application.Current.Shutdown();
 
                 }
-            }
-            else
-            {
-                //SystemWindows.Application.Current.Shutdown();
-
-            }
+            }            
         }
 
         private async void ShareLiveScreen_Tick(object sender, EventArgs e)
@@ -1441,6 +1437,17 @@ namespace TimeTracker.ViewModels
 
             // Keep the thread alive so that the timer can continue executing
             Dispatcher.Run();
+        }        
+        private async void ShowErrorMessage(string errorMessage)
+        {
+            // Show the error message in the label
+            ErrorMessage = errorMessage;
+
+            // Wait for 10 seconds using Task.Delay without blocking the UI thread
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
+            // Clear the error message after 10 seconds
+            ErrorMessage = string.Empty;
         }
         #endregion
     }

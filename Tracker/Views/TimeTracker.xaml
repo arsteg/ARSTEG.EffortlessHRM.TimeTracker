@@ -190,8 +190,8 @@
                                 <KeyBinding Key="Enter" Command="{Binding CreateNewTaskCommand}"/>
                             </ComboBox.InputBindings>
                         </ComboBox>                        
-                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Margin="0 -20 0 0" Height="15" Width="15">
-                            <Icons:PackIconMaterial Kind="Creation"  Style="{StaticResource gridButtonIcon}" Foreground="Blue">
+                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Margin="5 -10 0 0" Height="15" Width="15">
+                            <Icons:PackIconMaterial Kind="PlusBox"  Style="{StaticResource gridButtonIcon}"  Foreground="Green">
                                 <Icons:PackIconMaterial.ToolTip>
                                     <ToolTip Content="Create a new task" />
                                 </Icons:PackIconMaterial.ToolTip>
@@ -215,7 +215,7 @@
                             <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Rectangle RadiusX="7" RadiusY="7" Height="160" Width="400">
+                        <Rectangle RadiusX="7" RadiusY="7" Height="170" Width="400">
                             <Rectangle.Fill>
                                 <ImageBrush ImageSource="{Binding CurrentImagePath}"/>
                             </Rectangle.Fill>

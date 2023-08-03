@@ -34,5 +34,11 @@ namespace TimeTracker
             this.ShutdownMode = ShutdownMode.OnExplicitShutdown;           
 
         }
+        private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception exception = e.ExceptionObject as Exception;
+            MessageBox.Show(exception.Message);
+            // Handle the exception here (e.g., log the exception details, show a user-friendly error message)
+        }
     }
 }

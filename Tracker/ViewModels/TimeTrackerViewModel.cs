@@ -949,6 +949,7 @@ namespace TimeTracker.ViewModels
 
                 if (!CheckInternetConnectivity.IsConnectedToInternet())
                 {
+                    TempLog($"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}");
                     unsavedTimeLogs.Add(timeLog);
                     ShowErrorMessage("Please check your internet connectivity.");
                     return null;
@@ -980,6 +981,7 @@ namespace TimeTracker.ViewModels
                     var tempUnsavedTimeLogs = unsavedTimeLogs;
                     foreach (var unsavedTimeLog in tempUnsavedTimeLogs.ToArray())
                     {
+                        TempLog($"Save unsaved time #logs start Time {unsavedTimeLog.startTime} #log end Time {unsavedTimeLog.endTime}");
                         AddErrorLog("Info", $"Save unsaved log from SaveTimeSlot");
                         var unsavedLogResult = await rest.AddTimeLog(unsavedTimeLog);
                         unsavedTimeLogs.Remove(unsavedTimeLog);
@@ -990,6 +992,7 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
+                TempLog($"Catch block for Save time logs #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLog.startTime} #time end {timeLog.endTime}");
                 unsavedTimeLogs.Add(timeLog);
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
                 return null;
@@ -1445,6 +1448,37 @@ namespace TimeTracker.ViewModels
 
             // Clear the error message after 10 seconds
             ErrorMessage = string.Empty;
+        }
+        #endregion
+
+        #region "Save log into Temp"
+        private void TempLog(string message)
+        {
+            string tempPath = Path.GetTempPath();
+            //string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now.ToString("ddMMyyyyHHmmss")}.log");
+            string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now.ToString("ddMMyyyy")}.log");
+            try
+            {
+                StreamWriter sw;
+                if (!File.Exists(path))
+                {
+                    sw = File.CreateText(path);
+                }
+                else
+                {
+                    sw = File.AppendText(path);
+                }
+
+                sw.WriteLine($"{DateTime.Now.ToString()} Info : {message}");
+                
+                sw.Flush();
+                sw.Close();
+            }
+            catch (Exception ex)
+            {
+                AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                MessageBox.Show(ex.Message);
+            }
         }
         #endregion
     }

@@ -949,12 +949,8 @@ namespace TimeTracker.ViewModels
 
                 if (!CheckInternetConnectivity.IsConnectedToInternet())
                 {
-                    ShowErrorMessage($"Please check your internet connectivity.");
                     unsavedTimeLogs.Add(timeLog);
-                    Task.Run(() =>
-                    {
-                        ShowErrorMessage("Please check your internet connectivity.");
-                    });
+                    ShowErrorMessage("Please check your internet connectivity.");
                     return null;
                 }
                 var rest = new REST(new HttpProviders());
@@ -979,7 +975,7 @@ namespace TimeTracker.ViewModels
                         }
                     }
                 }
-                else
+                else if(unsavedTimeLogs.Count > 0)
                 {
                     var tempUnsavedTimeLogs = unsavedTimeLogs;
                     foreach (var unsavedTimeLog in tempUnsavedTimeLogs.ToArray())
@@ -994,6 +990,7 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
+                unsavedTimeLogs.Add(timeLog);
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
                 return null;
             }

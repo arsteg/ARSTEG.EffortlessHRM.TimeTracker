@@ -11,15 +11,15 @@ namespace BrowserHistoryGatherer.Data
 
         #region Properties
 
-        public Uri Uri { get; }
-        public string Title { get; }
-        public DateTime LastVisitTime { get; }
-        public int? VisitCount { get; }
-        public Browser Browser { get; }
+        public Uri uri { get; }
+        public string title { get; }
+        public DateTime lastVisitTime { get; }
+        public int? visitCount { get; }
+        public Browser browser { get; }
 
-        public string SafeVisitCount => VisitCount == null 
+        public string SafeVisitCount => visitCount == null 
             ? "N/A" 
-            : VisitCount.ToString();
+            : visitCount.ToString();
 
         #endregion
 
@@ -35,11 +35,11 @@ namespace BrowserHistoryGatherer.Data
         /// </summary>
         public HistoryEntry(Uri uri, string title, DateTime visitTime, int? visitCount, Browser browser)
         {
-            this.Uri = uri;
-            this.Title = title;
-            this.LastVisitTime = visitTime;
-            this.VisitCount = visitCount;
-            this.Browser = browser;
+            this.uri = uri;
+            this.title = title;
+            this.lastVisitTime = visitTime;
+            this.visitCount = visitCount;
+            this.browser = browser;
         }
     }
 }

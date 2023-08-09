@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using BrowserHistoryGatherer;
+using BrowserHistoryGatherer.Data;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -316,6 +318,12 @@ namespace TimeTracker.Services
             return res;
         }
 
+        public async Task<Object> AddBrowserHistory(HistoryEntry historyEntry)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/appWebsite/browser-history");
+            var res = await _httpProvider.PostWithTokenAsync<Object, HistoryEntry>(uri, historyEntry, GlobalSetting.Instance.LoginResult.token);
+            return (res);
+        }
         #endregion
 
     }

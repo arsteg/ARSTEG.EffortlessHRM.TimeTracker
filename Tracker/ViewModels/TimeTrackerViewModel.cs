@@ -731,6 +731,7 @@ namespace TimeTracker.ViewModels
             {                
                 if (trackerIsOn)
                 {
+                    var lastInterval = dispatcherTimer.Interval;
                     var currentMinutes = DateTime.UtcNow.Minute;
                     minutesTracked += 10;
                     var randonTime = (rand.Next(2, 9));
@@ -743,6 +744,9 @@ namespace TimeTracker.ViewModels
                     saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
                     saveDispatcherTimer.Interval = new TimeSpan(0, 0, 10);
                     saveDispatcherTimer.Start();
+                    var task = Task.Run(async () => await saveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now));
+                    task.Wait();
+                    
                 }
             }
             catch (Exception ex)
@@ -1371,11 +1375,24 @@ namespace TimeTracker.ViewModels
         {
             TimeManager.ClearScreenshotsFolder();
         }
+
+        private async Task saveBrowserHistory(DateTime startDate, DateTime endDate)
+        {
+            var browserHistoryList = BrowserHistory.GetHistoryEntries(startDate, endDate);
+            if (browserHistoryList.Count > 0)
+            {
+                var rest = new REST(new HttpProviders());
+                foreach (var browserHistory in browserHistoryList)
+                {
+                    var result = await rest.AddBrowserHistory(browserHistory);
+                }
+            }
+        }
         #endregion
 
 
         #region "Web socket"
-        
+
         private readonly ClientWebSocket webSocket = new ClientWebSocket();
 
         private async Task ConnectWebSocket()

@@ -62,7 +62,7 @@ namespace BrowserHistoryGatherer.Gathering
                 string tempTarget = Path.Combine(tempPath, "History");
                 if (File.Exists(tempTarget))
                 {
-                    File.Delete(tempTarget);
+                    //File.Delete(tempTarget);
                 }
                 File.Copy(dbPath, tempTarget, true);
 

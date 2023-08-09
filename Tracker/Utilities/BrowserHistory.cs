@@ -23,5 +23,21 @@ namespace TimeTracker.Utilities
             
             return historyEntries;
         }
+
+        public static List<HistoryEntry> GetHistoryEntries(DateTime startDate, DateTime endDate)
+        {
+            List<HistoryEntry> historyEntries = new List<HistoryEntry>();
+
+            var chromeEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(BrowserHistoryGatherer.Browser.Chrome, startDate, endDate);
+            var fireFoxEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(BrowserHistoryGatherer.Browser.Firefox, startDate, endDate);
+            var ieEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(BrowserHistoryGatherer.Browser.InternetExplorer, startDate, endDate);
+
+            historyEntries.AddRange(chromeEntries);
+            historyEntries.AddRange(fireFoxEntries);
+            historyEntries.AddRange(ieEntries);
+
+            return historyEntries;
+        }
+
     }
 }

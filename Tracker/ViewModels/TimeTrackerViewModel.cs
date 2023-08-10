@@ -454,6 +454,17 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(ErrorMessage));
             }
         }
+        private string messageColor = "red";
+        public string MessageColor
+        {
+            get { return messageColor; }
+            set
+            {
+                messageColor = value;
+                OnPropertyChanged(nameof(MessageColor));
+            }
+        }
+
         #endregion
 
         #region commands
@@ -1137,9 +1148,9 @@ namespace TimeTracker.ViewModels
                 title = "Task",
                 status= "In Progress"
             });
-
             if (newTaskResult.status.ToUpper() == "SUCCESS")
             {
+                ShowInformationMessage("Task has been created");
                 SelectedTask = newTaskResult.data.newTask;
             }
         }
@@ -1457,6 +1468,21 @@ namespace TimeTracker.ViewModels
         }        
         private async void ShowErrorMessage(string errorMessage)
         {
+            MessageColor = "red";
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            // Show the error message in the label
+            ErrorMessage = errorMessage;
+
+            // Wait for 10 seconds using Task.Delay without blocking the UI thread
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
+            // Clear the error message after 10 seconds
+            ErrorMessage = string.Empty;
+        }
+        private async void ShowInformationMessage(string errorMessage)
+        {
+            MessageColor = "green";
+            await Task.Delay(TimeSpan.FromSeconds(1));
             // Show the error message in the label
             ErrorMessage = errorMessage;
 

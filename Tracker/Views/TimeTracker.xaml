@@ -81,8 +81,10 @@
                 </StackPanel>                
                 <StackPanel Orientation="Horizontal" Margin="0 10" HorizontalAlignment="Center">                    
                 
-</StackPanel>                                
-                    <Grid>
+</StackPanel>
+                <Border  CornerRadius="5" BorderThickness="1" BorderBrush="LightGray" Margin="5 0 5 0">
+                <StackPanel>
+                <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="4*"/>
                             <ColumnDefinition Width="5*"/>
@@ -145,7 +147,8 @@
                              Text="{Binding CurrentMonthTimeTracked}" 
                              IsReadOnly="True" Width="auto"/>
                 </Grid>
-                
+                </StackPanel>
+                </Border>
                 <Grid Margin="0 10 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="4*"/>

@@ -67,7 +67,7 @@ namespace BrowserHistoryGatherer.Gathering
                     ? null
                     : historyEnumertator.Current.Title;
 
-                var historyEntry = new HistoryEntry(uri, title, lastUpdate, null, Browser.InternetExplorer);
+                var historyEntry = new HistoryEntry(uri, title, lastUpdate.ToUniversalTime(), null, Browser.InternetExplorer);
                 entryList.Add(historyEntry);
             }
 

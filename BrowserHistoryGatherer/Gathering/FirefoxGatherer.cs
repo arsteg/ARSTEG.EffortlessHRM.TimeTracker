@@ -89,7 +89,7 @@ namespace BrowserHistoryGatherer.Gathering
                         ? (int?)outVal
                         : null;
 
-                    HistoryEntry entry = new HistoryEntry(uri, title, lastVisit, visitCount, Browser.Firefox);
+                    HistoryEntry entry = new HistoryEntry(uri, title, lastVisit.ToUniversalTime(), visitCount, Browser.Firefox);
                     entryList.Add(entry);
                 }
             }

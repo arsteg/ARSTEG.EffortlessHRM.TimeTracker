@@ -1,0 +1,2 @@
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\Setup\bin\Debug\Setup.msi
+C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\Setup\bin\Debug\Setup.wixpdb

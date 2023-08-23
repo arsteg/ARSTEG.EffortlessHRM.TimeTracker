@@ -1408,12 +1408,19 @@ namespace TimeTracker.ViewModels
 
         private async Task ConnectWebSocket()
         {
-            //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/63f846e32ff78af44d597cbc"), CancellationToken.None);
-            //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/62dfa8d13babb9ac2072863c"), CancellationToken.None);
-            await webSocket.ConnectAsync(new Uri($"ws://localhost:8081/{userId}"), CancellationToken.None);
+            try
+            {
+                //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/63f846e32ff78af44d597cbc"), CancellationToken.None);
+                //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/62dfa8d13babb9ac2072863c"), CancellationToken.None);
+                await webSocket.ConnectAsync(new Uri($"wss://effortlesshrmapi.azurewebsites.net:4000/{userId}"), CancellationToken.None);
 
-            // Start listening for incoming WebSocket messages
-            ListenForWebSocketMessages();
+                // Start listening for incoming WebSocket messages
+                ListenForWebSocketMessages();
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private async void ListenForWebSocketMessages()

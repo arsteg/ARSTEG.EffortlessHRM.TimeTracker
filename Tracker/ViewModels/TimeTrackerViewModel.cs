@@ -291,7 +291,18 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private bool canSendReport = true;
+		private String taskDescription;
+		public string TaskDescription
+		{
+			get { return taskDescription; }
+			set
+			{
+				taskDescription = value;
+				OnPropertyChanged(nameof(TaskDescription));
+			}
+		}
+
+		private bool canSendReport = true;
 
         public bool CanSendReport
         {
@@ -402,7 +413,8 @@ namespace TimeTracker.ViewModels
             set
             {
                 _selectedtask = value;
-                OnPropertyChanged("SelectedTask");
+                TaskDescription = _selectedtask?.description;
+				OnPropertyChanged("SelectedTask");
             }
         }
 
@@ -587,6 +599,7 @@ namespace TimeTracker.ViewModels
             BindProjectList();
             Tasks = null;
             taskName = string.Empty;
+            TaskDescription = string.Empty;
             SelectedTask = null;
         }
         public async void LogCommandExecute()
@@ -1040,6 +1053,7 @@ namespace TimeTracker.ViewModels
                                 projectTaskList.Add(new ProjectTask()
                                 {
                                     taskName = t.taskName,
+                                    description = t.description,
                                     _id = t.id
                                 });
                         });
@@ -1139,7 +1153,7 @@ namespace TimeTracker.ViewModels
                 project = SelectedProject._id,
                 taskUsers = taskUsers,
                 user= GlobalSetting.Instance.LoginResult.data.user.id,
-                description = null,
+                description = TaskDescription,
                 endDate = null,
                 priority = null,
                 startDate = DateTime.UtcNow,

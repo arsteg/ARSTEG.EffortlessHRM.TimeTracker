@@ -211,7 +211,7 @@
                     <StackPanel  Grid.Row="1" Grid.Column="1" Margin="0,3,0,1">
                         <TextBox  HorizontalAlignment="Left" Text="{Binding TaskDescription,Mode=TwoWay}"   
                          MinWidth="200" MaxWidth="200" MaxHeight="40" TextWrapping="Wrap" AcceptsReturn="True"
-                            VerticalScrollBarVisibility="Visible" Style="{StaticResource textValueBox}">                            
+                            VerticalScrollBarVisibility="Visible" Style="{StaticResource textInputBox}">                            
                         </TextBox>
                     </StackPanel>
                     <StackPanel  Grid.Column="2" Margin="0,0,0,0">

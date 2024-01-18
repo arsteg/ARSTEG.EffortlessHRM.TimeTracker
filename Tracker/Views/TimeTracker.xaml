@@ -149,32 +149,27 @@
                 </Grid>
                 </StackPanel>
                 </Border>
-                <Grid Margin="0 10 0 0">
+                <Grid Margin="0 5 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="4*"/>
-                        <ColumnDefinition Width="5*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="6*"/>                        
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" x:Name="lblProject" Text="Project:" Style="{StaticResource textBlock}"/>
-                    <StackPanel Grid.Column="1">
-                        <ComboBox Name="cmb" IsTextSearchEnabled="True" IsEditable="True"
-                      HorizontalAlignment="Left"                      
+                    <TextBlock Grid.Column="0" x:Name="lblProject" Text="Project:" Style="{StaticResource textBlock}"/>                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <ComboBox Name="cmb" IsTextSearchEnabled="True" IsEditable="True"                      
                        Text="{Binding Path=SelectedProjectName}"
                       ItemsSource="{Binding Path=Projects}"
                     SelectedItem="{Binding Path=SelectedProject}"
-                    DisplayMemberPath="projectName" Style="{StaticResource comboBox}" MinWidth="200"/>
-                    </StackPanel>
-                    <StackPanel  Grid.Column="2" Margin="0,0,0,0">
-                        <Button Command="{Binding RefreshCommand}" BorderThickness="0" Background="Transparent">
+                    DisplayMemberPath="projectName" Style="{StaticResource comboBox}" MinWidth="240"/>
+                        <Button Command="{Binding RefreshCommand}" BorderThickness="0" Background="Transparent" Margin="15,0,0,0">
                             <Icons:PackIconMaterial Kind="Refresh" Style="{StaticResource gridButtonIcon}" Foreground="Green">
                                 <Icons:PackIconMaterial.ToolTip>
                                     <ToolTip Content="Refresh" />
                                 </Icons:PackIconMaterial.ToolTip>
                             </Icons:PackIconMaterial>
                         </Button>
-                    </StackPanel>
+                    </StackPanel>                    
                 </Grid>
-
                 <Grid Margin="0 4 0 0">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
@@ -186,35 +181,35 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" x:Name="lblTask" Text="Task:" Style="{StaticResource textBlock}"/>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Grid.ColumnSpan="3">
                         <ComboBox Grid.Column="1" Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
                       HorizontalAlignment="Left" Text="{Binding Taskname}"
                     IsEnabled="{Binding AllowTaskSelection}"
                       ItemsSource="{Binding Path=Tasks}"
                     SelectedItem="{Binding Path=SelectedTask}"
-                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200" MaxWidth="200">
+                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200" MaxWidth="240">
                             <ComboBox.InputBindings>
                                 <KeyBinding Key="Enter" Command="{Binding CreateNewTaskCommand}"/>
                             </ComboBox.InputBindings>
-                        </ComboBox>                        
-                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Margin="5 -10 0 0" Height="15" Width="15">
-                            <Icons:PackIconMaterial Kind="PlusBox"  Style="{StaticResource gridButtonIcon}"  Foreground="Green">
-                                <Icons:PackIconMaterial.ToolTip>
-                                    <ToolTip Content="Create a new task" />
-                                </Icons:PackIconMaterial.ToolTip>
-                            </Icons:PackIconMaterial>
-                        </Button>
+                        </ComboBox>                                                
                     </StackPanel>                    
                     <StackPanel  Grid.Row="1" Grid.Column="0" Margin="0,3,0,1">
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Description:" Style="{StaticResource textBlock}"/>
                     </StackPanel>
                     <StackPanel  Grid.Row="1" Grid.Column="1" Margin="0,3,0,1">
                         <TextBox  HorizontalAlignment="Left" Text="{Binding TaskDescription,Mode=TwoWay}"   
-                         MinWidth="200" MaxWidth="200" MaxHeight="40" TextWrapping="Wrap" AcceptsReturn="True"
+                         MinWidth="200" MaxHeight="40" TextWrapping="Wrap" AcceptsReturn="True" MaxWidth="240"
                             VerticalScrollBarVisibility="Visible" Style="{StaticResource textInputBox}">                            
                         </TextBox>
-                    </StackPanel>
-                    <StackPanel  Grid.Column="2" Margin="0,0,0,0">
+                    </StackPanel>                    
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,0">
+                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Height="15" Width="15">
+                            <Icons:PackIconMaterial Kind="PlusBox"  Style="{StaticResource gridButtonIcon}"  Foreground="Green">
+                                <Icons:PackIconMaterial.ToolTip>
+                                    <ToolTip Content="Create a new task" />
+                                </Icons:PackIconMaterial.ToolTip>
+                            </Icons:PackIconMaterial>
+                        </Button>
                         <Button Command="{Binding TaskCompleteCommand}" BorderThickness="0" Background="Transparent" Width="15">
                             <Icons:PackIconMaterial Kind="MarkerCheck"  Style="{StaticResource gridButtonIcon}" Foreground="Green">
                                 <Icons:PackIconMaterial.ToolTip>

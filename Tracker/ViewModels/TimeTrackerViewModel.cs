@@ -537,11 +537,11 @@ namespace TimeTracker.ViewModels
             if (GlobalSetting.Instance.TimeTracker != null)
             {
                 GlobalSetting.Instance.TimeTracker.Close();
-                GlobalSetting.Instance.TimeTracker=null;
+                //GlobalSetting.Instance.TimeTracker=null;
             }
             
-            GlobalSetting.Instance.TimeTracker = new TimeTracker.Views.Login(false);
-            GlobalSetting.Instance.TimeTracker.Show();            
+            GlobalSetting.Instance.LoginView = new TimeTracker.Views.Login(false);
+            GlobalSetting.Instance.LoginView.Show();            
             // Close the window.
         }
         public async void StartStopCommandExecute()

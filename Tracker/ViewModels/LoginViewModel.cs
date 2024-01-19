@@ -140,15 +140,19 @@ namespace TimeTracker.ViewModels
 
                 if (result.status == "success")
                 {
-                    if (GlobalSetting.Instance.TimeTracker != null)
+                    if (GlobalSetting.Instance.LoginView != null)
                     {
-                        GlobalSetting.Instance.TimeTracker.Close();
-                        GlobalSetting.Instance.TimeTracker = null;
+                        GlobalSetting.Instance.LoginView.Close();
+                        GlobalSetting.Instance.LoginView = null;
                     }
 
                     GlobalSetting.Instance.LoginResult = result;
-                    GlobalSetting.Instance.TimeTracker = new TimeTracker.Views.TimeTracker();
-                    GlobalSetting.Instance.TimeTracker.Show();
+                    if (GlobalSetting.Instance.TimeTracker == null)
+                    {
+                        GlobalSetting.Instance.TimeTracker = new TimeTracker.Views.TimeTracker();
+                    }
+
+					GlobalSetting.Instance.TimeTracker.Show();
                     Application.Current.MainWindow.Close();
                                                             
                     if (rememberMe)

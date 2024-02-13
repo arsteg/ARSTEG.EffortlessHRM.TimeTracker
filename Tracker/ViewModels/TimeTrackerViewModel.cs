@@ -1101,6 +1101,7 @@ namespace TimeTracker.ViewModels
                 }
                 catch
                 {
+                    deleteImagePath.Stop();
                 }
             }
             else
@@ -1424,12 +1425,16 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/63f846e32ff78af44d597cbc"), CancellationToken.None);
-                //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/62dfa8d13babb9ac2072863c"), CancellationToken.None);
-                await webSocket.ConnectAsync(new Uri($"wss://effortlesshrmapi.azurewebsites.net:4000/{userId}"), CancellationToken.None);
+                var url = $"wss://effortlesshrmapi.azurewebsites.net:4000/{userId}";
+                if (await Commons.CheckUrlAccessibility(url))
+                {
+                    //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/63f846e32ff78af44d597cbc"), CancellationToken.None);
+                    //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/62dfa8d13babb9ac2072863c"), CancellationToken.None);
+                    await webSocket.ConnectAsync(new Uri(url), CancellationToken.None);
 
-                // Start listening for incoming WebSocket messages
-                ListenForWebSocketMessages();
+                    // Start listening for incoming WebSocket messages
+                    ListenForWebSocketMessages();
+                }
             }
             catch (Exception ex)
             {

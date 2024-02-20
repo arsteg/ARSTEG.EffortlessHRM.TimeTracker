@@ -40,9 +40,6 @@ namespace TimeTracker.AppUsedTracker
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
 
 
-
-
-
         private bool stopThread = false;
         private string _appName = string.Empty;
         private string _appTitle = string.Empty;
@@ -67,9 +64,8 @@ namespace TimeTracker.AppUsedTracker
             mh.MouseDownEvent += Mh_MouseDownEventApp;
             mh.MouseUpEvent += mh_MouseUpEventApp;
             mh.MouseWheelEvent += mh_MouseWheelEventApp;
-
-            InterceptKeys.OnKeyDown += InterceptKey_OnKeyDown;
-            InterceptKeys.Start();
+            //InterceptKeys.OnKeyDown += InterceptKey_OnKeyDown;
+            //InterceptKeys.Start();
 
             idleTimeDetect.Tick += IdleTimeDetect_Tick;
             idleTimeDetect.Interval = new TimeSpan(00, 00, 30);
@@ -96,8 +92,7 @@ namespace TimeTracker.AppUsedTracker
         {
             appWiseTotalMouseScrolls++;
         }
-
-        private void InterceptKey_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        private void InterceptKey_OnKeyDown( object sender, System.Windows.Forms.KeyEventArgs e )
         {
 
             appWiseTotalKeysPressed++;

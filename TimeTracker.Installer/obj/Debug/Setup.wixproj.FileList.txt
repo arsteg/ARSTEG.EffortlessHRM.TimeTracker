@@ -1,6 +1,0 @@
-C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\Setup\bin\Debug\Setup.msi
-C:\Work\EffortlessHRM\ARSTEG.EffortlessHRM.TimeTracker\Setup\bin\Debug\Setup.wixpdb
-obj\Debug\Product.wixobj
-obj\Debug\Setup.wixproj.BindContentsFileListnull.txt
-obj\Debug\Setup.wixproj.BindOutputsFileListnull.txt
-obj\Debug\Setup.wixproj.BindBuiltOutputsFileListnull.txt

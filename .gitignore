@@ -21,3 +21,4 @@
 *.cache
 TimeTracker.Installer/Debug/setup.exe
 *.msi
+/TimeTracker.Setup/Release

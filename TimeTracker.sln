@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.33529.622
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeTracker", "Tracker\TimeTracker.csproj", "{EC46DC08-C047-4909-9D91-5542C0B77405}"
 EndProject
@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UrlHistoryLibrary", "UrlHis
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserHistoryGatherer", "BrowserHistoryGatherer\BrowserHistoryGatherer.csproj", "{F65BE72A-9936-469B-A79D-6B2080342E62}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TimeTracker.Installer", "TimeTracker.Installer\TimeTracker.Installer.wixproj", "{8F0E999D-861F-4DAC-8891-51BCE1338352}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TimeTracker.Setup", "TimeTracker.Setup\TimeTracker.Setup.vdproj", "{63C9076F-1052-432A-8543-1D6D8369DD50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,12 +43,10 @@ Global
 		{F65BE72A-9936-469B-A79D-6B2080342E62}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F65BE72A-9936-469B-A79D-6B2080342E62}.Release|x86.ActiveCfg = Release|Any CPU
 		{F65BE72A-9936-469B-A79D-6B2080342E62}.Release|x86.Build.0 = Release|Any CPU
-		{8F0E999D-861F-4DAC-8891-51BCE1338352}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{8F0E999D-861F-4DAC-8891-51BCE1338352}.Debug|x86.ActiveCfg = Debug|x86
-		{8F0E999D-861F-4DAC-8891-51BCE1338352}.Debug|x86.Build.0 = Debug|x86
-		{8F0E999D-861F-4DAC-8891-51BCE1338352}.Release|Any CPU.ActiveCfg = Release|x86
-		{8F0E999D-861F-4DAC-8891-51BCE1338352}.Release|x86.ActiveCfg = Release|x86
-		{8F0E999D-861F-4DAC-8891-51BCE1338352}.Release|x86.Build.0 = Release|x86
+		{63C9076F-1052-432A-8543-1D6D8369DD50}.Debug|Any CPU.ActiveCfg = Debug
+		{63C9076F-1052-432A-8543-1D6D8369DD50}.Debug|x86.ActiveCfg = Debug
+		{63C9076F-1052-432A-8543-1D6D8369DD50}.Release|Any CPU.ActiveCfg = Release
+		{63C9076F-1052-432A-8543-1D6D8369DD50}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

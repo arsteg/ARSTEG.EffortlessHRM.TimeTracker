@@ -12,6 +12,7 @@ namespace TimeTracker
 {
     /// <summary>
     /// Interaction logic for App.xaml
+	/// https://www.youtube.com/watch?v=nwsEi0JZM3k
     /// </summary>
     public partial class App : Application
     {

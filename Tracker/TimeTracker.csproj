@@ -47,8 +47,13 @@
     <PackageReference Include="NLog.Config" Version="4.7.13" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.0.0-rc2" />
     <PackageReference Include="NLog.Schema" Version="5.0.0-rc2" />
+    <PackageReference Include="NuGet.CommandLine" Version="6.9.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="sendgrid" Version="9.25.1" />
     <PackageReference Include="Simplify.Windows.Forms" Version="1.1.2" />
+    <PackageReference Include="squirrel.windows" Version="2.0.1" />
     <PackageReference Include="System.Management" Version="7.0.0" />
   </ItemGroup>
 
@@ -121,4 +126,22 @@
     </Compile>
   </ItemGroup>
 
+	<PropertyGroup>
+		<NugetTools>$(PkgNuGet_CommandLine)\tools</NugetTools>
+		<SquirrelTools>$(Pkgsquirrel_windows)\tools</SquirrelTools>
+
+		<Version>1.0.0</Version>
+
+		<NuspecFile>$(SolutionDir)Tracker\ReleaseSpec.nuspec</NuspecFile>
+	</PropertyGroup>
+
+	<Target Name="GenerateRelease" AfterTargets="AfterBuild" Condition="$(Configuration) == Release">
+		<XmlPeek XmlInputPath="$(NuspecFile)" Query="/package/metadata/id/text()">
+			<Output TaskParameter="Result" ItemName="ID" />
+		</XmlPeek>
+
+		<Exec Command="$(NugetTools)\NuGet.exe pack $(NuspecFile) -Version $(Version) -Properties Configuration=Release -OutputDirectory $(SolutionDir)Deployment\GeneratedNugets" />
+
+		<Exec Command="$(SquirrelTools)\Squirrel.exe --releasify $(SolutionDir)Deployment\GeneratedNugets\@(ID).$(Version).nupkg --releaseDir=$(SolutionDir)Deployment\Releases" />
+	</Target>
 </Project>

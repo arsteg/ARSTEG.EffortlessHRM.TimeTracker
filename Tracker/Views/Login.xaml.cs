@@ -13,6 +13,8 @@ using System.Windows.Navigation;
 using TimeTracker.ViewModels;
 using System.Threading;
 using System.Windows.Controls.Primitives;
+using Squirrel;
+
 
 namespace TimeTracker.Views
 {
@@ -21,6 +23,8 @@ namespace TimeTracker.Views
     /// </summary>
     public partial class Login : Window
     {
+        UpdateManager manager;
+
         private bool automaticLogin = true;
         public Login()
         {
@@ -34,7 +38,7 @@ namespace TimeTracker.Views
             this.Loaded += Login_Loaded;
         }
 
-        private void Login_Loaded(object sender, RoutedEventArgs e)
+        private async void Login_Loaded(object sender, RoutedEventArgs e)
         {
             if (Properties.Settings.Default.userName != string.Empty)
             {
@@ -49,6 +53,22 @@ namespace TimeTracker.Views
             {
                 ((LoginViewModel)this.DataContext).LoginCommandExecute();
             }
+
+#if DEBUG
+
+#else
+                manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/arsteg/ARSTEG.EffortlessHRM.TimeTracker");
+                        if (manager != null)
+                        {
+                        var updateInfo = await manager.CheckForUpdate();
+                        if (updateInfo.ReleasesToApply.Count > 0)
+                        {
+                            await manager.UpdateApp();
+                            MessageBox.Show("updated successfully");
+                        }
+                        currentVersion.Text = manager.CurrentlyInstalledVersion().ToString();                       
+                        }
+#endif
         }
 
         private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
@@ -121,6 +141,10 @@ namespace TimeTracker.Views
             if (e.ChangedButton == MouseButton.Left) {
                 this.DragMove();
             }
+        }
+        private void btnActionClose_Click( object sender, MouseButtonEventArgs e )
+        {
+            Application.Current.Shutdown();
         }
     }
 }

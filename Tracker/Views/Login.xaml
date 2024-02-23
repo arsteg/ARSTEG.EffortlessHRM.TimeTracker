@@ -22,9 +22,9 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
-            </Grid.ColumnDefinitions>            
-            <Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgClose}" MouseLeftButtonDown="btnActionClose_Click"/>
-            <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="BtnActionMinimize_OnClick"/>
+            </Grid.ColumnDefinitions>
+            <Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgClose}" MouseLeftButtonDown="BtnActionMinimize_OnClick"/>
+            <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="btnActionClose_Click"/>
         </Grid>
         <Thumb Opacity="100" Background="Red" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
 
@@ -48,6 +48,10 @@
                 <TextBlock Text="Enter your personal info and create new account to connect us" Style="{StaticResource normalText}" Opacity="0.8" Margin="20 30"></TextBlock>
                 <Button Content="Sign Up" Style="{StaticResource button}" Command="{Binding OpenSignUpPageCommand}"></Button>
             </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Version" Margin="0,0,5,0" />
+                <TextBlock x:Name="currentVersion" Text="1.0.0"/>
+            </StackPanel>            
         </Grid>
         <Border Background="#ffffff" Grid.Column="1" CornerRadius="0 10 1 0" MouseDown="Border_MouseDown">
             <StackPanel>

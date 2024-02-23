@@ -103,6 +103,11 @@ namespace TimeTracker.Views
         private void btnActionClose_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
-        }        
+        }
+
+        private void btnActionClose_Click( object sender, MouseButtonEventArgs e )
+        {
+            Application.Current.Shutdown();
+        }
     }
 }

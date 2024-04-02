@@ -696,7 +696,8 @@ namespace TimeTracker.ViewModels
 
                 dynamic task = new ExpandoObject();
                 task.status = "Done";
-                var result = await rest.CompleteATask(SelectedTask._id, task);
+                task.project = SelectedProject._id; 
+				var result = await rest.CompleteATask(SelectedTask._id, task);
                 if (result.data != null)
                 {
                     ShowErrorMessage("Task has been marked as completed");

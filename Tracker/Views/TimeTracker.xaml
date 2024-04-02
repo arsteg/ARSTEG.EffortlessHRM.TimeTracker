@@ -187,11 +187,18 @@
                     IsEnabled="{Binding AllowTaskSelection}"
                       ItemsSource="{Binding Path=Tasks}"
                     SelectedItem="{Binding Path=SelectedTask}"
-                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="200" MaxWidth="240">
+                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="240" MaxWidth="240">
                             <ComboBox.InputBindings>
                                 <KeyBinding Key="Enter" Command="{Binding CreateNewTaskCommand}"/>
                             </ComboBox.InputBindings>
-                        </ComboBox>                                                
+                        </ComboBox>
+                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Height="15" Width="15" Margin="15,0,0,0">
+                            <Icons:PackIconMaterial Kind="PlusBox"  Style="{StaticResource gridButtonIcon}"  Foreground="Green">
+                                <Icons:PackIconMaterial.ToolTip>
+                                    <ToolTip Content="Create a new task" />
+                                </Icons:PackIconMaterial.ToolTip>
+                            </Icons:PackIconMaterial>
+                        </Button>
                     </StackPanel>                    
                     <StackPanel  Grid.Row="1" Grid.Column="0" Margin="0,3,0,1">
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Description:" Style="{StaticResource textBlock}"/>
@@ -202,14 +209,7 @@
                             VerticalScrollBarVisibility="Visible" Style="{StaticResource textInputBox}">                            
                         </TextBox>
                     </StackPanel>                    
-                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,0">
-                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Height="15" Width="15">
-                            <Icons:PackIconMaterial Kind="PlusBox"  Style="{StaticResource gridButtonIcon}"  Foreground="Green">
-                                <Icons:PackIconMaterial.ToolTip>
-                                    <ToolTip Content="Create a new task" />
-                                </Icons:PackIconMaterial.ToolTip>
-                            </Icons:PackIconMaterial>
-                        </Button>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,0">                        
                         <Button Command="{Binding TaskCompleteCommand}" BorderThickness="0" Background="Transparent" Width="15">
                             <Icons:PackIconMaterial Kind="MarkerCheck"  Style="{StaticResource gridButtonIcon}" Foreground="Green">
                                 <Icons:PackIconMaterial.ToolTip>

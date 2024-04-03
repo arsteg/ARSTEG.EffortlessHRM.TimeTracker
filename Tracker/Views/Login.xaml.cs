@@ -57,7 +57,8 @@ namespace TimeTracker.Views
 #if DEBUG
 
 #else
-                manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/arsteg/ARSTEG.EffortlessHRM.TimeTracker");
+                try{
+                    manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/arsteg/ARSTEG.EffortlessHRM.TimeTracker");
                         if (manager != null)
                         {
                         var updateInfo = await manager.CheckForUpdate();
@@ -68,6 +69,10 @@ namespace TimeTracker.Views
                         }
                         currentVersion.Text = manager.CurrentlyInstalledVersion().ToString();                       
                         }
+                    }
+                    catch(Exception ex){
+                    MessageBox.Show(ex.Message);
+                    }
 #endif
         }
 

@@ -14,6 +14,9 @@ using TimeTracker.ViewModels;
 using System.Threading;
 using System.Windows.Controls.Primitives;
 using Squirrel;
+using TimeTracker.Trace;
+using DocumentFormat.OpenXml.ExtendedProperties;
+
 
 
 namespace TimeTracker.Views
@@ -38,11 +41,11 @@ namespace TimeTracker.Views
             this.Loaded += Login_Loaded;
         }
 
-        private async void Login_Loaded(object sender, RoutedEventArgs e)
+        private async void Login_Loaded( object sender, RoutedEventArgs e )
         {
             if (Properties.Settings.Default.userName != string.Empty)
             {
-                ((LoginViewModel)this.DataContext).UserName = Properties.Settings.Default.userName;                
+                ((LoginViewModel)this.DataContext).UserName = Properties.Settings.Default.userName;
             }
             if (Properties.Settings.Default.userPassword != string.Empty)
             {
@@ -53,28 +56,38 @@ namespace TimeTracker.Views
             {
                 ((LoginViewModel)this.DataContext).LoginCommandExecute();
             }
+#if RELEASE
+			try
+			{
+				LogManager.Logger.Info("calling GitHubUpdateManager");               
+                
 
-#if DEBUG
-
-#else
-                try{
-                    manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/arsteg/ARSTEG.EffortlessHRM.TimeTracker");
-                        if (manager != null)
-                        {
-                        var updateInfo = await manager.CheckForUpdate();
-                        if (updateInfo.ReleasesToApply.Count > 0)
-                        {
-                            await manager.UpdateApp();
-                            MessageBox.Show("updated successfully");
-                        }
-                        currentVersion.Text = manager.CurrentlyInstalledVersion().ToString();                       
-                        }
-                    }
-                    catch(Exception ex){
-                    MessageBox.Show(ex.Message);
-                    }
+				manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/arsteg/ARSTEG.EffortlessHRM.TimeTracker");
+				if (manager != null)
+				{
+					LogManager.Logger.Info($"calling CheckForUpdate");
+					var updateInfo = await manager.CheckForUpdate();
+					if (updateInfo.ReleasesToApply.Count > 0)
+					{
+						LogManager.Logger.Info($"updating the application");						
+						await manager.UpdateApp();
+						MessageBox.Show("updated successfully");
+					}
+					currentVersion.Text = manager.CurrentlyInstalledVersion().ToString();
+					LogManager.Logger.Info($"updating the currentVersion");
+				}
+				else
+				{
+					LogManager.Logger.Info($"manager = {manager}");
+				}
+			}
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
 #endif
-        }
+
+		}
 
         private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
@@ -110,7 +123,7 @@ namespace TimeTracker.Views
 
         private void btnActionClose_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void Thumb_OnDragDelta(object sender, DragDeltaEventArgs e)
@@ -149,7 +162,7 @@ namespace TimeTracker.Views
         }
         private void btnActionClose_Click( object sender, MouseButtonEventArgs e )
         {
-            Application.Current.Shutdown();
+			System.Windows.Application.Current.Shutdown();
         }
     }
 }

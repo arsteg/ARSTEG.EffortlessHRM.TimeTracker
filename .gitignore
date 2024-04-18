@@ -22,3 +22,8 @@
 TimeTracker.Installer/Debug/setup.exe
 *.msi
 /TimeTracker.Setup/Release
+/Deployment/Releases
+/Deployment
+/Deployment/GeneratedNugets
+/Deployment
+/Deployment

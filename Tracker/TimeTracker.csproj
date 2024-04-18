@@ -13,10 +13,15 @@
     <None Remove="Icons\facebook.png" />
     <None Remove="Icons\gears.png" />
     <None Remove="Icons\google.png" />
+    <None Remove="Icons\instagram.jpg" />
+    <None Remove="Icons\instagram.png" />
     <None Remove="Icons\linkedIn.png" />
     <None Remove="Icons\lock.png" />
     <None Remove="Icons\minimize.png" />
+    <None Remove="Icons\x.png" />
+    <None Remove="Icons\youtube.png" />
     <None Remove="Media\Images\logo.png" />
+    <None Remove="NLog.config" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +31,12 @@
       <VersionMajor>2</VersionMajor>
       <Guid>215d64d2-031c-33c7-96e3-61794cd1ee61</Guid>
     </COMReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="nlog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -70,10 +81,7 @@
     <None Update="Media\Images\logo.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="NLog.xsd">
+    <None Update="nlog.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Properties\Settings.settings">
@@ -109,11 +117,20 @@
     <Resource Include="Icons\google.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Icons\instagram.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Icons\linkedIn.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Icons\lock.png" />
     <Resource Include="Icons\minimize.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\x.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\youtube.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

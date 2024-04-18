@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TimeTracker.ViewModels;
 using TimeTracker.Models;
+using TimeTracker.Trace;
 
 namespace TimeTracker.Views
 {
@@ -29,6 +30,7 @@ namespace TimeTracker.Views
     {
         public TimeTracker()
         {
+            try { 
             InitializeComponent();
 
             UpdatePopupPosition();
@@ -41,7 +43,13 @@ namespace TimeTracker.Views
                     this.Show();
                     this.WindowState = WindowState.Normal;
                 };
-            //SetTheme();            
+            //SetTheme();
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
+
         }
         protected override void OnStateChanged(EventArgs e)
         {

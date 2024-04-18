@@ -6,12 +6,14 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using TimeTracker.Models;
 using TimeTracker.Services;
+using TimeTracker.Trace;
 using TimeTracker.Utilities;
 
 namespace TimeTracker.ViewModels
@@ -28,22 +30,17 @@ namespace TimeTracker.ViewModels
             LoginCommand = new RelayCommand(LoginCommandExecute);
             CloseCommand = new RelayCommand(CloseCommandExecute);
             OpenForgotPasswordCommand = new RelayCommand(OpenForgotPasswordCommandExecute);
-            OpenSignUpPageCommand = new RelayCommand(OpenSignUpPageCommandExecute);
-            OpenFaceBookPageCommand = new RelayCommand(OpenFaceBookPageCommandExecute);
-            OpenGooglePageCommand = new RelayCommand(OpenGooglePageCommandExecute);
-            OpenLinkedInPageCommand = new RelayCommand(OpenLinkedInPageCommandExecute);            
-            configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        }
+            OpenSignUpPageCommand = new RelayCommand(OpenSignUpPageCommandExecute);            
+			OpenSocialMediaPageCommand = new RelayCommand<string>(OpenSocialMediaPageCommandCommandExecute);            
+            configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();        }
         #endregion
 
         #region commands
         public RelayCommand LoginCommand { get; set; }
         public RelayCommand CloseCommand { get; set; }
         public RelayCommand OpenForgotPasswordCommand { get; set; }
-        public RelayCommand OpenSignUpPageCommand { get; set; }
-        public RelayCommand OpenFaceBookPageCommand { get; set; }
-        public RelayCommand OpenGooglePageCommand { get; set; }
-        public RelayCommand OpenLinkedInPageCommand { get; set; }
+        public RelayCommand OpenSignUpPageCommand { get; set; }        
+        public RelayCommand<string> OpenSocialMediaPageCommand { get; set; }        
 
         #endregion
 
@@ -131,16 +128,21 @@ namespace TimeTracker.ViewModels
         public  async void LoginCommandExecute() {
             try
             {
+                if( string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
+                {                    
+                    return;
+                }
                 ProgressWidth = 30;
-                ErrorMessage = "";
+                ErrorMessage = "";               
 
-                 var rest = new REST(new HttpProviders());
-
+				var rest = new REST(new HttpProviders());
+                
                 var result = await rest.SignIn(new Models.Login() { email = UserName, password = Password });
 
                 if (result.status == "success")
                 {
-                    if (GlobalSetting.Instance.LoginView != null)
+					LogManager.Logger.Info("SignIn is successful");
+					if (GlobalSetting.Instance.LoginView != null)
                     {
                         GlobalSetting.Instance.LoginView.Close();
                         GlobalSetting.Instance.LoginView = null;
@@ -149,13 +151,15 @@ namespace TimeTracker.ViewModels
                     GlobalSetting.Instance.LoginResult = result;
                     if (GlobalSetting.Instance.TimeTracker == null)
                     {
+                        LogManager.Logger.Info("Creating the instance of TimeTracker");
                         GlobalSetting.Instance.TimeTracker = new TimeTracker.Views.TimeTracker();
                     }
-
+					LogManager.Logger.Info("showing the instance of TimeTracker");
 					GlobalSetting.Instance.TimeTracker.Show();
                     Application.Current.MainWindow.Close();
-                                                            
-                    if (rememberMe)
+					LogManager.Logger.Info("TimeTracker is loaded.");
+
+					if (rememberMe)
                     {
                         Properties.Settings.Default.userName = UserName;
                         Properties.Settings.Default.userPassword = Password;                        
@@ -177,12 +181,14 @@ namespace TimeTracker.ViewModels
             }
             catch(Exception ex)
             {
-                ErrorMessage = $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";                
+                ErrorMessage = $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";
+                LogManager.Logger.Error(ex);
             }
             finally
             {
                 ProgressWidth = 0;
                 EnableLoginButton = true;
+                
             }
         }
         public void CloseCommandExecute()
@@ -199,21 +205,13 @@ namespace TimeTracker.ViewModels
             string url = configuration.GetSection("SignUpUrl").Value;
             Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });            
         }
-        public void OpenGooglePageCommandExecute()
+        public void OpenSocialMediaPageCommandCommandExecute( string pageName)
         {
-            string url = configuration.GetSection("GooglePage").Value;
+			string  url = configuration.GetSection(pageName).Value;
+			            
             Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-        }
-        public void OpenFaceBookPageCommandExecute()
-        {
-            string url = configuration.GetSection("FacebookPage").Value;
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-        }
-        public void OpenLinkedInPageCommandExecute()
-        {
-            string url = configuration.GetSection("linkedInPage").Value;
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });            
-        }
+        }       
+        
         #endregion
     }
 }

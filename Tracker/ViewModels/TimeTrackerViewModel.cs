@@ -111,13 +111,23 @@ namespace TimeTracker.ViewModels
             InterceptKeys.OnKeyDown -= InterceptKeys_OnKeyDown;
             InterceptKeys.OnKeyDown += InterceptKeys_OnKeyDown;
             InterceptKeys.Start();
+            LogManager.Logger.Info("before initializeUI method");
+            initializeUI();
+			LogManager.Logger.Info("after initializeUI method");
+		}
 
-            BindProjectList();
-
-            ConnectWebSocket();
-
-            DeleteTempFolder();
-
+        private void initializeUI()
+        {
+            try
+            {
+                BindProjectList();
+                ConnectWebSocket();
+                DeleteTempFolder();
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
         }
 
         private void Mh_MouseDownEvent(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -520,48 +530,62 @@ namespace TimeTracker.ViewModels
         #region public methods
         public async void CloseCommandExecute(CancelEventArgs args)
         {
-            if (args == null)
+            try
             {
-                if (trackerIsOn)
+                if (args == null)
                 {
-                    ShowErrorMessage("Please stop the tracker before closing the application.");
-                    return;
+                    if (trackerIsOn)
+                    {
+                        ShowErrorMessage("Please stop the tracker before closing the application.");
+                        return;
+                    }
+                    else
+                    {
+                        checkForUnsavedLog();
+                        SystemWindows.Application.Current.Shutdown();
+                    }
                 }
                 else
                 {
-                    checkForUnsavedLog();
-                    SystemWindows.Application.Current.Shutdown();
+                    if (trackerIsOn)
+                    {
+                        ShowErrorMessage("Please stop the tracker before closing the application.");
+                        args.Cancel = true;
+                    }
+                    else
+                    {
+                        checkForUnsavedLog();
+                    }
                 }
             }
-            else
+            catch(Exception ex)
             {
-                if (trackerIsOn)
-                {
-                    ShowErrorMessage("Please stop the tracker before closing the application.");
-                    args.Cancel = true;
-                }
-                else
-                {
-                    checkForUnsavedLog();
-                }
-            }
+				LogManager.Logger.Error(ex);
+			}
         }
         public void LogoutCommandExecute()
         {
-            if (trackerIsOn)
+            try
             {
-                StartStopCommandExecute();
+                if (trackerIsOn)
+                {
+                    StartStopCommandExecute();
+                }
+                if (GlobalSetting.Instance.TimeTracker != null)
+                {
+                    GlobalSetting.Instance.TimeTracker.Close();
+                    //GlobalSetting.Instance.TimeTracker=null;
+                }
+
+                GlobalSetting.Instance.LoginView = new TimeTracker.Views.Login(false);
+                GlobalSetting.Instance.LoginView.Show();
+                // Close the window.
             }
-            if (GlobalSetting.Instance.TimeTracker != null)
+            catch (Exception ex)
             {
-                GlobalSetting.Instance.TimeTracker.Close();
-                //GlobalSetting.Instance.TimeTracker=null;
+                LogManager.Logger.Error(ex);
             }
-            
-            GlobalSetting.Instance.LoginView = new TimeTracker.Views.Login(false);
-            GlobalSetting.Instance.LoginView.Show();            
-            // Close the window.
-        }
+		}
         public async void StartStopCommandExecute()
         {            
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
@@ -590,7 +614,8 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }
+				LogManager.Logger.Error(ex);
+		}
             finally
             {
                 ProgressWidthStart = 0;
@@ -614,73 +639,115 @@ namespace TimeTracker.ViewModels
         }
         public void RefreshCommandExecute()
         {
-            BindProjectList();
-            Tasks = null;
-            taskName = string.Empty;
-            TaskDescription = string.Empty;
-            SelectedTask = null;
-        }
+            try
+            {
+                BindProjectList();
+                Tasks = null;
+                taskName = string.Empty;
+                TaskDescription = string.Empty;
+                SelectedTask = null;
+            }
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
+		}
         public async void LogCommandExecute()
         {
-            var rest = new REST(new HttpProviders());
-            var errorLogList = await rest.GetErrorLogs(GlobalSetting.Instance.LoginResult.data.user.id);
-            if (errorLogList != null && errorLogList?.status.ToUpper() == "SUCCESS" && errorLogList?.data?.errorLogList?.Count > 0)
+            try
             {
-                if (errorLogList.data.errorLogList.Any(e => e.createdOn.Date == DateTime.UtcNow.Date))
+                var rest = new REST(new HttpProviders());
+                var errorLogList = await rest.GetErrorLogs(GlobalSetting.Instance.LoginResult.data.user.id);
+                if (errorLogList != null && errorLogList?.status.ToUpper() == "SUCCESS" && errorLogList?.data?.errorLogList?.Count > 0)
                 {
-                    var errors = errorLogList.data.errorLogList.Where(e => e.createdOn.Date == DateTime.UtcNow.Date);
-                    ShowLog(errors);
+                    if (errorLogList.data.errorLogList.Any(e => e.createdOn.Date == DateTime.UtcNow.Date))
+                    {
+                        var errors = errorLogList.data.errorLogList.Where(e => e.createdOn.Date == DateTime.UtcNow.Date);
+                        ShowLog(errors);
+                    }
+                    else
+                    {
+                        ShowErrorMessage("Log not found");
+                    }
                 }
                 else
                 {
                     ShowErrorMessage("Log not found");
                 }
             }
-            else
-            {
-                ShowErrorMessage("Log not found");
-            }
-        }
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
+		}
         public void ScreenshotCaptureSoundCommandExecute()
         {
-            var playScreenCaptureSound = Properties.Settings.Default.playScreenCaptureSound;
-            if (playScreenCaptureSound)
+            try
             {
-                ScreenshotSoundtext = "Turn on sound on screenshot capture";
+                var playScreenCaptureSound = Properties.Settings.Default.playScreenCaptureSound;
+                if (playScreenCaptureSound)
+                {
+                    ScreenshotSoundtext = "Turn on sound on screenshot capture";
+                }
+                else
+                {
+                    ScreenshotSoundtext = "Turn off sound on screenshot capture";
+                }
+                Properties.Settings.Default.playScreenCaptureSound = !playScreenCaptureSound;
+                Properties.Settings.Default.Save();
             }
-            else
-            {
-                ScreenshotSoundtext = "Turn off sound on screenshot capture";
-            }
-            Properties.Settings.Default.playScreenCaptureSound = !playScreenCaptureSound;
-            Properties.Settings.Default.Save();
-        }
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
+		}
         public void DeleteScreenshotCommandExecute()
         {
-            DeleteImagePath = CurrentImagePath;
-            CurrentImagePath = null;
-            saveDispatcherTimer.Stop();
-            CanShowScreenshot = false;
+            try
+            {
+                DeleteImagePath = CurrentImagePath;
+                CurrentImagePath = null;
+                saveDispatcherTimer.Stop();
+                CanShowScreenshot = false;
 
-            deleteImagePath = new DispatcherTimer();
-            deleteImagePath.Tick += new EventHandler(deleteImagePath_Tick);
-            deleteImagePath.Interval = new TimeSpan(0, 1, 0);
-            deleteImagePath.Start();
-        }
+                deleteImagePath = new DispatcherTimer();
+                deleteImagePath.Tick += new EventHandler(deleteImagePath_Tick);
+                deleteImagePath.Interval = new TimeSpan(0, 1, 0);
+                deleteImagePath.Start();
+            }
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
+		}
         public void SaveScreenshotCommandExecute()
         {
             CanShowScreenshot = false;
         }
         public void OpenDashboardCommandExecute()
         {
-            string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/screenshots";
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-        }
+            try
+            {
+                string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/screenshots";
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            }
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
+		}
         public void ProductivityApplicationCommandExecute()
         {
-            GlobalSetting.Instance.ProductivityAppsSettings = new TimeTracker.Views.ProductivityAppsSettings();
-            GlobalSetting.Instance.ProductivityAppsSettings.Show();
-        } 
+            try
+            {
+                GlobalSetting.Instance.ProductivityAppsSettings = new TimeTracker.Views.ProductivityAppsSettings();
+                GlobalSetting.Instance.ProductivityAppsSettings.Show();
+            }
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
+		} 
         public async void TaskCompleteCommandExecute()
         {
 
@@ -710,7 +777,8 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }
+				LogManager.Logger.Error(ex);			
+		}
             finally
             {
                 ProgressWidthStart = 0;
@@ -1165,30 +1233,35 @@ namespace TimeTracker.ViewModels
 
         private async void CreateNewTask()
         {
-
-            var taskUsers = new string[] { GlobalSetting.Instance.LoginResult.data.user.id };
-            var rest = new REST(new HttpProviders());
-            var newTaskResult = await rest.AddNewTask(new CreateTaskRequest
+            try
             {
-                taskName = taskName,
-                comment = "Created by TimeTracker",                
-                project = SelectedProject._id,
-                taskUsers = taskUsers,
-                user= GlobalSetting.Instance.LoginResult.data.user.id,
-                description = TaskDescription,
-                endDate = null,
-                priority = null,
-                startDate = DateTime.UtcNow,
-                startTime = DateTime.UtcNow,
-                taskAttachments = null,
-                title = "Task",
-                status= "In Progress"
-            });
-            if (newTaskResult.status.ToUpper() == "SUCCESS")
-            {
-                ShowInformationMessage("Task has been created");
-                SelectedTask = newTaskResult.data.newTask;
+                var taskUsers = new string[] { GlobalSetting.Instance.LoginResult.data.user.id };
+                var rest = new REST(new HttpProviders());
+                var newTaskResult = await rest.AddNewTask(new CreateTaskRequest
+                {
+                    taskName = taskName,
+                    comment = "Created by TimeTracker",
+                    project = SelectedProject._id,
+                    taskUsers = taskUsers,
+                    user = GlobalSetting.Instance.LoginResult.data.user.id,
+                    description = TaskDescription,
+                    endDate = null,
+                    priority = null,
+                    startDate = DateTime.UtcNow,
+                    startTime = DateTime.UtcNow,
+                    taskAttachments = null,
+                    title = "Task",
+                    status = "In Progress"
+                });
+                if (newTaskResult.status.ToUpper() == "SUCCESS")
+                {
+                    ShowInformationMessage("Task has been created");
+                    SelectedTask = newTaskResult.data.newTask;
+                }
             }
+            catch (Exception ex) {
+				LogManager.Logger.Error(ex);
+			}
         }
 
         private void ShowLog(IEnumerable<ErrorLog> errorLogList)
@@ -1223,7 +1296,7 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message);               
             }
         }
 

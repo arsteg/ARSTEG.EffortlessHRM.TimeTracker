@@ -11,7 +11,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using TimeTracker.Models;
+using TimeTracker.Trace;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace TimeTracker.Services
 {
@@ -49,7 +52,8 @@ namespace TimeTracker.Services
 
         public async Task<LoginResult> SignIn(Login login)
         {
-            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/users/login");
+            LogManager.Logger.Info($"calling Task<LoginResult> SignIn(Login login),  login={login.ToString()}");			
+			var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/users/login");
             var res = await _httpProvider.PostAsync<LoginResult, Login>(uri, login);
             return (res);
         }

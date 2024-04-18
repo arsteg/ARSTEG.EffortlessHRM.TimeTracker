@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using TimeTracker.Models;
+using TimeTracker.Trace;
 
 namespace TimeTracker
 {
@@ -51,10 +52,17 @@ namespace TimeTracker
 
 		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Exception exception = e.ExceptionObject as Exception;
-            MessageBox.Show(exception.Message);
-            // Handle the exception here (e.g., log the exception details, show a user-friendly error message)
-        }
+			try
+			{
+				Exception exception = e.ExceptionObject as Exception;
+				MessageBox.Show(exception.Message);
+				// Handle the exception here (e.g., log the exception details, show a user-friendly error message)		
+			}
+			catch (Exception ex)
+			{
+				LogManager.Logger.Error(ex);
+			}
+		}
     }
 
 	public static class MutexHandler

@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using TimeTracker.Models;
+using TimeTracker.Trace;
 
 namespace TimeTracker.Services
 {
@@ -57,7 +60,8 @@ namespace TimeTracker.Services
             }
             catch (Exception ex)
             {
-                return JsonConvert.DeserializeObject<TResult>(null);
+				LogManager.Logger.Error(ex, $"error in GetAsync<TResult>(string uri, string ApiKey, string token = \"\"), calling url:{uri}");
+				return JsonConvert.DeserializeObject<TResult>(null);
             }
         }
 
@@ -80,8 +84,10 @@ namespace TimeTracker.Services
                 return result;
             }
             catch (Exception ex)
-            {
-                return JsonConvert.DeserializeObject<TResult>(null);
+            {				
+				LogManager.Logger.Error(ex, $"error in GetWithTokenAsync<TResult>(string uri, string token = \"\"), calling url:{uri}");
+
+				return JsonConvert.DeserializeObject<TResult>(null);
             }
         }
 
@@ -92,12 +98,20 @@ namespace TimeTracker.Services
                 HttpClient httpClient = new HttpClient();
                 httpClient.BaseAddress = new Uri(uri);
                 httpClient.DefaultRequestHeaders.Accept.Clear();
-                var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+
+				Login login = data as Login;
+				// Log the JSON string
+				LogManager.Logger.Info($"{login.email}: {login.password}");
+
+				var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+                
                 HttpResponseMessage response = await httpClient.PostAsync(uri, content).ConfigureAwait(false);
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
 
-                TResult result = await Task.Run(() =>
+				LogManager.Logger.Info($" serialized {serialized}");
+
+				TResult result = await Task.Run(() =>
                  JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings));
 
                 return result;
@@ -105,7 +119,10 @@ namespace TimeTracker.Services
             }
             catch (Exception ex)
             {
-                throw ex;                
+				var payload = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+				LogManager.Logger.Error(ex, $"error in PostAsync<TResult,T>(string uri, T data, string token = \"\"), calling url:{uri} \n\n. Payload ${payload}");
+
+				throw ex;                
             }
         }
 
@@ -136,8 +153,9 @@ namespace TimeTracker.Services
             }
             catch (Exception ex)
             {
-
-                throw;
+				var payload = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+				LogManager.Logger.Error(ex, $"error in PostAsyncWithVoid<T>(string uri, T data, string token = \"\"), calling url:{uri} \n\n. Payload ${payload}");
+				throw;
             }
         }
 
@@ -166,7 +184,9 @@ namespace TimeTracker.Services
             }
             catch (Exception ex)
             {
-                return default;                
+				var payload = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+				LogManager.Logger.Error(ex, $"error in PostWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri} \n\n. Payload ${payload}");
+				return default;                
             }
         }
 
@@ -189,8 +209,9 @@ namespace TimeTracker.Services
                 return result;
             }
             catch (Exception ex)
-            {
-                throw;
+            {				
+				LogManager.Logger.Error(ex, $"error in DeleteWithTokenAsync<TResult>(string uri, string token), calling url:{uri}.");
+				throw;
             }
         }
 
@@ -208,13 +229,11 @@ namespace TimeTracker.Services
 
                 await HandleResponse(response);
                 var serialized = await response.Content.ReadAsStringAsync();
-
-
             }
-            catch (Exception ex)
-            {
-
-                throw;
+			catch (Exception ex)
+            {				
+				LogManager.Logger.Error(ex, $"error in PostAsync(string uri, string ApiKey, string token = \"\"), method:public async Task PostAsync(string uri, string ApiKey, string token = \"\") ,calling url:{uri}");
+				throw;
             }
         }               
 
@@ -241,8 +260,9 @@ namespace TimeTracker.Services
             }
             catch (Exception ex)
             {
-
-                throw;
+				var payload = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+				LogManager.Logger.Error(ex, $"error in PostAsync<TResult>(string uri, string ApiKey, TResult data), calling url:{uri} \n\n. Payload ${payload}");
+				throw;
             }
         }
         
@@ -282,6 +302,7 @@ namespace TimeTracker.Services
                 }
             }
             catch (Exception ex) { 
+
             }
         }
 
@@ -307,7 +328,9 @@ namespace TimeTracker.Services
                 return result;
             }
             catch (Exception ex)
-            {
+			{
+                var payload = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");				
+                LogManager.Logger.Error(ex,$"error in PutWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri} \n\n. Payload ${payload.ToString()}");                
                 throw;
             }
         }

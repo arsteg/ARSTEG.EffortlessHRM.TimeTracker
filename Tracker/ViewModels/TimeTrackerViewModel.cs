@@ -33,6 +33,7 @@ using System.Timers;
 using System.Dynamic;
 using System.Windows.Input;
 using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
+using DocumentFormat.OpenXml.Office2013.Drawing.Chart;
 
 namespace TimeTracker.ViewModels
 {
@@ -70,7 +71,8 @@ namespace TimeTracker.ViewModels
         #region constructor
         public TimeTrackerViewModel()
         {
-            CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
+			LogManager.Logger.Info($"timetracker constructor starts");
+			CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
             StartStopCommand = new RelayCommand(StartStopCommandExecute);            
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
             RefreshCommand = new RelayCommand(RefreshCommandExecute);
@@ -114,6 +116,7 @@ namespace TimeTracker.ViewModels
             LogManager.Logger.Info("before initializeUI method");
             initializeUI();
 			LogManager.Logger.Info("after initializeUI method");
+			LogManager.Logger.Info($"timetracker constructor ends");
 		}
 
         private void initializeUI()
@@ -641,12 +644,14 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                BindProjectList();
+				LogManager.Logger.Info($"refeshcommandexecute starts");
+				BindProjectList();
                 Tasks = null;
                 taskName = string.Empty;
                 TaskDescription = string.Empty;
                 SelectedTask = null;
-            }
+				LogManager.Logger.Info($"refreshcommand execution ends");
+			}
 			catch (Exception ex)
 			{
 				LogManager.Logger.Error(ex);
@@ -684,7 +689,8 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                var playScreenCaptureSound = Properties.Settings.Default.playScreenCaptureSound;
+				LogManager.Logger.Info($"screen capture starts");
+				var playScreenCaptureSound = Properties.Settings.Default.playScreenCaptureSound;
                 if (playScreenCaptureSound)
                 {
                     ScreenshotSoundtext = "Turn on sound on screenshot capture";
@@ -695,7 +701,8 @@ namespace TimeTracker.ViewModels
                 }
                 Properties.Settings.Default.playScreenCaptureSound = !playScreenCaptureSound;
                 Properties.Settings.Default.Save();
-            }
+				LogManager.Logger.Info($"screen capture ends");
+			}
 			catch (Exception ex)
 			{
 				LogManager.Logger.Error(ex);
@@ -705,7 +712,8 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                DeleteImagePath = CurrentImagePath;
+				LogManager.Logger.Info($"delete screenshot starts");
+				DeleteImagePath = CurrentImagePath;
                 CurrentImagePath = null;
                 saveDispatcherTimer.Stop();
                 CanShowScreenshot = false;
@@ -714,7 +722,8 @@ namespace TimeTracker.ViewModels
                 deleteImagePath.Tick += new EventHandler(deleteImagePath_Tick);
                 deleteImagePath.Interval = new TimeSpan(0, 1, 0);
                 deleteImagePath.Start();
-            }
+				LogManager.Logger.Info($"delete screenshot ends");
+			}
 			catch (Exception ex)
 			{
 				LogManager.Logger.Error(ex);
@@ -863,63 +872,88 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 Logger.Error(ex);
+                LogManager.Logger.Error(ex);
             }
         }
         private void saveTimeSlot_Tick(object sender, EventArgs e)
         {
-            CanShowScreenshot = false;
-            var task = Task.Run(async () => await SaveTimeSlot(CurrentImagePath));
-            task.Wait();
-            totalKeysPressed = 0;
-            totalMouseClick = 0;
-            totalMouseScrolls = 0;
-            ShowTimeTracked(false);
-            ShowCurrentTimeTracked();
-            saveDispatcherTimer.Stop();
-            CurrentInput=string.Empty;
+            try
+            {
+                CanShowScreenshot = false;
+                var task = Task.Run(async () => await SaveTimeSlot(CurrentImagePath));
+                task.Wait();
+                totalKeysPressed = 0;
+                totalMouseClick = 0;
+                totalMouseScrolls = 0;
+                ShowTimeTracked(false);
+                ShowCurrentTimeTracked();
+                saveDispatcherTimer.Stop();
+                CurrentInput = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
         }
         private string CaptureScreen()
         {
-            AddErrorLog("Info", $"screen captured at: {DateTime.UtcNow}");
-            currentImagePath = Utilities.TimeManager.CaptureMyScreen();
-            if (Properties.Settings.Default.playScreenCaptureSound)
+            try
             {
-                PlayMedia.PlayScreenCaptureSound();
+                AddErrorLog("Info", $"screen captured at: {DateTime.UtcNow}");
+                currentImagePath = Utilities.TimeManager.CaptureMyScreen();
+                if (Properties.Settings.Default.playScreenCaptureSound)
+                {
+                    PlayMedia.PlayScreenCaptureSound();
+                }
+                CanShowScreenshot = true;
+                Countdown(10, TimeSpan.FromSeconds(1), cur => CountdownTimer = "(" + cur + ")".ToString());
+                return currentImagePath;
             }
-            CanShowScreenshot = true;
-            Countdown(10, TimeSpan.FromSeconds(1), cur => CountdownTimer = "(" + cur + ")".ToString());
-            return currentImagePath;
+            catch(Exception ex)
+            {
+				LogManager.Logger.Error(ex);
+                throw ex;
+			}
         }
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
-        {            
-            if (trackerIsOn || userIsInactive)
+        {
+            try
             {
-                var idleTime = IdleTimeDetector.GetIdleTimeInfo();
+				LogManager.Logger.Info($"IdlTimeDetectionTimer_Tick execution starts");
+				if (trackerIsOn || userIsInactive)
+                {
+                    var idleTime = IdleTimeDetector.GetIdleTimeInfo();
 
-                if (idleTime.IdleTime.TotalMinutes >= 4)
-                {
-                    SetTrackerStatus().Wait();
-                    CanSendReport = true;
-                    userIsInactive = true;
-                    dispatcherTimer.IsEnabled = false;
-                }
-                else
-                {
-                    if (!trackerIsOn)
+                    if (idleTime.IdleTime.TotalMinutes >= 4)
                     {
                         SetTrackerStatus().Wait();
-                        userIsInactive = false;
-                        dispatcherTimer.IsEnabled = true;
-                        CanSendReport = false;
-                        getCurrentSavedTime();
+                        CanSendReport = true;
+                        userIsInactive = true;
+                        dispatcherTimer.IsEnabled = false;
                     }
-                    else if (dispatcherTimer.IsEnabled == false)
+                    else
                     {
-                        CanSendReport = false;
-                        dispatcherTimer.IsEnabled = true;
-                        getCurrentSavedTime();
+                        if (!trackerIsOn)
+                        {
+                            SetTrackerStatus().Wait();
+                            userIsInactive = false;
+                            dispatcherTimer.IsEnabled = true;
+                            CanSendReport = false;
+                            getCurrentSavedTime();
+                        }
+                        else if (dispatcherTimer.IsEnabled == false)
+                        {
+                            CanSendReport = false;
+                            dispatcherTimer.IsEnabled = true;
+                            getCurrentSavedTime();
+                        }
                     }
                 }
+				LogManager.Logger.Info($"IdlTimeDetectionTimer_Tick execution ends");
+			}
+            catch(Exception ex)
+            {
+                LogManager.Logger.Error(ex);
             }
         }
         private void UsedAppDetector_Tick(object sender, EventArgs e)
@@ -955,7 +989,8 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
-                return totalTime;
+				LogManager.Logger.Error(ex);
+				return totalTime;
             }
         }
 
@@ -1112,7 +1147,8 @@ namespace TimeTracker.ViewModels
                 TempLog($"Catch block for Save time logs #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLog.startTime} #time end {timeLog.endTime}");
                 unsavedTimeLogs.Add(timeLog);
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-                return null;
+				LogManager.Logger.Info(ex);
+				return null;
             }
         }
 
@@ -1296,8 +1332,9 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-                MessageBox.Show(ex.Message);               
-            }
+                MessageBox.Show(ex.Message);
+				LogManager.Logger.Error(ex);
+			}
         }
 
         private void TempStoreApplicationUsed(Dictionary<string, FocushedApplicationDetails> ne)
@@ -1498,15 +1535,22 @@ namespace TimeTracker.ViewModels
 
         private async Task saveBrowserHistory(DateTime startDate, DateTime endDate)
         {
-            var browserHistoryList = BrowserHistory.GetHistoryEntries(startDate, endDate);
-            if (browserHistoryList.Count > 0)
+            try
             {
-                var rest = new REST(new HttpProviders());
-                foreach (var browserHistory in browserHistoryList)
+                var browserHistoryList = BrowserHistory.GetHistoryEntries(startDate, endDate);
+                if (browserHistoryList.Count > 0)
                 {
-                    var result = await rest.AddBrowserHistory(browserHistory);
+                    var rest = new REST(new HttpProviders());
+                    foreach (var browserHistory in browserHistoryList)
+                    {
+                        var result = await rest.AddBrowserHistory(browserHistory);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+				LogManager.Logger.Error(ex);
+			}
         }
         #endregion
 
@@ -1575,7 +1619,9 @@ namespace TimeTracker.ViewModels
                     }
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+				LogManager.Logger.Error(ex);
+			}
         }
 
         private static void DispatcherTimerThread(DispatcherTimer shareLiveScreen)
@@ -1641,7 +1687,8 @@ namespace TimeTracker.ViewModels
             {
                 AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
                 MessageBox.Show(ex.Message);
-            }
+				LogManager.Logger.Error(ex);
+			}
         }
         #endregion
     }

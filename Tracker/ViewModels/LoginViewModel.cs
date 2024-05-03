@@ -27,12 +27,15 @@ namespace TimeTracker.ViewModels
         #region constructor
         public LoginViewModel()
         {
+            LogManager.Logger.Info($"constructor starts");
             LoginCommand = new RelayCommand(LoginCommandExecute);
             CloseCommand = new RelayCommand(CloseCommandExecute);
             OpenForgotPasswordCommand = new RelayCommand(OpenForgotPasswordCommandExecute);
             OpenSignUpPageCommand = new RelayCommand(OpenSignUpPageCommandExecute);            
 			OpenSocialMediaPageCommand = new RelayCommand<string>(OpenSocialMediaPageCommandCommandExecute);            
-            configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();        }
+            configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+			LogManager.Logger.Info($"constructor ends");
+		}
         #endregion
 
         #region commands
@@ -72,7 +75,8 @@ namespace TimeTracker.ViewModels
             get { return rememberMe; }
             set
             {
-                rememberMe = value;
+				LogManager.Logger.Info($"remember me setter starts");
+				rememberMe = value;
                 OnPropertyChanged(nameof(RememberMe));
                 if (rememberMe)
                 {
@@ -86,7 +90,8 @@ namespace TimeTracker.ViewModels
                     Properties.Settings.Default.userPassword = "";
                     Properties.Settings.Default.Save();
                 }
-            }
+				LogManager.Logger.Info($"remember me setter ends");
+			}
         }
 
         private bool enableLoginButton= false;
@@ -128,7 +133,8 @@ namespace TimeTracker.ViewModels
         public  async void LoginCommandExecute() {
             try
             {
-                if( string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
+				LogManager.Logger.Info($"login command execution starts");
+				if ( string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
                 {                    
                     return;
                 }
@@ -174,11 +180,13 @@ namespace TimeTracker.ViewModels
                 {
                     ErrorMessage ="Invalid credentials, Please try again";
                 }
-            }
+				LogManager.Logger.Info($"login command execution ends");
+			}
             catch(ServiceAuthenticationException ex)
             {
                 ErrorMessage = "Invalid credentials, Please try again";
-            }
+				LogManager.Logger.Error(ex);
+			}
             catch(Exception ex)
             {
                 ErrorMessage = $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";

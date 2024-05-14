@@ -63,7 +63,8 @@ namespace TimeTracker.ViewModels
         private int totalKeysPressed = 0;
         private int totalMouseScrolls = 0;
         private string machineId = string.Empty;
-        
+        private TimeLog timeLogForSwitchingMachine = new TimeLog();
+
         MouseHook mh;
         public event EventHandler RequestClose;
         #endregion
@@ -84,6 +85,8 @@ namespace TimeTracker.ViewModels
             ProductivityApplicationCommand = new RelayCommand(ProductivityApplicationCommandExecute);
             TaskCompleteCommand = new RelayCommand(TaskCompleteCommandExecute);
             CreateNewTaskCommand = new RelayCommand(CreateNewTaskCommandExecute);
+            SwitchTrackerNoCommand = new RelayCommand(SwitchTrackerNoCommandExecute);
+            SwitchTrackerYesCommand = new RelayCommand(SwitchTrackerYesCommandExecute);
 
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
@@ -508,6 +511,17 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        private bool popupForSwitchTracker = false;
+        public bool PopupForSwitchTracker
+        {
+            get { return popupForSwitchTracker; }
+            set
+            {
+                popupForSwitchTracker = value;
+                OnPropertyChanged(nameof(PopupForSwitchTracker));
+            }
+        }
+
         #endregion
 
         #region commands
@@ -524,6 +538,8 @@ namespace TimeTracker.ViewModels
         public RelayCommand ProductivityApplicationCommand { get; set; }
         public RelayCommand TaskCompleteCommand { get; set; }
         public RelayCommand CreateNewTaskCommand { get; set; }
+        public RelayCommand SwitchTrackerYesCommand { get; set; }
+        public RelayCommand SwitchTrackerNoCommand { get ; set; }
 
 
         ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
@@ -814,6 +830,46 @@ namespace TimeTracker.ViewModels
                 ProgressWidthStart = 0;
             }
         }
+        public async void SwitchTrackerNoCommandExecute()
+        {
+            PopupForSwitchTracker = false;
+            minutesTracked = 0;
+            if (trackerIsOn)
+            {
+                StartStopCommandExecute();
+            }
+            totalKeysPressed = 0;
+            totalMouseClick = 0;
+            totalMouseScrolls = 0;
+            saveDispatcherTimer.Stop();
+            CurrentInput = string.Empty;
+        }
+        public async void SwitchTrackerYesCommandExecute()
+        {
+            try
+            {
+                PopupForSwitchTracker = false;
+                minutesTracked = 10;
+                timeLogForSwitchingMachine.makeThisDeviceActive = true;
+                var rest = new REST(new HttpProviders());
+                var result = await rest.AddTimeLog(timeLogForSwitchingMachine);
+                totalKeysPressed = 0;
+                totalMouseClick = 0;
+                totalMouseScrolls = 0;
+                ShowTimeTracked(false);
+                ShowCurrentTimeTracked();
+                saveDispatcherTimer.Stop();
+                CurrentInput = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                TempLog($"Catch block for Save time logs (switching the machine) #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLogForSwitchingMachine.startTime} #time end {timeLogForSwitchingMachine.endTime}");
+                unsavedTimeLogs.Add(timeLogForSwitchingMachine);
+                AddErrorLog("SaveTimeSlot (switching the machine) Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                LogManager.Logger.Info(ex);
+            }
+            timeLogForSwitchingMachine = new TimeLog();
+        }
         #endregion
 
         #region Private Methods
@@ -881,14 +937,14 @@ namespace TimeTracker.ViewModels
             {
                 CanShowScreenshot = false;
                 var task = Task.Run(async () => await SaveTimeSlot(CurrentImagePath));
-                task.Wait();
-                totalKeysPressed = 0;
-                totalMouseClick = 0;
-                totalMouseScrolls = 0;
-                ShowTimeTracked(false);
-                ShowCurrentTimeTracked();
-                saveDispatcherTimer.Stop();
-                CurrentInput = string.Empty;
+                    task.Wait();
+                    totalKeysPressed = 0;
+                    totalMouseClick = 0;
+                    totalMouseScrolls = 0;
+                    ShowTimeTracked(false);
+                    ShowCurrentTimeTracked();
+                    saveDispatcherTimer.Stop();
+                    CurrentInput = string.Empty;
             }
             catch (Exception ex)
             {
@@ -1113,19 +1169,26 @@ namespace TimeTracker.ViewModels
                 {
                     if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
                     {
-                        var isConfirm = MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo);
-                        if (isConfirm == DialogResult.Yes)
-                        {
-                            timeLog.makeThisDeviceActive = true;
-                            result = await rest.AddTimeLog(timeLog);
-                        }
-                        else
-                        {
-                            if (trackerIsOn)
-                            {
-                                StartStopCommandExecute();
-                            }
-                        }
+                        PopupForSwitchTracker = true;
+                        timeLogForSwitchingMachine = timeLog;
+                        minutesTracked = 0;
+                        return null;
+
+                        #region"not in use"
+                        //var isConfirm = MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo);
+                        //if (isConfirm == DialogResult.Yes)
+                        //{
+                        //    timeLog.makeThisDeviceActive = true;
+                        //    result = await rest.AddTimeLog(timeLog);
+                        //}
+                        //else
+                        //{
+                        //    if (trackerIsOn)
+                        //    {
+                        //        StartStopCommandExecute();
+                        //    }
+                        //}
+                        #endregion
                     }
                 }
                 else if(unsavedTimeLogs.Count > 0)

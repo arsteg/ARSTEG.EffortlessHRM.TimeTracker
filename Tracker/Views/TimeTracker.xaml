@@ -293,7 +293,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Foreground="Black" Text="Title Banner" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"/>
+                        <TextBlock Grid.Column="0" Foreground="Black" Text="Confirmation" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"/>
                     </Grid>
                     <!-- Content StackPanel -->
                     <StackPanel Margin="20">

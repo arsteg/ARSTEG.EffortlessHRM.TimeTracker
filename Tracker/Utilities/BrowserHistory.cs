@@ -31,10 +31,12 @@ namespace TimeTracker.Utilities
             var chromeEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(BrowserHistoryGatherer.Browser.Chrome, startDate, endDate);
             var fireFoxEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(BrowserHistoryGatherer.Browser.Firefox, startDate, endDate);
             var ieEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(BrowserHistoryGatherer.Browser.InternetExplorer, startDate, endDate);
+            var safariEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(BrowserHistoryGatherer.Browser.Safari, startDate, endDate);
 
             historyEntries.AddRange(chromeEntries);
             historyEntries.AddRange(fireFoxEntries);
             historyEntries.AddRange(ieEntries);
+            historyEntries.AddRange(safariEntries);
 
             return historyEntries;
         }

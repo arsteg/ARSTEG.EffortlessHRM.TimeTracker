@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -64,8 +65,8 @@ namespace TimeTracker.AppUsedTracker
             mh.MouseDownEvent += Mh_MouseDownEventApp;
             mh.MouseUpEvent += mh_MouseUpEventApp;
             mh.MouseWheelEvent += mh_MouseWheelEventApp;
-            //InterceptKeys.OnKeyDown += InterceptKey_OnKeyDown;
-            //InterceptKeys.Start();
+            InterceptKeys.OnKeyDown += InterceptKey_OnKeyDown;
+            InterceptKeys.Start();
 
             idleTimeDetect.Tick += IdleTimeDetect_Tick;
             idleTimeDetect.Interval = new TimeSpan(00, 00, 30);
@@ -100,6 +101,20 @@ namespace TimeTracker.AppUsedTracker
 
         public void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
+            #region "Code to check any application active status currently not in use"
+            //if (eventType == EVENT_SYSTEM_FOREGROUND)
+            //{
+            //    StringBuilder windowTitle = new StringBuilder(256);
+            //    GetWindowText(new IntPtr(hwnd), windowTitle, windowTitle.Capacity);
+            //    if (windowTitle.ToString().Contains("Microsoft Edge") || windowTitle.ToString().Contains("Edge"))
+            //    {
+            //        //TempLog(windowTitle.ToString());
+            //        // Edge browser came to foreground! Handle the event here.
+            //        // ...
+            //    }
+            //}
+            #endregion
+
             StartThread();
         }
 
@@ -141,10 +156,12 @@ namespace TimeTracker.AppUsedTracker
             IntPtr handle = IntPtr.Zero;
             StringBuilder Buff = new StringBuilder(nChars);
             handle = GetForegroundWindow();
-
+            
             if (GetWindowText(handle, Buff, nChars) > 0)
             {
-                return Buff.ToString();
+                string appName = Buff.ToString();
+                return appName;
+                //return ReplaceWithZWSP(appName);
             }
             return string.Empty;
         }
@@ -152,16 +169,32 @@ namespace TimeTracker.AppUsedTracker
         {
             try
             {
-                Process[] AllProcess = Process.GetProcesses();
                 string title = GetActiveWindowTitle();
-
+                Process[] AllProcess = Process.GetProcesses();
                 if (!string.IsNullOrEmpty(title))
                 {
-                    var forgroundWindows = AllProcess.Where(p => p.MainWindowTitle == title).FirstOrDefault();
-                    if (forgroundWindows != null)
+                    try
+                    {
+                        var forgroundWindows = AllProcess.Where(p => p.MainWindowTitle == title);
+                        if (forgroundWindows.Any())
+                        {
+                            var forgroundWindow = forgroundWindows.FirstOrDefault();
+                            if (forgroundWindows != null)
+                            {
+                                _appTitle = title;
+                                _appName = forgroundWindow.MainModule?.ModuleName;
+                            }
+                        }
+                        else
+                        {
+                            _appTitle = title;
+                            _appName = title;
+                        }
+                    }
+                    catch (Exception ex)
                     {
                         _appTitle = title;
-                        _appName = forgroundWindows.MainModule?.ModuleName;
+                        _appName = null;
                     }
                 }
             }
@@ -214,5 +247,44 @@ namespace TimeTracker.AppUsedTracker
                 lastInputTime = idleTime.LastInputTime;
             }
         }
+
+        #region "Save log into Temp"
+        private void TempLog(string message)
+        {
+            string tempPath = Path.GetTempPath();
+            //string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now.ToString("ddMMyyyyHHmmss")}.log");
+            string path = Path.Combine(tempPath, $"trackerlogApp_{DateTime.Now.ToString("ddMMyyyy")}.log");
+            try
+            {
+                StreamWriter sw;
+                if (!File.Exists(path))
+                {
+                    sw = File.CreateText(path);
+                }
+                else
+                {
+                    sw = File.AppendText(path);
+                }
+
+                sw.WriteLine($"\n{DateTime.Now.ToString()} Info : {message}");
+
+                sw.Flush();
+                sw.Close();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+        
+        private string ReplaceWithZWSP(string input)
+        {
+            // Define your replacement character (ZWSP)
+            string zwsp = "\u200B";
+
+            // Use regex to replace each character with ZWSP
+            return Regex.Replace(input, "\\?", zwsp);
+        }
+        #endregion
     }
 }

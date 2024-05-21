@@ -61,7 +61,7 @@ namespace TimeTracker.AppUsedTracker
             mh = new MouseHook();
             mh.SetHook();
 
-            mh.MouseClickEvent += mh_MouseClickEventApp;    
+            mh.MouseClickEvent += mh_MouseClickEventApp;
             mh.MouseDownEvent += Mh_MouseDownEventApp;
             mh.MouseUpEvent += mh_MouseUpEventApp;
             mh.MouseWheelEvent += mh_MouseWheelEventApp;
@@ -93,7 +93,7 @@ namespace TimeTracker.AppUsedTracker
         {
             appWiseTotalMouseScrolls++;
         }
-        private void InterceptKey_OnKeyDown( object sender, System.Windows.Forms.KeyEventArgs e )
+        private void InterceptKey_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
 
             appWiseTotalKeysPressed++;
@@ -156,7 +156,7 @@ namespace TimeTracker.AppUsedTracker
             IntPtr handle = IntPtr.Zero;
             StringBuilder Buff = new StringBuilder(nChars);
             handle = GetForegroundWindow();
-            
+
             if (GetWindowText(handle, Buff, nChars) > 0)
             {
                 string appName = Buff.ToString();
@@ -198,13 +198,53 @@ namespace TimeTracker.AppUsedTracker
                     }
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.Message);
             }
         }
+
+        private void GetActiveWindowTitleV1()
+        {
+            IntPtr foregroundWindowHandle = GetForegroundWindow();
+            if (foregroundWindowHandle == IntPtr.Zero)
+            {
+                Console.WriteLine("No foreground window found.");
+                return;
+            }
+
+            // Get the process ID of the process that owns the foreground window
+            GetWindowThreadProcessId(foregroundWindowHandle, out uint processId);
+
+            // Get the process by ID
+            Process process = Process.GetProcessById((int)processId);
+
+            if(process == null)
+            {
+                return;
+            }
+
+            if (process != null)
+            {
+                try
+                {
+                    _appTitle = string.IsNullOrEmpty(process.MainWindowTitle) ? null : process.MainWindowTitle;
+                    _appName = string.IsNullOrEmpty(process.MainModule?.ModuleName) ? null : process.MainModule?.ModuleName;
+                }
+                catch (Exception ex)
+                {
+                    return;
+                }
+            }
+        }
+
+        private void GetActiveProcessV1()
+        {
+            GetActiveWindowTitleV1();
+        }
         private void StartEndFocushedApplication()
         {
-            GetActiveProcess();
+            GetActiveProcessV1();
             if (!string.IsNullOrEmpty(_appName))
             {
                 if (_justSentApplicationName == "")
@@ -276,7 +316,7 @@ namespace TimeTracker.AppUsedTracker
 
             }
         }
-        
+
         private string ReplaceWithZWSP(string input)
         {
             // Define your replacement character (ZWSP)

@@ -55,6 +55,7 @@ namespace TimeTracker.ViewModels
         private TimeSpan timeTrackedSaved;
         private List<TimeLog> timeLogs = new List<TimeLog>();
         private List<TimeLog> unsavedTimeLogs = new List<TimeLog>();
+        private List<ApplicationLog> unsavedApplicationLog = new List<ApplicationLog>();
 
         private bool userIsInactive = false;
         Random rand = new Random();
@@ -894,6 +895,7 @@ namespace TimeTracker.ViewModels
                 {
                     CreateNewTask();
                 }
+                activeWorker.activeApplicationInfomationCollector._focusedApplication = new Dictionary<string, FocushedApplicationDetails>();
                 StartApplicationTracker();
                 usedAppDetector.Start();
             }
@@ -1476,6 +1478,9 @@ namespace TimeTracker.ViewModels
                         TimeSpent = focusedApplication[key].Duration,
                         total = focusedApplication[key].Duration
                     });
+
+                    //var log = $"key: {key} # ApplicationTitle: {focusedApplication[key].AppTitle} #projectReference:{SelectedProject._id} #inactive:{focusedApplication[key].TotalIdletime} #keyboardStrokes:{focusedApplication[key].TotalKeysPressed} #mouseClicks:{focusedApplication[key].TotalMouseClick} #scrollingNumber:{focusedApplication[key].TotalMouseScrolls} #ModuleName:{SelectedProject.projectName} #TimeSpent:{focusedApplication[key].Duration} #total:{focusedApplication[key].Duration}";
+                    //TempLogAppUsed(log);
                 }
             }
         }
@@ -1486,9 +1491,27 @@ namespace TimeTracker.ViewModels
             {
                 var rest = new REST(new HttpProviders());
                 var usedApp = await rest.AddUsedApplicationLog(applicationLog);
+                applicationLog = null;
+
+                if (unsavedApplicationLog.Count > 0)
+                {
+                    var tempApplicationLog = unsavedApplicationLog;
+                    foreach(var app in tempApplicationLog.ToArray())
+                    {
+                        TempLog($"Save unsaved app and website used # {app.ModuleName}");
+                        AddErrorLog("Info", $"Save unsaved app and website used");
+                        await rest.AddUsedApplicationLog(app);
+                        unsavedApplicationLog.Remove(app);
+                    }
+                    tempApplicationLog = null;
+                }
             }
             catch (Exception ex)
             {
+                if (applicationLog != null)
+                {
+                    unsavedApplicationLog.Add(applicationLog);
+                }
                 AddErrorLog("Error AddUsedApplicationLog", $"Message: {ex?.Message} ex.StackTrace:{ex?.StackTrace} InnerException: {ex?.InnerException?.InnerException}");
             }
         }
@@ -1753,6 +1776,36 @@ namespace TimeTracker.ViewModels
 				LogManager.Logger.Error(ex);
 			}
         }
+
+        //private void TempLogAppUsed(string message)
+        //{
+        //    string tempPath = Path.GetTempPath();
+        //    //string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now.ToString("ddMMyyyyHHmmss")}.log");
+        //    string path = Path.Combine(tempPath, $"trackerlogappused_{DateTime.Now.ToString("ddMMyyyy")}.log");
+        //    try
+        //    {
+        //        StreamWriter sw;
+        //        if (!File.Exists(path))
+        //        {
+        //            sw = File.CreateText(path);
+        //        }
+        //        else
+        //        {
+        //            sw = File.AppendText(path);
+        //        }
+
+        //        sw.WriteLine($"\n{DateTime.Now.ToString()} Info : {message}");
+
+        //        sw.Flush();
+        //        sw.Close();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+        //        MessageBox.Show(ex.Message);
+        //        LogManager.Logger.Error(ex);
+        //    }
+        //}
         #endregion
     }
 }

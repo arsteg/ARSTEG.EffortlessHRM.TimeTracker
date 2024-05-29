@@ -128,7 +128,7 @@ namespace TimeTracker.ViewModels
             try
             {
                 BindProjectList();
-                ConnectWebSocket();
+                //ConnectWebSocket();
                 DeleteTempFolder();
             }
             catch (Exception ex)
@@ -882,6 +882,7 @@ namespace TimeTracker.ViewModels
                 StartStopButtontext = "Start";
                 AddErrorLog("Info", $"stopped at {DateTime.UtcNow}");
                 trackingStopedAt = DateTime.UtcNow;
+                StopApplicationTracker();
                 usedAppDetector.Stop();
             }
             else

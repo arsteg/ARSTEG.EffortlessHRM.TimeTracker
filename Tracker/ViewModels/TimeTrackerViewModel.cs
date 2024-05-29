@@ -1775,37 +1775,7 @@ namespace TimeTracker.ViewModels
                 MessageBox.Show(ex.Message);
 				LogManager.Logger.Error(ex);
 			}
-        }
-
-        //private void TempLogAppUsed(string message)
-        //{
-        //    string tempPath = Path.GetTempPath();
-        //    //string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now.ToString("ddMMyyyyHHmmss")}.log");
-        //    string path = Path.Combine(tempPath, $"trackerlogappused_{DateTime.Now.ToString("ddMMyyyy")}.log");
-        //    try
-        //    {
-        //        StreamWriter sw;
-        //        if (!File.Exists(path))
-        //        {
-        //            sw = File.CreateText(path);
-        //        }
-        //        else
-        //        {
-        //            sw = File.AppendText(path);
-        //        }
-
-        //        sw.WriteLine($"\n{DateTime.Now.ToString()} Info : {message}");
-
-        //        sw.Flush();
-        //        sw.Close();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-        //        MessageBox.Show(ex.Message);
-        //        LogManager.Logger.Error(ex);
-        //    }
-        //}
+        }       
         #endregion
     }
 }

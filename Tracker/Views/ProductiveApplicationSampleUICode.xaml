@@ -32,7 +32,7 @@
                 <Button HorizontalContentAlignment="Left" Margin="20 28 0 35" Style="{StaticResource topButton}">
                     <Icons:PackIconMaterial Kind="Menu" Width="15" Height="15"/>
                 </Button>
-                <Border Grid.Row="1" Background="#623ed0" CornerRadius="0 50 0 30">
+                <Border Grid.Row="1" Background="#4EB1B6" CornerRadius="0 50 0 30">
                     <DockPanel>
                         <!--Menu Logo-->
                         <Border Width="80" Height="80" Padding="3" Background="white" CornerRadius="100" 

@@ -21,7 +21,7 @@
         <converters:StatusApprovedToVisibilityConverter x:Key="statusApprovedToVisibilityConverter" />
         <converters:StatusRejectedToVisibilityConverter x:Key="statusRejectedToVisibilityConverter" />
     </Window.Resources>
-    <Border Background="#eff2f7" CornerRadius="30" MouseDown="Border_MouseDown" MouseLeftButtonDown="Border_MouseLeftButtonDown">
+    <Border Background="#eff2f7" CornerRadius="15" MouseDown="Border_MouseDown" MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
             <Grid.ColumnDefinitions>               
                 <ColumnDefinition/>
@@ -162,7 +162,7 @@
                                                 <Button Style="{StaticResource gridRemoveButton}" 
                                                 Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, 
                                                 Path=DataContext.DeleteApplication}" CommandParameter="{Binding _id}">
-                                                    <Icons:PackIconMaterial Kind="DeleteOutline" Style="{StaticResource gridButtonIcon}"/>
+                                                    <Icons:PackIconMaterial Kind="DeleteOutline" Style="{StaticResource gridButtonIcon}" Height="15" Width="15"/>
                                                 </Button>
                                             </StackPanel>
                                         </DataTemplate>

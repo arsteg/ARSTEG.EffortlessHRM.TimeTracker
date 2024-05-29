@@ -606,8 +606,8 @@
         </Style>
 
         <Style x:Key="gridEditButton" TargetType="Button">
-            <Setter Property="Background" Value="#512da8"/>
-            <Setter Property="BorderBrush" Value="#4a148c"/>
+            <Setter Property="Background" Value="#6AD9CA"/>
+            <Setter Property="BorderBrush" Value="#3AADA1"/>
             <Setter Property="Foreground" Value="#ffffff"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -619,7 +619,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#673ab7"/>
+                                <Setter Property="Background" Value="#7BF0E7"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -628,11 +628,11 @@
         </Style>
 
         <Style x:Key="gridRemoveButton" TargetType="Button" BasedOn="{StaticResource gridEditButton}">
-            <Setter Property="Background" Value="#d32f2f"/>
-            <Setter Property="BorderBrush" Value="#b72c1c"/>
+            <Setter Property="Background" Value="#FF7F7F"/>
+            <Setter Property="BorderBrush" Value="#FF7F7F"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#f44336"/>
+                    <Setter Property="Background" Value="#FFAFAF"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -680,11 +680,11 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#623ed0"/>
+                    <Setter Property="Background" Value="#7BF0E7"/>
                     <Setter Property="Foreground" Value="#ffffff"/>
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#623ed0"/>
+                    <Setter Property="Background" Value="#7BF0E7"/>
                     <Setter Property="Foreground" Value="#ffffff"/>
                 </Trigger>
                 <MultiTrigger>

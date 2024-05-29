@@ -61,22 +61,22 @@
                 </StackPanel>                
                 <StackPanel Orientation="Horizontal" Margin="0 20" HorizontalAlignment="Center">
                     <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="googlePageURL">
-                        <Image  Source="/icons/google.png" Height="20"/>
+                        <Image  Source="/icons/google.png" Height="15"/>
                     </Button>
                     <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="facebookPageURL">
-                        <Image Source="/icons/facebook.png" Height="20"/>
+                        <Image Source="/icons/facebook.png" Height="15"/>
                     </Button>
                     <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="linkedInPageURL">
-                        <Image Source="/icons/linkedin.png" Height="20"/>
+                        <Image Source="/icons/linkedin.png" Height="15"/>
                     </Button>
                     <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="xPageURL">
-                        <Image  Source="/icons/x.png" Height="20"/>
+                        <Image  Source="/icons/x.png" Height="15"/>
                     </Button>
                     <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="youtubePageURL">
-                        <Image Source="/icons/youtube.png" Height="20"/>
+                        <Image Source="/icons/youtube.png" Height="15"/>
                     </Button>
                     <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="instagramPageURL">
-                        <Image Source="/icons/instagram.png" Height="20"/>
+                        <Image Source="/icons/instagram.png" Height="15"/>
                     </Button>
                 </StackPanel>
                 <TextBlock Text="or use your email info :" Style="{StaticResource normalText}" Foreground="#878787" Margin="0 10 0 15"/>

@@ -109,7 +109,7 @@ namespace TimeTracker.ViewModels
             //shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
             //shareLiveScreen.Interval = TimeSpan.FromMilliseconds(1000);
             checkForLiveScreen.Tick += new EventHandler(CheckForLiveScreen_Tick);
-            checkForLiveScreen.Interval = new TimeSpan(00, 1, 00);
+            checkForLiveScreen.Interval = new TimeSpan(00, 00, 30);
             checkForLiveScreen.Start();
             #endregion
 

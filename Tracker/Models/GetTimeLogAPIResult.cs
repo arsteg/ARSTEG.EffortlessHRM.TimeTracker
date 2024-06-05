@@ -133,4 +133,9 @@ namespace TimeTracker.Models
         public object role { get; set; }
         public string id { get; set; }
     }
+
+    public class CheckLiveScreenResponse
+    {
+        public bool Success { get; set; }
+    }
 }

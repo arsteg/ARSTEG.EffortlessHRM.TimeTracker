@@ -48,7 +48,11 @@ namespace TimeTracker.ViewModels
         private DispatcherTimer deleteImagePath = new DispatcherTimer();
         private DispatcherTimer usedAppDetector = new DispatcherTimer();
 
-        private DispatcherTimer shareLiveScreen = new DispatcherTimer();
+        //private DispatcherTimer shareLiveScreen = new DispatcherTimer();
+        private DispatcherTimer checkForLiveScreen = new DispatcherTimer();
+        private System.Threading.Timer sendImageRegularly;
+        private double frequencyOfLiveImage = 1000;
+        private bool isLiveImageRunning = false;
 
         private DateTime trackingStartedAt;
         private DateTime trackingStopedAt;
@@ -101,8 +105,13 @@ namespace TimeTracker.ViewModels
             usedAppDetector.Tick += new EventHandler(UsedAppDetector_Tick);
             usedAppDetector.Interval = TimeSpan.FromMinutes(10);
 
-            shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
-            shareLiveScreen.Interval = TimeSpan.FromMilliseconds(2000);
+            #region "live screen"
+            //shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
+            //shareLiveScreen.Interval = TimeSpan.FromMilliseconds(1000);
+            checkForLiveScreen.Tick += new EventHandler(CheckForLiveScreen_Tick);
+            checkForLiveScreen.Interval = new TimeSpan(00, 00, 30);
+            checkForLiveScreen.Start();
+            #endregion
 
             minutesTracked = 0;
             CreateMachineId();
@@ -128,7 +137,7 @@ namespace TimeTracker.ViewModels
             try
             {
                 BindProjectList();
-                ConnectWebSocket();
+                //ConnectWebSocket();
                 DeleteTempFolder();
             }
             catch (Exception ex)
@@ -882,6 +891,7 @@ namespace TimeTracker.ViewModels
                 StartStopButtontext = "Start";
                 AddErrorLog("Info", $"stopped at {DateTime.UtcNow}");
                 trackingStopedAt = DateTime.UtcNow;
+                StopApplicationTracker();
                 usedAppDetector.Stop();
             }
             else
@@ -1590,9 +1600,10 @@ namespace TimeTracker.ViewModels
                     SystemWindows.Application.Current.Shutdown();
 
                 }
-            }            
+            }
         }
 
+        #region "Live screen functions"
         private async void ShareLiveScreen_Tick(object sender, EventArgs e)
         {
             Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
@@ -1607,13 +1618,102 @@ namespace TimeTracker.ViewModels
 
                 screenshot.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
 
-                await rest.sendLiveScreenData(new LiveImageRequest
+                await rest.sendLiveScreenDataV1(new LiveImageRequest
                 {
                     fileString = Convert.ToBase64String(stream.ToArray())
                 });
             }
         }
-        
+
+        private async Task SendLiveImage()
+        {
+            try
+            {
+                Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+                using (Graphics g = Graphics.FromImage(screenshot))
+                {
+                    g.CopyFromScreen(Screen.PrimaryScreen.Bounds.X, Screen.PrimaryScreen.Bounds.Y, 0, 0, screenshot.Size);
+                }
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    var rest = new REST(new HttpProviders());
+
+                    screenshot.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+
+                    await rest.sendLiveScreenDataV1(new LiveImageRequest
+                    {
+                        fileString = Convert.ToBase64String(stream.ToArray())
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempLog($"live screen error SendLiveImage: {ex.Message}");
+                LogManager.Logger.Error($"live screen error SendLiveImage : {ex.Message}");
+            }
+        }
+
+        private async void CheckForLiveScreen_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                var rest = new REST(new HttpProviders());
+                var response = await rest.checkLiveScreen(new TaskUser
+                {
+                    user = UserId
+                });
+
+                if (response != null)
+                {
+                    if (response.Success)
+                    {
+                        if (!isLiveImageRunning)
+                        {
+                            isLiveImageRunning = true;
+                            sendImageRegularly = new System.Threading.Timer(async (_) => await SendLiveImage(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(frequencyOfLiveImage));
+
+                            //isLiveImageRunning = true;
+                            //System.Windows.Forms.Application.Current.Dispatcher.Invoke(async () =>
+                            //{
+                            //    sendImageRegularly = new System.Threading.Timer(async (_) => await SendLiveImage(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(frequencyOfLiveImage));
+                            //});
+
+                            //Dispatcher.CurrentDispatcher.Invoke(() =>
+                            //{
+                            //    sendImageRegularly = new System.Threading.Timer(async (_) =>
+                            //    {
+                            //        await Dispatcher.CurrentDispatcher.InvokeAsync(async () => await SendLiveImage());
+                            //    }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(frequencyOfLiveImage));
+                            //});
+                        }
+                    }
+                    else
+                    {
+                        isLiveImageRunning = false;
+                        if (sendImageRegularly != null)
+                        {
+                            sendImageRegularly.Dispose();
+                        }
+                    }
+                }
+                else
+                {
+                    isLiveImageRunning = false;
+                    if (sendImageRegularly != null)
+                    {
+                        sendImageRegularly.Dispose();
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                TempLog($"live screen error CheckForLiveScreen_Tick : {ex.Message}");
+                LogManager.Logger.Error($"live screen error CheckForLiveScreen_Tick : {ex.Message}");
+            }
+        }
+        #endregion
+
         private void DeleteTempFolder()
         {
             TimeManager.ClearScreenshotsFolder();
@@ -1689,7 +1789,7 @@ namespace TimeTracker.ViewModels
 
                         Thread thread = new Thread(() =>
                         {
-                            DispatcherTimerThread(shareLiveScreen);
+                            //DispatcherTimerThread(shareLiveScreen);
                         });
 
                         if (eventData.EventName == "startlivepreview" && eventData.UserId == UserId)
@@ -1700,7 +1800,7 @@ namespace TimeTracker.ViewModels
                         else
                         {
                             //Dispatcher.ExitAllFrames();
-                            shareLiveScreen.Stop();
+                            //shareLiveScreen.Stop();
                         }
                     }
                 }

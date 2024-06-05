@@ -267,15 +267,30 @@ namespace TimeTracker.Services
         //    return res;
         //}
 
+        #region "Live screen"
         public async Task sendLiveScreenData(LiveImageRequest timeLog)
         {
             var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/liveTracking/save");
             await _httpProvider.PostAsyncWithVoid<LiveImageRequest>(uri, timeLog, GlobalSetting.Instance.LoginResult.token);
         }
 
+        public async Task sendLiveScreenDataV1(LiveImageRequest timeLog)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/liveTracking/updateUserScreen");
+            await _httpProvider.PostAsyncWithVoid<LiveImageRequest>(uri, timeLog, GlobalSetting.Instance.LoginResult.token);
+        }
+
+        public async Task<CheckLiveScreenResponse> checkLiveScreen(TaskUser user)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/liveTracking/getLiveTrackingByUserId");
+            var res = await _httpProvider.PostWithTokenAsync<CheckLiveScreenResponse, TaskUser>(uri, user, GlobalSetting.Instance.LoginResult.token);
+            return res;
+        }
+        #endregion
+
         #region Productivity Applications
 
-        public  async Task<ProductivityAppResult> GetProductivityApps(string url)
+        public async Task<ProductivityAppResult> GetProductivityApps(string url)
         {
             ProductivityAppResult res = new ProductivityAppResult();
             try

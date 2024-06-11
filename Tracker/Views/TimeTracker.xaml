@@ -199,6 +199,13 @@
                                 </Icons:PackIconMaterial.ToolTip>
                             </Icons:PackIconMaterial>
                         </Button>
+                        <Button Command="{Binding TaskOpenCommand}" BorderThickness="0" Background="Transparent" Width="15">
+                            <Icons:PackIconMaterial Kind="OpenInNew" Style="{StaticResource gridButtonIcon}" Foreground="Green">
+                                <Icons:PackIconMaterial.ToolTip>
+                                    <ToolTip Content="Open Task in Browser" />
+                                </Icons:PackIconMaterial.ToolTip>
+                            </Icons:PackIconMaterial>
+                        </Button>
                     </StackPanel>
                     <StackPanel  Grid.Row="1" Grid.Column="0" Margin="0,3,0,1">
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Description:" Style="{StaticResource textBlock}"/>
@@ -216,7 +223,7 @@
                                     <ToolTip Content="Mark Completed" />
                                 </Icons:PackIconMaterial.ToolTip>
                             </Icons:PackIconMaterial>
-                        </Button>
+                        </Button>                        
                     </StackPanel>
                 </Grid>
                 <Border BorderThickness="1" BorderBrush="#acb0af" Margin="5,5,5,0" CornerRadius="5">

@@ -90,6 +90,7 @@ namespace TimeTracker.ViewModels
             ProductivityApplicationCommand = new RelayCommand(ProductivityApplicationCommandExecute);
             TaskCompleteCommand = new RelayCommand(TaskCompleteCommandExecute);
             CreateNewTaskCommand = new RelayCommand(CreateNewTaskCommandExecute);
+			TaskOpenCommand = new RelayCommand(TaskOpenCommandExecute);
             SwitchTrackerNoCommand = new RelayCommand(SwitchTrackerNoCommandExecute);
             SwitchTrackerYesCommand = new RelayCommand(SwitchTrackerYesCommandExecute);
 
@@ -548,6 +549,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand ProductivityApplicationCommand { get; set; }
         public RelayCommand TaskCompleteCommand { get; set; }
         public RelayCommand CreateNewTaskCommand { get; set; }
+        public RelayCommand TaskOpenCommand { get; set; }
         public RelayCommand SwitchTrackerYesCommand { get; set; }
         public RelayCommand SwitchTrackerNoCommand { get ; set; }
 
@@ -831,6 +833,29 @@ namespace TimeTracker.ViewModels
             {
                 CreateNewTask();                
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                ProgressWidthStart = 0;
+            }
+        }
+        public async void TaskOpenCommandExecute()
+        {
+            if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
+            {
+                ShowErrorMessage("No task is selected");
+                return;
+            }
+            ProgressWidthStart = 30;
+            try
+            {
+                var taskUrl = $"{GlobalSetting.portalBaseUrl}#/edit-task?taskId={this.SelectedTask._id}";
+				Process.Start(new ProcessStartInfo(taskUrl) { UseShellExecute = true });
+
+			}
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
@@ -1739,7 +1764,6 @@ namespace TimeTracker.ViewModels
 			}
         }
         #endregion
-
 
         #region "Web socket"
 

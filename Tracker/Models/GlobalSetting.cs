@@ -15,6 +15,9 @@ namespace TimeTracker.Models
         //public const string apiBaseUrl = "http://localhost:8080";                
         public const string apiBaseUrl = "https://effortlesshrmapi.azurewebsites.net";
         
+        public const string portalBaseUrl = "https://effort-less-hrm-web.vercel.app/";
+
+        
         public const string EmailReceiver = "info@arsteg.com";
 
         public const string ApiKey = "ec86b9ecfee30654";

@@ -51,6 +51,7 @@ namespace TimeTracker.ActivityTracker
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
 
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr SetWindowsHookEx(int idHook,
             LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);

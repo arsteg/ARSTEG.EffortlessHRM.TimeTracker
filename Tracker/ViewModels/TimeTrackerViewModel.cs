@@ -166,7 +166,7 @@ namespace TimeTracker.ViewModels
         {
             totalKeysPressed++;
             // Append the pressed key to the current input            
-            CurrentInput += Convert.ToChar(e.KeyValue);            
+            CurrentInput += (char)e.KeyValue;            
         }       
 
         private void OnRequestClose()

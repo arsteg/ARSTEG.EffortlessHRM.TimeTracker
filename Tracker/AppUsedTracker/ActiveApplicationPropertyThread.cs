@@ -65,8 +65,8 @@ namespace TimeTracker.AppUsedTracker
             mh.MouseDownEvent += Mh_MouseDownEventApp;
             mh.MouseUpEvent += mh_MouseUpEventApp;
             mh.MouseWheelEvent += mh_MouseWheelEventApp;
-            InterceptKeys.OnKeyDown += InterceptKey_OnKeyDown;
-            InterceptKeys.Start();
+            //InterceptKeys.OnKeyDown += InterceptKey_OnKeyDown;
+            //InterceptKeys.Start();
 
             idleTimeDetect.Tick += IdleTimeDetect_Tick;
             idleTimeDetect.Interval = new TimeSpan(00, 00, 30);

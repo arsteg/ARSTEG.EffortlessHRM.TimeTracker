@@ -1230,6 +1230,7 @@ namespace TimeTracker.ViewModels
                 }
                 else if(unsavedTimeLogs.Count > 0)
                 {
+                    timeLog = null;
                     var tempUnsavedTimeLogs = unsavedTimeLogs;
                     foreach (var unsavedTimeLog in tempUnsavedTimeLogs.ToArray())
                     {
@@ -1245,7 +1246,10 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 TempLog($"Catch block for Save time logs #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLog.startTime} #time end {timeLog.endTime}");
-                unsavedTimeLogs.Add(timeLog);
+                if (timeLog != null)
+                {
+                    unsavedTimeLogs.Add(timeLog);
+                }
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
 				LogManager.Logger.Info(ex);
 				return null;

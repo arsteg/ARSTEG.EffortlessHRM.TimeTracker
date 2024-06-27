@@ -1194,6 +1194,7 @@ namespace TimeTracker.ViewModels
 
                 if (!CheckInternetConnectivity.IsConnectedToInternet())
                 {
+                    LogManager.Logger.Info($"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}");
                     TempLog($"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}");
                     unsavedTimeLogs.Add(timeLog);
                     ShowErrorMessage("Please check your internet connectivity.");
@@ -1202,6 +1203,7 @@ namespace TimeTracker.ViewModels
                 var rest = new REST(new HttpProviders());
                 var result = rest.AddTimeLog(timeLog).GetAwaiter().GetResult();
                 AddErrorLog("Info", $"machineId {machineId} Message {result?.data?.message ?? ""}");
+                LogManager.Logger.Info($"machineId {machineId} Message {result?.data?.message ?? ""}");
                 if (!string.IsNullOrEmpty(result.data.message))
                 {
                     if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
@@ -1236,6 +1238,7 @@ namespace TimeTracker.ViewModels
                     {
                         TempLog($"Save unsaved time #logs start Time {unsavedTimeLog.startTime} #log end Time {unsavedTimeLog.endTime}");
                         AddErrorLog("Info", $"Save unsaved log from SaveTimeSlot");
+                        LogManager.Logger.Info($"Save unsaved time #logs start Time {unsavedTimeLog.startTime} #log end Time {unsavedTimeLog.endTime}");
                         var unsavedLogResult = await rest.AddTimeLog(unsavedTimeLog);
                         unsavedTimeLogs.Remove(unsavedTimeLog);
                     }
@@ -1251,7 +1254,7 @@ namespace TimeTracker.ViewModels
                     unsavedTimeLogs.Add(timeLog);
                 }
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-				LogManager.Logger.Info(ex);
+				LogManager.Logger.Error("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
 				return null;
             }
         }
@@ -1400,7 +1403,7 @@ namespace TimeTracker.ViewModels
                 }
             }
             catch (Exception ex) {
-				LogManager.Logger.Error(ex);
+                LogManager.Logger.Error($"Error in CreateNewTask(): {ex}");
 			}
         }
 
@@ -1591,6 +1594,7 @@ namespace TimeTracker.ViewModels
 
         private async Task checkForUnsavedLog()
         {
+            LogManager.Logger.Info($"checkForUnsavedLog() called on close");
             if (unsavedTimeLogs?.Count > 0)
             {
                 var isConfirm = MessageBox.Show($"There are some logs saved locally. Do you want to save this to the server before closing the application? Otherwise, the data will be lost.", "Confirmation", MessageBoxButtons.YesNo);
@@ -1608,6 +1612,7 @@ namespace TimeTracker.ViewModels
                     {
                         var result = await rest.AddTimeLog(unsavedTimeLog);
                         AddErrorLog("Info saved from checkForUnsavedLog()", $"machineId {machineId} Message {result?.data?.message ?? ""}");
+                        LogManager.Logger.Info("Info saved from checkForUnsavedLog() after save time log", $"machineId {machineId} Message {result?.data?.message ?? ""}");
                         if (!string.IsNullOrEmpty(result?.data?.message))
                         {
                             if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
@@ -1615,6 +1620,7 @@ namespace TimeTracker.ViewModels
                                 if (MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
                                 {
                                     unsavedTimeLog.makeThisDeviceActive = true;
+                                    LogManager.Logger.Info("Info saved from checkForUnsavedLog() after save time log for other system", $"machineId {machineId} Message {result?.data?.message ?? ""}");
                                     result = await rest.AddTimeLog(unsavedTimeLog);
                                 }
                             }
@@ -1764,7 +1770,7 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
-				LogManager.Logger.Error(ex);
+                LogManager.Logger.Error($"Error while saveBrowserHistory(): {ex}");
 			}
         }
         #endregion
@@ -1899,6 +1905,7 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
+                LogManager.Logger.Error($"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
                 AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
                 MessageBox.Show(ex.Message);
 				LogManager.Logger.Error(ex);

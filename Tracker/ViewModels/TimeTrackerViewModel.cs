@@ -1272,8 +1272,8 @@ namespace TimeTracker.ViewModels
                     {
                         projectId = SelectedProject._id,
                         userId = GlobalSetting.Instance.LoginResult.data.user.id,
-                        skip="0",
-                        next="99999999"
+                        skip="",
+                        next=""
                     });
 
                     if (taskList.status == "success" && taskList.taskList != null)

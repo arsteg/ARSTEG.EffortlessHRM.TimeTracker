@@ -133,9 +133,11 @@ namespace TimeTracker.ViewModels
         public  async void LoginCommandExecute() {
             try
             {
-				LogManager.Logger.Info($"login command execution starts");
+                ErrorMessage = "";
+                LogManager.Logger.Info($"login command execution starts");
 				if ( string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
-                {                    
+                {
+                    ErrorMessage = "Invalid credentials, Please try again";
                     return;
                 }
                 ProgressWidth = 30;
@@ -162,7 +164,7 @@ namespace TimeTracker.ViewModels
                     }
 					LogManager.Logger.Info("showing the instance of TimeTracker");
 					GlobalSetting.Instance.TimeTracker.Show();
-                    Application.Current.MainWindow.Close();
+                    Application.Current.MainWindow?.Close();
 					LogManager.Logger.Info("TimeTracker is loaded.");
 
 					if (rememberMe)

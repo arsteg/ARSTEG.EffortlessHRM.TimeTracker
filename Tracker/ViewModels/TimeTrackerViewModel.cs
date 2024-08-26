@@ -140,6 +140,7 @@ namespace TimeTracker.ViewModels
                 BindProjectList();
                 //ConnectWebSocket();
                 DeleteTempFolder();
+                populateUserName();
             }
             catch (Exception ex)
             {
@@ -409,6 +410,16 @@ namespace TimeTracker.ViewModels
             set
             {
                 _projects = value;
+                OnPropertyChanged("Projects");
+            }
+        }
+        private string _userFullName;
+        public string UserFullName
+        {
+            get { return _userFullName; }
+            set
+            {
+                _userFullName = value;
                 OnPropertyChanged("Projects");
             }
         }
@@ -1372,6 +1383,10 @@ namespace TimeTracker.ViewModels
             {
                 Projects = projectList.data.projectList;
             }
+        }
+
+        private async void populateUserName() {
+            UserFullName = $"Welcome, {GlobalSetting.Instance.LoginResult.data.user.firstName} {GlobalSetting.Instance.LoginResult.data.user.lastName}.";             
         }
 
         private async void CreateNewTask()

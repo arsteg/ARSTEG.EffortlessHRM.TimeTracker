@@ -420,7 +420,7 @@ namespace TimeTracker.ViewModels
             set
             {
                 _userFullName = value;
-                OnPropertyChanged("Projects");
+                OnPropertyChanged("UserFullName");
             }
         }
 

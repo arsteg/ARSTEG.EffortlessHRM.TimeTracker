@@ -684,7 +684,8 @@ namespace TimeTracker.ViewModels
             try
             {
 				LogManager.Logger.Info($"refeshcommandexecute starts");
-				BindProjectList();
+                populateUserName();
+                BindProjectList();
                 Tasks = null;
                 taskName = string.Empty;
                 TaskDescription = string.Empty;

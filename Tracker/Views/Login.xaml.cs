@@ -13,7 +13,7 @@ using System.Windows.Navigation;
 using TimeTracker.ViewModels;
 using System.Threading;
 using System.Windows.Controls.Primitives;
-using Squirrel;
+//using Squirrel;
 using TimeTracker.Trace;
 using DocumentFormat.OpenXml.ExtendedProperties;
 
@@ -26,7 +26,7 @@ namespace TimeTracker.Views
     /// </summary>
     public partial class Login : Window
     {
-        UpdateManager manager;
+        //UpdateManager manager;
 
         private bool automaticLogin = true;
         public Login()
@@ -62,24 +62,24 @@ namespace TimeTracker.Views
 				LogManager.Logger.Info("calling GitHubUpdateManager");               
                 
 
-				manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/arsteg/ARSTEG.EffortlessHRM.TimeTracker");
-				if (manager != null)
-				{
-					LogManager.Logger.Info($"calling CheckForUpdate");
-					var updateInfo = await manager.CheckForUpdate();
-					if (updateInfo.ReleasesToApply.Count > 0)
-					{
-						LogManager.Logger.Info($"updating the application");						
-						await manager.UpdateApp();
-						MessageBox.Show("updated successfully");
-					}
-					currentVersion.Text = manager.CurrentlyInstalledVersion().ToString();
-					LogManager.Logger.Info($"updating the currentVersion");
-				}
-				else
-				{
-					LogManager.Logger.Info($"manager = {manager}");
-				}
+				//manager = await UpdateManager.GitHubUpdateManager(@"https://github.com/arsteg/ARSTEG.EffortlessHRM.TimeTracker");
+				//if (manager != null)
+				//{
+				//	LogManager.Logger.Info($"calling CheckForUpdate");
+				//	var updateInfo = await manager.CheckForUpdate();
+				//	if (updateInfo.ReleasesToApply.Count > 0)
+				//	{
+				//		LogManager.Logger.Info($"updating the application");						
+				//		await manager.UpdateApp();
+				//		MessageBox.Show("updated successfully");
+				//	}
+				//	currentVersion.Text = manager.CurrentlyInstalledVersion().ToString();
+				//	LogManager.Logger.Info($"updating the currentVersion");
+				//}
+				//else
+				//{
+				//	LogManager.Logger.Info($"manager = {manager}");
+				//}
 			}
 			catch (Exception ex)
 			{

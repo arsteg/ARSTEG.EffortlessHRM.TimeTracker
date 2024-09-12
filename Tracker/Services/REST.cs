@@ -143,129 +143,7 @@ namespace TimeTracker.Services
             var res = await _httpProvider.PostWithTokenAsync<ApplicationLogResult, ApplicationLog>(uri, applicationLog, GlobalSetting.Instance.LoginResult.token);
             return res;
         }
-        #endregion
-
-        //public async Task<DeviceInstallation> UpdateDevice(DeviceInstallation di)
-        //{
-        //    var uri = CombineUri(GlobalSetting.DefaultEndpoint, $"/api/Mobile/UpdateDeviceGPI");
-        //    DeviceInstallation res = await _httpProvider.PostAsync<DeviceInstallation>(uri, GlobalSetting.ApiKey, di);
-        //    return (res);
-        //}
-
-        //public async Task<List<ES_VideoMediaCategory>> GetMedias(int nb, int W, int H)
-        //{
-        //    List<ES_VideoMediaCategory> data = new List<ES_VideoMediaCategory>();
-        //    var uri = CombineUri(GlobalSetting.DefaultEndpoint, $"/api/Mobile/GetMedias?nb=" + nb);
-
-        //    try
-        //    {
-        //        data = await _httpProvider.GetAsync<List<ES_VideoMediaCategory>>(uri, GlobalSetting.ApiKey);
-        //        if (data != null)
-        //        {
-        //            foreach (var e in data)
-        //            {
-        //                foreach (var v in e.esVideos)
-        //                {
-        //                    //v.img = new Xamarin.Forms.UriImageSource() { CachingEnabled=false, Uri = new Uri(string.Format("https://content.grandprix.info/gptv/medias/{1}/{2}/{0}.jpg", v.VideoId.ToString().ToLower(), W, H)) };
-        //                    //v.VideoPictureMiniatureURL = "http://loremflickr.com/600/600/nature?filename=simple.jpg";
-        //                    v.VideoPictureMiniatureURL = string.Format("https://content.grandprix.info/gptv/medias/{1}/{2}/{0}.jpg", v.VideoId.ToString().ToLower(), W, H);
-        //                }
-        //            }
-        //        }
-        //        else
-        //            return (new List<ES_VideoMediaCategory>());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine(@"\tERROR {0}", ex.Message);
-        //    }
-
-        //    return (data);
-        //}
-
-        //public async Task<ES_VideoMediaCategory> GetMediasCategory(string catid, int nb, int W, int H)
-        //{
-        //    ES_VideoMediaCategory data = null;
-        //    var uri = CombineUri(GlobalSetting.DefaultEndpoint, $"/api/Mobile/GetMediasCategory?category=" + catid + "&nb=" + nb);
-
-        //    try
-        //    {
-        //        data = await _httpProvider.GetAsync<ES_VideoMediaCategory>(uri, GlobalSetting.ApiKey);
-        //        if (data != null)
-        //        {
-        //            foreach (var v in data.esVideos)
-        //            {
-        //                v.VideoPictureMiniatureURL = string.Format("https://content.grandprix.info/gptv/medias/{1}/{2}/{0}.jpg", v.VideoId.ToString().ToLower(), W, H);
-        //                if (string.IsNullOrEmpty(v.VideoDescription) == false && v.VideoDescription.Length > 100)
-        //                    v.VideoDescription = v.VideoDescription.Substring(0, 100) + " ...";
-        //                else
-        //                    v.VideoDescription = v.VideoDescription;
-        //            }
-
-        //        }
-        //        else
-        //            return (null);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine(@"\tERROR {0}", ex.Message);
-        //    }
-
-        //    return (data);
-        //}
-
-        //public async Task<EsVideo> GetVideo(long VideoId, string token, int W = 160, int H = 90)
-        //{
-        //    EsVideo data = null;
-
-        //    var uri = CombineUri(GlobalSetting.DefaultEndpoint, $"/api/Mobile/GetVideo?VideoId=" + VideoId);
-        //    try
-        //    {
-        //        data = await _httpProvider.GetAsync<EsVideo>(uri, GlobalSetting.ApiKey, token);
-        //        if (data != null)
-        //            data.VideoPictureMiniatureURL = string.Format("https://content.grandprix.info/gptv/medias/{1}/{2}/{0}.jpg", data.VideoId.ToString().ToLower(), W, H);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine(@"\tERROR {0}", ex.Message);
-        //    }
-        //    return data;
-        //}
-
-        //public async Task<classConfig> GetMenu()
-        //{
-        //    classConfig res = null;
-        //    try
-        //    {
-        //        HttpClient client = new HttpClient();
-
-        //        var uri = CombineUri(GlobalSetting.DefaultEndpoint, $"/gpi/ws/fr/ios-phone/config.json");
-        //        res = await _httpProvider.GetAsync<classConfig>(uri, GlobalSetting.ApiKey);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine(@"\tERROR {0}", ex.Message);
-        //    }
-
-        //    return res;
-        //}
-
-        //public async Task<classRubrique> GetModuleCollection(string url)
-        //{
-        //    classRubrique res = null;
-        //    try
-        //    {
-        //        HttpClient client = new HttpClient();
-        //        var uri = CombineUri(GlobalSetting.DefaultEndpoint, url);
-        //        res = await _httpProvider.GetAsync<classRubrique>(uri, GlobalSetting.ApiKey);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine(@"\tERROR {0}", ex.Message);
-        //    }
-
-        //    return res;
-        //}
+        #endregion        
 
         #region "Live screen"
         public async Task sendLiveScreenData(LiveImageRequest timeLog)
@@ -345,5 +223,23 @@ namespace TimeTracker.Services
         }
         #endregion
 
+        #region User Preferences
+
+        public async Task<EnableBeepSoundResult> GetEnableBeepSoundSetting(string url)
+        {
+            var res = new EnableBeepSoundResult();
+            try
+            {
+                HttpClient client = new HttpClient();
+                var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
+                res = await _httpProvider.GetWithTokenAsync<EnableBeepSoundResult>(uri, GlobalSetting.Instance.LoginResult.token);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(@"\tERROR {0}", ex.Message);
+            }
+            return res;
+        }        
+        #endregion
     }
 }

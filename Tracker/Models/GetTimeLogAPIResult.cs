@@ -138,4 +138,10 @@ namespace TimeTracker.Models
     {
         public bool Success { get; set; }
     }
+    public class EnableBeepSoundResult
+    {
+        public string status { get; set; }
+        public bool data { get; set; }
+    }
+
 }

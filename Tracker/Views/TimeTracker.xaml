@@ -63,11 +63,14 @@
                 <Ellipse Margin="50 400 0 0" Width="20" Height="20" Fill="#4EB1B6" />
             </Canvas>
             <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                <TextBlock Text="Effortless-HRM" Style="{StaticResource titleText}"></TextBlock>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Background="Transparent">
-                    <TextBlock Text="Time Tracker" Style="{StaticResource titleText}"  Margin="40 0 0 0"/>
-                    <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Height="30" Margin="10,5,0,0" Foreground="White"/>
-                </StackPanel>
+                <!--<TextBlock Text="Effortless-HRM" Style="{StaticResource titleText}"></TextBlock>-->
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="..\icons\logo.png" Height="50" Width="100"></Image>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Background="Transparent">
+                        <TextBlock Text="Time Tracker" Style="{StaticResource titleText}"/>
+                        <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Height="30" Margin="10,5,0,0" Foreground="White"/>
+                    </StackPanel>
+                </StackPanel>                
                 <TextBlock Text="Experience seamless time-tracking and employee monitoring with our cutting-edge software designed specifically for companies and remote teams.
                            Effortless HRM is a comprehensive solution equipped with all the essential features.Time-Tracking, Screenshots, Apps and Web Usage monitoring, Attendance Monitoring,Task management, and much more." 
                            Style="{StaticResource messageBoardText}" Opacity="0.8" Margin="20 20"></TextBlock>
@@ -137,9 +140,7 @@
                                         </MenuItem.Icon>
                                         <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
                                         <MenuItem Header="Log" Command="{Binding LogCommand}">
-                                        </MenuItem>
-                                        <MenuItem Header="{Binding ScreenshotSoundtext}" Command="{Binding ScreenshotCaptureSoundCommand}">
-                                        </MenuItem>
+                                        </MenuItem>                                        
                                         <MenuItem Header="Productivity Applications" Command="{Binding ProductivityApplicationCommand}">
                                         </MenuItem>
                                     </MenuItem>

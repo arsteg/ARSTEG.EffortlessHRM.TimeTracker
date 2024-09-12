@@ -21,7 +21,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_FCA3BC4B77834A40BB26CE413E2504F4"
+        "MsmKey" = "8:_E2FAC4201B5840F2BBED1FEA2A5099C9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -43,6 +43,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -59,6 +75,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -90,7 +122,7 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FCA3BC4B77834A40BB26CE413E2504F4"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E2FAC4201B5840F2BBED1FEA2A5099C9"
             {
             "SourcePath" = "8:..\\Tracker\\Icons\\favicon.ico"
             "TargetName" = "8:favicon.ico"
@@ -298,7 +330,7 @@
             "Target" = "8:_67CC9EFEB35647399863C28978E62803"
             "Folder" = "8:_224CCB0105634479AFC61F8A6FE130C5"
             "WorkingFolder" = "8:_EE6C0C4C6CDA4FC19DA3CA01A67AC03B"
-            "Icon" = "8:_FCA3BC4B77834A40BB26CE413E2504F4"
+            "Icon" = "8:"
             "Feature" = "8:"
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_96B49CC80E694E458D2FEDB0DFD6AF00"
@@ -312,7 +344,7 @@
             "Target" = "8:_67CC9EFEB35647399863C28978E62803"
             "Folder" = "8:_2E2D2E12C2174131B8A22BE0EE087C26"
             "WorkingFolder" = "8:_EE6C0C4C6CDA4FC19DA3CA01A67AC03B"
-            "Icon" = "8:_FCA3BC4B77834A40BB26CE413E2504F4"
+            "Icon" = "8:"
             "Feature" = "8:"
             }
         }

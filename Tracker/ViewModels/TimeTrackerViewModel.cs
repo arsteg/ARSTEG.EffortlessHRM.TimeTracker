@@ -82,8 +82,7 @@ namespace TimeTracker.ViewModels
             StartStopCommand = new RelayCommand(StartStopCommandExecute);            
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
             RefreshCommand = new RelayCommand(RefreshCommandExecute);
-            LogCommand = new RelayCommand(LogCommandExecute);
-            ScreenshotCaptureSoundCommand = new RelayCommand(ScreenshotCaptureSoundCommandExecute);
+            LogCommand = new RelayCommand(LogCommandExecute);            
             DeleteScreenshotCommand = new RelayCommand(DeleteScreenshotCommandExecute);
             SaveScreenshotCommand = new RelayCommand(SaveScreenshotCommandExecute);
             OpenDashboardCommand = new RelayCommand(OpenDashboardCommandExecute);
@@ -166,8 +165,16 @@ namespace TimeTracker.ViewModels
         private void InterceptKeys_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             totalKeysPressed++;
-            // Append the pressed key to the current input            
-            CurrentInput += (char)e.KeyValue;            
+            
+            // Convert the KeyValue to a character
+            char keyChar = (char)e.KeyValue;
+
+            // Check if the character is not a control character (non-printable)
+            if (!char.IsControl(keyChar))
+            {
+                // Append the pressed key to the current input if it's a readable character
+                CurrentInput += keyChar;
+            }
         }       
 
         private void OnRequestClose()
@@ -211,21 +218,7 @@ namespace TimeTracker.ViewModels
                 currentInput = value;
                 OnPropertyChanged(nameof(CurrentInput));
             }
-        }
-
-
-        private string screenshotSoundtext = Properties.Settings.Default.playScreenCaptureSound
-            ? "Turn off sound on screenshot capture"
-            : "Turn on sound on screenshot capture";
-        public string ScreenshotSoundtext
-        {
-            get { return screenshotSoundtext; }
-            set
-            {
-                screenshotSoundtext = value;
-                OnPropertyChanged(nameof(ScreenshotSoundtext));
-            }
-        }
+        }      
 
         private string currentImagePath;
         public string CurrentImagePath
@@ -552,8 +545,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand EODReportsCommand { get; set; }
         public RelayCommand LogoutCommand { get; set; }
         public RelayCommand RefreshCommand { get; set; }
-        public RelayCommand LogCommand { get; set; }
-        public RelayCommand ScreenshotCaptureSoundCommand { get; set; }
+        public RelayCommand LogCommand { get; set; }        
         public RelayCommand DeleteScreenshotCommand { get; set; }
         public RelayCommand SaveScreenshotCommand { get; set; }
         public RelayCommand OpenDashboardCommand { get; set; }
@@ -682,8 +674,8 @@ namespace TimeTracker.ViewModels
         public void RefreshCommandExecute()
         {
             try
-            {
-				LogManager.Logger.Info($"refeshcommandexecute starts");
+            {               
+                LogManager.Logger.Info($"refeshcommandexecute starts");
                 populateUserName();
                 BindProjectList();
                 Tasks = null;
@@ -724,30 +716,7 @@ namespace TimeTracker.ViewModels
 			{
 				LogManager.Logger.Error(ex);
 			}
-		}
-        public void ScreenshotCaptureSoundCommandExecute()
-        {
-            try
-            {
-				LogManager.Logger.Info($"screen capture starts");
-				var playScreenCaptureSound = Properties.Settings.Default.playScreenCaptureSound;
-                if (playScreenCaptureSound)
-                {
-                    ScreenshotSoundtext = "Turn on sound on screenshot capture";
-                }
-                else
-                {
-                    ScreenshotSoundtext = "Turn off sound on screenshot capture";
-                }
-                Properties.Settings.Default.playScreenCaptureSound = !playScreenCaptureSound;
-                Properties.Settings.Default.Save();
-				LogManager.Logger.Info($"screen capture ends");
-			}
-			catch (Exception ex)
-			{
-				LogManager.Logger.Error(ex);
-			}
-		}
+		}        
         public void DeleteScreenshotCommandExecute()
         {
             try
@@ -950,7 +919,7 @@ namespace TimeTracker.ViewModels
             CanShowRefresh = trackerIsOn ? "Hidden" : "Visible";
             return true;
         }
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        private async void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             try
             {                
@@ -962,7 +931,7 @@ namespace TimeTracker.ViewModels
                     var randonTime = (rand.Next(2, 9));
                     double forTimerInterval = ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime) - currentMinutes;
                     dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
-                    var filepath = CaptureScreen();
+                    var filepath = await CaptureScreenAsync();
                     CurrentImagePath = filepath;
 
                     saveDispatcherTimer = new DispatcherTimer();
@@ -1000,13 +969,14 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Error(ex);
             }
         }
-        private string CaptureScreen()
+        private async Task<string> CaptureScreenAsync()
         {
             try
             {
                 AddErrorLog("Info", $"screen captured at: {DateTime.UtcNow}");
                 currentImagePath = Utilities.TimeManager.CaptureMyScreen();
-                if (Properties.Settings.Default.playScreenCaptureSound)
+                var playScreenCaptureSound = await APIService.GetEnableBeepSoundSetting();
+                if (playScreenCaptureSound)
                 {
                     PlayMedia.PlayScreenCaptureSound();
                 }

@@ -25,37 +25,49 @@
             </Grid.ColumnDefinitions>
             <Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgClose}" MouseLeftButtonDown="BtnActionMinimize_OnClick"/>
             <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="btnActionClose_Click"/>
+        
         </Grid>
-        <Thumb Opacity="100" Background="Red" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
+        
 
+        
+        <Thumb Opacity="100" Background="White" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
+        
         <Border CornerRadius="10,0 0 10" MouseDown="Border_MouseDown">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#3AA9AD" Offset="0"/>
-                    <GradientStop Color="#3AADA1" Offset="0"/>
+                    <GradientStop Color="White" Offset="0"/>
+                    <GradientStop Color="#3AADA1" Offset="0.5"/>
+                    <GradientStop Color="#3A6D91" Offset="1"/>
                 </LinearGradientBrush>
-            </Border.Background>
+            </Border.Background>            
         </Border>
         <Grid>
             <Canvas>
                 <Polygon Points="0,20,230,140,0,270" Fill="#4EB1B6"/>
                 <Polygon Points="100,400,200,370,180,470" Fill="#4EB1B6"/>
                 <Ellipse Margin="250 450 0 0" Width="40" Height="40" Fill="#4EB1B6" />
-                <Ellipse Margin="50 400 0 0" Width="20" Height="20" Fill="#4EB1B6" />
+                <Ellipse Margin="50 400 0 0" Width="20" Height="20" Fill="#4EB1B6" />                
             </Canvas>
+            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                <Image Source="..\Icons\logo.png" Height="25" Margin="5,0,0,0"></Image>
+            </StackPanel>
             <StackPanel VerticalAlignment="Center">
+                
                 <TextBlock Text="Sign Up" Style="{StaticResource titleText}"></TextBlock>
                 <TextBlock Text="Enter your personal info and create new account to connect us" Style="{StaticResource normalText}" Opacity="0.8" Margin="20 30"></TextBlock>
                 <Button Content="Sign Up" Style="{StaticResource button}" Command="{Binding OpenSignUpPageCommand}"></Button>
+                
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Version" Margin="0,0,5,0" />
-                <TextBlock x:Name="currentVersion" Text="1.0.0"/>
-            </StackPanel>            
+            <StackPanel VerticalAlignment="Bottom">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Version" Margin="0,0,5,0" />
+                    <TextBlock x:Name="currentVersion" Text="1.0.0"/>
+                </StackPanel>
+            </StackPanel>
         </Grid>
         <Border Background="#ffffff" Grid.Column="1" CornerRadius="0 10 1 0" MouseDown="Border_MouseDown">
             <StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">                    
                     <TextBlock Text="Sign in to App" Style="{StaticResource titleText}" Foreground="#3AB19B"/>
                     <fa:ImageAwesome Icon="Refresh" Spin="True" Height="25" Width="{Binding ProgressWidth}" Foreground="#3AB19B" Margin="5 0 0 0" />
                 </StackPanel>                

@@ -20,6 +20,7 @@ using System.Windows.Shapes;
 using TimeTracker.ViewModels;
 using TimeTracker.Models;
 using TimeTracker.Trace;
+using System.Drawing;
 
 namespace TimeTracker.Views
 {
@@ -35,14 +36,15 @@ namespace TimeTracker.Views
 
             UpdatePopupPosition();
             System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
-            ni.Icon = new System.Drawing.Icon(@$"{System.AppDomain.CurrentDomain.BaseDirectory}\Media\Images\logo.ico");
-            ni.Visible = true;
+            ni.Icon = ConvertImageToIcon(@$"{System.AppDomain.CurrentDomain.BaseDirectory}Media\Images\smallLogo.png");
+            ni.Text = "EffortlessHRM- Time Tracker";
+            ni.Visible = true;                
             ni.DoubleClick +=
-                delegate (object sender, EventArgs args)
-                {
-                    this.Show();
-                    this.WindowState = WindowState.Normal;
-                };
+            delegate (object sender, EventArgs args)
+            {
+                this.Show();
+                this.WindowState = WindowState.Normal;
+            };
             //SetTheme();
             }
             catch (Exception ex)
@@ -51,6 +53,16 @@ namespace TimeTracker.Views
             }
 
         }
+
+        private System.Drawing.Icon ConvertImageToIcon( string imagePath )
+        {
+            using (Bitmap bitmap = new Bitmap(imagePath))
+            {
+                IntPtr hIcon = bitmap.GetHicon();
+                return System.Drawing.Icon.FromHandle(hIcon);
+            }
+        }
+
         protected override void OnStateChanged(EventArgs e)
         {
             if (WindowState == WindowState.Minimized)

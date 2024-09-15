@@ -17,12 +17,15 @@
     <None Remove="Icons\instagram.png" />
     <None Remove="Icons\linkedIn.png" />
     <None Remove="Icons\lock.png" />
+    <None Remove="Icons\logo.eps" />
     <None Remove="Icons\logo.jpg" />
     <None Remove="Icons\logo.png" />
     <None Remove="Icons\minimize.png" />
+    <None Remove="Icons\smallLogo.png" />
     <None Remove="Icons\x.png" />
     <None Remove="Icons\youtube.png" />
     <None Remove="Media\Images\logo.png" />
+    <None Remove="Media\Images\smallLogo.png" />
     <None Remove="NLog.config" />
   </ItemGroup>
 
@@ -61,6 +64,7 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="5.0.0-rc2" />
     <PackageReference Include="NLog.Schema" Version="5.0.0-rc2" />
     <PackageReference Include="sendgrid" Version="9.25.1" />
+    <PackageReference Include="SharpVectors.Wpf" Version="1.8.4.2" />
     <PackageReference Include="Simplify.Windows.Forms" Version="1.1.2" />
     <PackageReference Include="System.Management" Version="7.0.0" />
   </ItemGroup>
@@ -127,12 +131,18 @@
     <Resource Include="Icons\minimize.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Icons\smallLogo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Icons\x.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Icons\youtube.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Content Include="Media\Images\smallLogo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

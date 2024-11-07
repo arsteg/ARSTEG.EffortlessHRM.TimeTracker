@@ -11,6 +11,7 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
@@ -74,25 +75,19 @@ namespace TimeTracker.Utilities
             EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 75L);
             myEncoderParameters.Param[0] = myEncoderParameter;
 
-            // Determine the combined width and height of both monitors
-            int width = 0;
-            int height = 0;
-            foreach (var screen in System.Windows.Forms.Screen.AllScreens)
-            {
-                width += screen.Bounds.Width;
-                height = Math.Max(height, screen.Bounds.Height);
-            }
+            // Get the total dimensions of all screens combined
+            int screenLeft = SystemInformation.VirtualScreen.Left;
+            int screenTop = SystemInformation.VirtualScreen.Top;
+            int screenWidth = SystemInformation.VirtualScreen.Width;
+            int screenHeight = SystemInformation.VirtualScreen.Height;
 
-            bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            // Create a bitmap of the appropriate size to receive the full-screen screenshot.
+            bitmap = new Bitmap(screenWidth, screenHeight);
 
+            // Draw the screenshot into our bitmap.
             using (Graphics g = Graphics.FromImage(bitmap))
             {
-                int x = 0;
-                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
-                {
-                    g.CopyFromScreen(screen.Bounds.Left, screen.Bounds.Top, x, 0, screen.Bounds.Size);
-                    x += screen.Bounds.Width;
-                }
+                g.CopyFromScreen(screenLeft, screenTop, 0, 0, bitmap.Size);
             }
 
             IntPtr handle = IntPtr.Zero;

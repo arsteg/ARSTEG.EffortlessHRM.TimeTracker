@@ -846,7 +846,7 @@ namespace TimeTracker.ViewModels
                 ProgressWidthStart = 0;
             }
         }
-        public async void SwitchTrackerNoCommandExecute()
+        public void SwitchTrackerNoCommandExecute()
         {
             PopupForSwitchTracker = false;
             minutesTracked = 0;
@@ -907,7 +907,7 @@ namespace TimeTracker.ViewModels
                 dispatcherTimer.Start();
                 trackingStartedAt = DateTime.UtcNow;
                 minutesTracked = 0;
-                if (SelectedTask == null && taskName.Length > 0)
+                if (taskName.Length > 0)
                 {
                     CreateNewTask();
                 }
@@ -919,7 +919,7 @@ namespace TimeTracker.ViewModels
             CanShowRefresh = trackerIsOn ? "Hidden" : "Visible";
             return true;
         }
-        private async void dispatcherTimer_Tick(object sender, EventArgs e)
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             try
             {                
@@ -931,7 +931,7 @@ namespace TimeTracker.ViewModels
                     var randonTime = (rand.Next(2, 9));
                     double forTimerInterval = ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime) - currentMinutes;
                     dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
-                    var filepath = await CaptureScreenAsync();
+                    var filepath = CaptureScreen();
                     CurrentImagePath = filepath;
 
                     saveDispatcherTimer = new DispatcherTimer();
@@ -969,13 +969,14 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Error(ex);
             }
         }
-        private async Task<string> CaptureScreenAsync()
+        private string CaptureScreen()
         {
             try
             {
                 AddErrorLog("Info", $"screen captured at: {DateTime.UtcNow}");
                 currentImagePath = Utilities.TimeManager.CaptureMyScreen();
-                var playScreenCaptureSound = await APIService.GetEnableBeepSoundSetting();
+                var playScreenCaptureSound = Task.Run(async () => await APIService.GetEnableBeepSoundSetting()).Result;
+                
                 if (playScreenCaptureSound)
                 {
                     PlayMedia.PlayScreenCaptureSound();

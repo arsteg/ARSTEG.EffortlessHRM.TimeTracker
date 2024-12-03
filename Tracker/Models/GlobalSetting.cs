@@ -13,9 +13,9 @@ namespace TimeTracker.Models
 
         public Window ProductivityAppsSettings { get; set; }
         //public const string apiBaseUrl = "http://localhost:8080";                
-        public const string apiBaseUrl = "https://effortlesshrmapi.azurewebsites.net";
+        public const string apiBaseUrl = "https://effortlesshrmapi-develop-eyd4cwezfvdebfbq.centralindia-01.azurewebsites.net";
         
-        public const string portalBaseUrl = "https://effort-less-hrm-web.vercel.app/";
+        public const string portalBaseUrl = "https://www.effortlesshrm.com/";
 
         
         public const string EmailReceiver = "info@arsteg.com";

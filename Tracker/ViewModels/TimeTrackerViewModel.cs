@@ -165,15 +165,20 @@ namespace TimeTracker.ViewModels
         private void InterceptKeys_OnKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             totalKeysPressed++;
-            
-            // Convert the KeyValue to a character
-            char keyChar = (char)e.KeyValue;
+            // Check if the key is not a control key (like Shift, Alt, Ctrl)
+            if (!e.Control && !e.Alt && !e.Shift && !char.IsControl((char)e.KeyValue))
+            {                // Use the KeyCode to get the actual readable key
+                string keyText = e.KeyCode.ToString();
 
-            // Check if the character is not a control character (non-printable)
-            if (!char.IsControl(keyChar))
-            {
-                // Append the pressed key to the current input if it's a readable character
-                CurrentInput += keyChar;
+                // Handle special cases (e.g., Space, Enter)
+                if (keyText.Length == 1)
+                {
+                    CurrentInput += keyText;
+                }
+                else if (e.KeyCode == Keys.Space)
+                {
+                    CurrentInput += " ";
+                }
             }
         }       
 

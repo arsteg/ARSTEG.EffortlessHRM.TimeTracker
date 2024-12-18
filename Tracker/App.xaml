@@ -116,36 +116,7 @@
                     <Setter Property="Foreground" Value="White"/>
                 </Trigger>
             </Style.Triggers>
-        </Style>
-
-        <Style x:Key="closeButton" TargetType="Button">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Width" Value="105"/>
-            <Setter Property="Height" Value="48"/>
-            <Setter Property="Margin" Value="0 2 0 12"/>
-            <Setter Property="Background" Value="#3AB19B"/>
-            <Setter Property="Foreground" Value="#FDFEFE"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="25" BorderThickness="1" BorderBrush="White" Padding="15">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#e8e8e8"/>
-                    <Setter Property="Foreground" Value="DimGray"/>
-                </Trigger>
-                <Trigger Property="IsMouseCaptured" Value="True">
-                    <Setter Property="Background" Value="#2d7a6c"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        </Style>       
         
         <!--region CheckBox Style-->
         
@@ -240,10 +211,10 @@
         
         <!--endregion  checkbox style-->
         
-        <Style x:Key="logoutButton" TargetType="Button">
+        <Style x:Key="actionButtonStyle" TargetType="Button">
             <Setter Property="FontSize" Value="14"/>            
             <Setter Property="Width" Value="105"/>
-            <Setter Property="Height" Value="48"/>
+            <Setter Property="Height" Value="45"/>
             <Setter Property="Margin" Value="0 2 0 12"/>
             <Setter Property="Background" Value="#3AB19B"/>
             <Setter Property="Foreground" Value="#FDFEFE"/>
@@ -267,36 +238,8 @@
                     <Setter Property="Foreground" Value="White"/>
                 </Trigger>
             </Style.Triggers>
-        </Style>
+        </Style>       
         
-        <Style x:Key="startButton" TargetType="Button">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Width" Value="105"/>
-            <Setter Property="Height" Value="48"/>
-            <Setter Property="Margin" Value="0 2 0 12"/>
-            <Setter Property="Background" Value="#3AB19B"/>
-            <Setter Property="Foreground" Value="#FDFEFE"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="25" BorderThickness="1" BorderBrush="White" Padding="15">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#e8e8e8"/>
-                    <Setter Property="Foreground" Value="DimGray"/>
-                </Trigger>
-                <Trigger Property="IsMouseCaptured" Value="True">
-                    <Setter Property="Background" Value="#2d7a6c"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
 
         <Style x:Key="textCheckBox" TargetType="CheckBox">
             <Setter Property="FontSize" Value="14"/>

@@ -2,7 +2,9 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" 
 	 xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
 	 >
-	<Bundle Name="TimeTracker.Bootstrapper" Version="1.0.0.0" Manufacturer="Arsteg" UpgradeCode="df409280-4d33-43d5-a5b5-1a5bb99dcbd9">
+	<Bundle Name="EffortlessHRM TimeTracker" Version="1.0.0.0" Manufacturer="ARSTEG" 
+			UpgradeCode="df409280-4d33-43d5-a5b5-1a5bb99dcbd9"
+			IconSourceFile="favicon.ico">
 		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
 			<bal:WixStandardBootstrapperApplication LicenseUrl="" />
 		</BootstrapperApplicationRef>

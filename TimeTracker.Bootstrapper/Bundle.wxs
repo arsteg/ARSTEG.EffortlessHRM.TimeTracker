@@ -15,7 +15,7 @@
 			<!-- Add .NET Runtime 8 -->
 			<ExePackage
 				Id="DotNetRuntime8"
-				SourceFile="dotnet-runtime-8.0.11-win-x64.exe"
+				SourceFile="windowsdesktop-runtime-8.0.11-win-x64.exe"
 				Cache="yes"
 				Compressed="yes"
 				PerMachine="yes"

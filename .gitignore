@@ -27,3 +27,6 @@ TimeTracker.Installer/Debug/setup.exe
 /Deployment/GeneratedNugets
 /Deployment
 /Deployment
+/TimeTracker.Bootstrapper/bin
+/TimeTracker.Bootstrapper/bin
+/TimeTracker.Bootstrapper/bin

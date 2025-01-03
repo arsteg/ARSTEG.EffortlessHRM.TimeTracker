@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ using TimeTracker.ViewModels;
 using TimeTracker.Models;
 using TimeTracker.Trace;
 using System.Drawing;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace TimeTracker.Views
 {
@@ -44,8 +45,16 @@ namespace TimeTracker.Views
             {
                 this.Show();
                 this.WindowState = WindowState.Normal;
-            };
-            //SetTheme();
+            };                
+
+                // Register to listen for the message
+                Messenger.Default.Register<NotificationMessage>(this, message =>
+                {
+                    if (message.Notification == "RestoreWindowMethod")
+                    {
+                        RestoreWindow();
+                    }
+                });                
             }
             catch (Exception ex)
             {
@@ -129,5 +138,16 @@ namespace TimeTracker.Views
         {
             Application.Current.Shutdown();
         }
+
+        public void RestoreWindow()
+        {
+            if (this.WindowState == WindowState.Minimized)
+            {
+                this.Show();
+                this.WindowState = WindowState.Normal;
+            }
+            this.Activate();
+            this.Focus();
+        }        
     }
 }

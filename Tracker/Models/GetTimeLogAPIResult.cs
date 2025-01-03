@@ -2,24 +2,28 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Text;
 
 namespace TimeTracker.Models
 {
-    public class GetTimeLogAPIResult
+    public class BaseResponse
     {
+        public HttpStatusCode statusCode { get; set; }
         public string status { get; set; }
+    }
+    public class GetTimeLogAPIResult: BaseResponse
+    {        
         public List<TimeLogBaseResponse> data { get; set; }
     }
-    public class AddTimeLogAPIResult
-    {
-        public string status { get; set; }
-        public TimeLog data { get; set; }
+    public class AddTimeLogAPIResult: BaseResponse
+    {     
+        public TimeLog data { get; set; }       
+
     }
 
-    public class AddErrorLogAPIResult
-    {
-        public string status { get; set; }
+    public class AddErrorLogAPIResult: BaseResponse
+    {     
         public AddErrorLog data { get; set; }
     }
 
@@ -28,9 +32,8 @@ namespace TimeTracker.Models
         public ErrorLog ErrorLog { get; set; }
     }
 
-    public class GetProjectListAPIResult
-    {
-        public string status { get; set; }
+    public class GetProjectListAPIResult: BaseResponse
+    {        
         public ProjectList data { get; set; }
     }
 
@@ -50,9 +53,8 @@ namespace TimeTracker.Models
         public List<ProjectTask> taskList { get; set; }
     }
 
-    public class GetTaskListAPIResult
-    {
-        public string status { get; set; }
+    public class GetTaskListAPIResult: BaseResponse
+    {        
         public List<TaskList> taskList { get; set; }
         public int taskCount { get; set; }
     }
@@ -62,7 +64,7 @@ namespace TimeTracker.Models
         public string id { get; set; }
         public string taskName { get; set; }		
         public string description { get; set; }
-		public string status { get; set; }
+        public string status { get; set; }
 
     }
 
@@ -71,6 +73,7 @@ namespace TimeTracker.Models
         public string _id { get; set; }
         public string taskName { get; set; }
         public string description { get; set; }
+        public string status { get; set; }
 
     }
 
@@ -78,9 +81,8 @@ namespace TimeTracker.Models
     {
         public ProjectTask newTask { get; set; }
     }
-    public class NewTaskResult
-    {
-        public string status { get; set; }
+    public class NewTaskResult: BaseResponse
+    {        
         public NewtaskData data { get; set; }
     }
 
@@ -88,21 +90,18 @@ namespace TimeTracker.Models
     {
         public List<ErrorLog> errorLogList { get; set; }
     }
-    public class GetErrorLogResult
-    {
-        public string status { get; set; }
+    public class GetErrorLogResult: BaseResponse
+    {        
         public ErrorLogList data { get; set; }
     }
 
-    public class ProductivityAppResult
-    {
-        public string status { get; set; }
+    public class ProductivityAppResult: BaseResponse
+    {        
         public List<ProductivityModel> data { get; set; }
     }
 
-    public class ProductivityAppDeleteResult
-    {
-        public string status { get; set; }
+    public class ProductivityAppDeleteResult: BaseResponse
+    {        
         public ProductivityModel data { get; set; }
     }
 
@@ -138,9 +137,8 @@ namespace TimeTracker.Models
     {
         public bool Success { get; set; }
     }
-    public class EnableBeepSoundResult
-    {
-        public string status { get; set; }
+    public class EnableBeepSoundResult: BaseResponse
+    {        
         public bool data { get; set; }
     }
 

@@ -175,6 +175,13 @@ namespace TimeTracker.Services
                 var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
 
                 HttpResponseMessage response = await httpClient.PostAsync(uri, content).ConfigureAwait(false);
+                // Check if the response indicates an Unauthorized status
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    // Log the unauthorized error and take appropriate action
+                    LogManager.Logger.Warn($"Unauthorized access. URL: {uri}");
+                    throw new UnauthorizedAccessException("Unauthorized access. Please check your token.");
+                }
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
 
@@ -183,6 +190,15 @@ namespace TimeTracker.Services
 
                 return result;
 
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Handle unauthorized exception separately if needed
+                LogManager.Logger.Error(ex, "Unauthorized exception in PostWithTokenAsync.");
+                // Optional: Trigger a re-login or token refresh mechanism here
+                TResult result = await Task.Run(() =>
+                 JsonConvert.DeserializeObject<TResult>("{statusCode:401,status:'failed',data:null}", _serializerSettings));
+                return result;
             }
             catch (Exception ex)
             {

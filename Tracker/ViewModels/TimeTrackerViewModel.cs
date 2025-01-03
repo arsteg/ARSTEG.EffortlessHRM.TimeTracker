@@ -1,4 +1,4 @@
-﻿using GalaSoft.MvvmLight.CommandWpf;
+using GalaSoft.MvvmLight.CommandWpf;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -34,6 +34,8 @@ using System.Dynamic;
 using System.Windows.Input;
 using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
 using DocumentFormat.OpenXml.Office2013.Drawing.Chart;
+using GalaSoft.MvvmLight.Messaging;
+using System.Net;
 
 namespace TimeTracker.ViewModels
 {
@@ -108,9 +110,9 @@ namespace TimeTracker.ViewModels
             #region "live screen"
             //shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
             //shareLiveScreen.Interval = TimeSpan.FromMilliseconds(1000);
-            checkForLiveScreen.Tick += new EventHandler(CheckForLiveScreen_Tick);
-            checkForLiveScreen.Interval = new TimeSpan(00, 00, 30);
-            checkForLiveScreen.Start();
+            //checkForLiveScreen.Tick += new EventHandler(CheckForLiveScreen_Tick);
+            //checkForLiveScreen.Interval = new TimeSpan(00, 00, 30);
+            //checkForLiveScreen.Start();
             #endregion
 
             minutesTracked = 0;
@@ -615,8 +617,10 @@ namespace TimeTracker.ViewModels
                     GlobalSetting.Instance.TimeTracker.Close();
                     //GlobalSetting.Instance.TimeTracker=null;
                 }
-
-                GlobalSetting.Instance.LoginView = new TimeTracker.Views.Login(false);
+                if (GlobalSetting.Instance.LoginView == null)
+                {
+                    GlobalSetting.Instance.LoginView = new TimeTracker.Views.Login(false);
+                }                
                 GlobalSetting.Instance.LoginView.Show();
                 // Close the window.
             }
@@ -954,21 +958,29 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Error(ex);
             }
         }
-        private void saveTimeSlot_Tick(object sender, EventArgs e)
+        private async void  saveTimeSlot_Tick(object sender, EventArgs e)
         {
             try
             {
-                CanShowScreenshot = false;
+                CanShowScreenshot = false;                
                 var task = Task.Run(async () => await SaveTimeSlot(CurrentImagePath));
                     task.Wait();
-                    totalKeysPressed = 0;
+                var statusCode = task?.Result.statusCode; // Retrieve the result
+                if (statusCode == HttpStatusCode.Unauthorized)
+                {
+                    StartStopCommand.Execute(null);
+                    Messenger.Default.Send(new NotificationMessage("RestoreWindowMethod"));
+                    await ShowErrorMessage("Unauthorized access detected. You will be logged out.");
+                    LogoutCommand.Execute(null);                    
+                }
+                totalKeysPressed = 0;
                     totalMouseClick = 0;
                     totalMouseScrolls = 0;
                     ShowTimeTracked(false);
                     ShowCurrentTimeTracked();
                     saveDispatcherTimer.Stop();
                     CurrentInput = string.Empty;
-            }
+            }                        
             catch (Exception ex)
             {
                 LogManager.Logger.Error(ex);
@@ -1154,7 +1166,7 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private async Task<TimeLog> SaveTimeSlot(string filePath)
+        private async Task<(TimeLog timeLog, HttpStatusCode statusCode)> SaveTimeSlot(string filePath)
         {
             Byte[] bytes = File.ReadAllBytes(filePath);
             String file = Convert.ToBase64String(bytes);
@@ -1179,17 +1191,20 @@ namespace TimeTracker.ViewModels
             };
             try
             {
-
                 if (!CheckInternetConnectivity.IsConnectedToInternet())
                 {
                     LogManager.Logger.Info($"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}");
                     TempLog($"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}");
                     unsavedTimeLogs.Add(timeLog);
                     ShowErrorMessage("Please check your internet connectivity.");
-                    return null;
+                    return (null, HttpStatusCode.OK);
                 }
                 var rest = new REST(new HttpProviders());
                 var result = rest.AddTimeLog(timeLog).GetAwaiter().GetResult();
+                if (result.statusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return (null, HttpStatusCode.Unauthorized);
+                }
                 AddErrorLog("Info", $"machineId {machineId} Message {result?.data?.message ?? ""}");
                 LogManager.Logger.Info($"machineId {machineId} Message {result?.data?.message ?? ""}");
                 if (!string.IsNullOrEmpty(result.data.message))
@@ -1199,7 +1214,7 @@ namespace TimeTracker.ViewModels
                         PopupForSwitchTracker = true;
                         timeLogForSwitchingMachine = timeLog;
                         minutesTracked = 0;
-                        return null;
+                        return (null,HttpStatusCode.OK);
 
                         #region"not in use"
                         //var isConfirm = MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo);
@@ -1232,8 +1247,8 @@ namespace TimeTracker.ViewModels
                     }
                     tempUnsavedTimeLogs = null;
                 }
-                return result.data;
-            }
+                return  (result?.data, result?.statusCode ?? HttpStatusCode.InternalServerError); ;
+            }            
             catch (Exception ex)
             {
                 TempLog($"Catch block for Save time logs #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLog.startTime} #time end {timeLog.endTime}");
@@ -1243,7 +1258,7 @@ namespace TimeTracker.ViewModels
                 }
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
 				LogManager.Logger.Error("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-				return null;
+                throw;
             }
         }
 
@@ -1388,7 +1403,7 @@ namespace TimeTracker.ViewModels
                     title = "Task",
                     status = "In Progress"
                 });
-                if (newTaskResult.status.ToUpper() == "SUCCESS")
+                if (newTaskResult?.status.ToUpper() == "SUCCESS")
                 {
                     ShowInformationMessage("Task has been created");
                     SelectedTask = newTaskResult.data.newTask;
@@ -1490,34 +1505,40 @@ namespace TimeTracker.ViewModels
 
         private async void StopApplicationTracker()
         {
-            activeWorker.StopThread(false);
-            var focusedApplication = activeWorker.activeApplicationInfomationCollector._focusedApplication;
-            if (focusedApplication != null)
-            {
-                foreach (var key in focusedApplication?.Keys)
-                {
-                    await AddUsedApplicationLog(new ApplicationLog
-                    {
-                        appWebsite = key,
-                        type = "App",
-                        ApplicationTitle = focusedApplication[key].AppTitle,
-                        projectReference = SelectedProject._id,
-                        userReference = GlobalSetting.Instance.LoginResult.data.user.id,
-                        date = DateTime.UtcNow,
-                        inactive = focusedApplication[key].TotalIdletime,
-                        keyboardStrokes = focusedApplication[key].TotalKeysPressed,
-                        mouseClicks = focusedApplication[key].TotalMouseClick,
-                        scrollingNumber = focusedApplication[key].TotalMouseScrolls,
-                        ModuleName = SelectedProject.projectName,
-                        TimeSpent = focusedApplication[key].Duration,
-                        total = focusedApplication[key].Duration
-                    });
+            try {
+                activeWorker.StopThread(false);
+                var focusedApplication = activeWorker.activeApplicationInfomationCollector._focusedApplication;
 
-                    //var log = $"key: {key} # ApplicationTitle: {focusedApplication[key].AppTitle} #projectReference:{SelectedProject._id} #inactive:{focusedApplication[key].TotalIdletime} #keyboardStrokes:{focusedApplication[key].TotalKeysPressed} #mouseClicks:{focusedApplication[key].TotalMouseClick} #scrollingNumber:{focusedApplication[key].TotalMouseScrolls} #ModuleName:{SelectedProject.projectName} #TimeSpent:{focusedApplication[key].Duration} #total:{focusedApplication[key].Duration}";
-                    //TempLogAppUsed(log);
+                if (focusedApplication != null)
+                {
+                    // Create a snapshot of the keys to avoid modifying the collection during iteration
+                    foreach (var key in focusedApplication.Keys)
+                    {
+                        //await AddUsedApplicationLog(new ApplicationLog
+                        //{
+                        //    appWebsite = key,
+                        //    type = "App",
+                        //    ApplicationTitle = focusedApplication[key].AppTitle,
+                        //    projectReference = SelectedProject._id,
+                        //    userReference = GlobalSetting.Instance.LoginResult.data.user.id,
+                        //    date = DateTime.UtcNow,
+                        //    inactive = focusedApplication[key].TotalIdletime,
+                        //    keyboardStrokes = focusedApplication[key].TotalKeysPressed,
+                        //    mouseClicks = focusedApplication[key].TotalMouseClick,
+                        //    scrollingNumber = focusedApplication[key].TotalMouseScrolls,
+                        //    ModuleName = SelectedProject.projectName,
+                        //    TimeSpent = focusedApplication[key].Duration,
+                        //    total = focusedApplication[key].Duration
+                        //});
+                    }
                 }
             }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }            
         }
+
 
         private async Task AddUsedApplicationLog(ApplicationLog applicationLog)
         {
@@ -1844,7 +1865,7 @@ namespace TimeTracker.ViewModels
             // Keep the thread alive so that the timer can continue executing
             Dispatcher.Run();
         }        
-        private async void ShowErrorMessage(string errorMessage)
+        private async Task ShowErrorMessage(string errorMessage)
         {
             MessageColor = "red";
             await Task.Delay(TimeSpan.FromSeconds(1));
@@ -1857,6 +1878,7 @@ namespace TimeTracker.ViewModels
             // Clear the error message after 10 seconds
             ErrorMessage = string.Empty;
         }
+
         private async void ShowInformationMessage(string errorMessage)
         {
             MessageColor = "green";
@@ -1870,8 +1892,8 @@ namespace TimeTracker.ViewModels
             // Clear the error message after 10 seconds
             ErrorMessage = string.Empty;
         }
-        #endregion
 
+        #endregion
         #region "Save log into Temp"
         private void TempLog(string message)
         {

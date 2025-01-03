@@ -34,3 +34,6 @@ TimeTracker.Installer/Debug/setup.exe
 /TimeTracker.Bootstrapper/obj
 /TimeTracker.Bootstrapper/obj
 /TimeTracker.Bootstrapper/obj
+/TimeTracker.Bootstrapper/obj/Debug
+/TimeTracker.Bootstrapper/obj/Debug
+/TimeTracker.Bootstrapper/obj

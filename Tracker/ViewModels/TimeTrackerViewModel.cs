@@ -1258,7 +1258,7 @@ namespace TimeTracker.ViewModels
                 }
                 AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
 				LogManager.Logger.Error("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-                throw;
+                return default;
             }
         }
 
@@ -1514,22 +1514,22 @@ namespace TimeTracker.ViewModels
                     // Create a snapshot of the keys to avoid modifying the collection during iteration
                     foreach (var key in focusedApplication.Keys)
                     {
-                        //await AddUsedApplicationLog(new ApplicationLog
-                        //{
-                        //    appWebsite = key,
-                        //    type = "App",
-                        //    ApplicationTitle = focusedApplication[key].AppTitle,
-                        //    projectReference = SelectedProject._id,
-                        //    userReference = GlobalSetting.Instance.LoginResult.data.user.id,
-                        //    date = DateTime.UtcNow,
-                        //    inactive = focusedApplication[key].TotalIdletime,
-                        //    keyboardStrokes = focusedApplication[key].TotalKeysPressed,
-                        //    mouseClicks = focusedApplication[key].TotalMouseClick,
-                        //    scrollingNumber = focusedApplication[key].TotalMouseScrolls,
-                        //    ModuleName = SelectedProject.projectName,
-                        //    TimeSpent = focusedApplication[key].Duration,
-                        //    total = focusedApplication[key].Duration
-                        //});
+                        await AddUsedApplicationLog(new ApplicationLog
+                        {
+                            appWebsite = key,
+                            type = "App",
+                            ApplicationTitle = focusedApplication[key].AppTitle,
+                            projectReference = SelectedProject._id,
+                            userReference = GlobalSetting.Instance.LoginResult.data.user.id,
+                            date = DateTime.UtcNow,
+                            inactive = focusedApplication[key].TotalIdletime,
+                            keyboardStrokes = focusedApplication[key].TotalKeysPressed,
+                            mouseClicks = focusedApplication[key].TotalMouseClick,
+                            scrollingNumber = focusedApplication[key].TotalMouseScrolls,
+                            ModuleName = SelectedProject.projectName,
+                            TimeSpent = focusedApplication[key].Duration,
+                            total = focusedApplication[key].Duration
+                        });
                     }
                 }
             }

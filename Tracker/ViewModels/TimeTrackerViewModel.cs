@@ -1,47 +1,36 @@
-using GalaSoft.MvvmLight.CommandWpf;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.Dynamic;
 using System.IO;
-using System.Net.Mail;
-using System.Net.Mime;
+using System.Linq;
+using System.Management;
+using System.Net;
+using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using SystemWindows = System.Windows;
-using System.Windows.Media.Imaging;
+using System.Windows.Forms;
 using System.Windows.Threading;
+using GalaSoft.MvvmLight.CommandWpf;
+using GalaSoft.MvvmLight.Messaging;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using TimeTracker.ActivityTracker;
+using TimeTracker.AppUsedTracker;
 using TimeTracker.Models;
 using TimeTracker.Services;
-using TimeTracker.Utilities;
-using System.Linq;
-using System.Linq.Expressions;
-using System.ComponentModel;
 using TimeTracker.Trace;
-using TimeTracker.ActivityTracker;
-using BrowserHistoryGatherer.Data;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using System.Diagnostics;
-using TimeTracker.AppUsedTracker;
-using System.Management;
-using System.Windows.Forms;
-using System.Drawing;
-using Newtonsoft.Json;
-using System.Net.WebSockets;
-using System.Threading;
-using TimeTracker.Views;
-using System.Timers;
-using System.Dynamic;
-using System.Windows.Input;
-using DocumentFormat.OpenXml.Office2013.PowerPoint.Roaming;
-using DocumentFormat.OpenXml.Office2013.Drawing.Chart;
-using GalaSoft.MvvmLight.Messaging;
-using System.Net;
+using TimeTracker.Utilities;
+using SystemWindows = System.Windows;
 
 namespace TimeTracker.ViewModels
 {
     public class TimeTrackerViewModel : ViewModelBase
     {
-        #region  private members        
+        #region  private members
         private IConfiguration configuration;
         private bool trackerIsOn = false;
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
@@ -79,19 +68,21 @@ namespace TimeTracker.ViewModels
         #region constructor
         public TimeTrackerViewModel()
         {
-			LogManager.Logger.Info($"timetracker constructor starts");
-			CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
-            StartStopCommand = new RelayCommand(StartStopCommandExecute);            
+            LogManager.Logger.Info($"timetracker constructor starts");
+            CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
+            StartStopCommand = new RelayCommand(StartStopCommandExecute);
             LogoutCommand = new RelayCommand(LogoutCommandExecute);
             RefreshCommand = new RelayCommand(RefreshCommandExecute);
-            LogCommand = new RelayCommand(LogCommandExecute);            
+            LogCommand = new RelayCommand(LogCommandExecute);
             DeleteScreenshotCommand = new RelayCommand(DeleteScreenshotCommandExecute);
             SaveScreenshotCommand = new RelayCommand(SaveScreenshotCommandExecute);
             OpenDashboardCommand = new RelayCommand(OpenDashboardCommandExecute);
-            ProductivityApplicationCommand = new RelayCommand(ProductivityApplicationCommandExecute);
+            ProductivityApplicationCommand = new RelayCommand(
+                ProductivityApplicationCommandExecute
+            );
             TaskCompleteCommand = new RelayCommand(TaskCompleteCommandExecute);
             CreateNewTaskCommand = new RelayCommand(CreateNewTaskCommandExecute);
-			TaskOpenCommand = new RelayCommand(TaskOpenCommandExecute);
+            TaskOpenCommand = new RelayCommand(TaskOpenCommandExecute);
             SwitchTrackerNoCommand = new RelayCommand(SwitchTrackerNoCommandExecute);
             SwitchTrackerYesCommand = new RelayCommand(SwitchTrackerYesCommandExecute);
 
@@ -130,9 +121,9 @@ namespace TimeTracker.ViewModels
             InterceptKeys.Start();
             LogManager.Logger.Info("before initializeUI method");
             initializeUI();
-			LogManager.Logger.Info("after initializeUI method");
-			LogManager.Logger.Info($"timetracker constructor ends");
-		}
+            LogManager.Logger.Info("after initializeUI method");
+            LogManager.Logger.Info($"timetracker constructor ends");
+        }
 
         private void initializeUI()
         {
@@ -153,12 +144,11 @@ namespace TimeTracker.ViewModels
         {
             totalMouseClick++;
         }
-        private void mh_MouseUpEvent(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-        }
-        private void mh_MouseClickEvent(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-        }
+
+        private void mh_MouseUpEvent(object sender, System.Windows.Forms.MouseEventArgs e) { }
+
+        private void mh_MouseClickEvent(object sender, System.Windows.Forms.MouseEventArgs e) { }
+
         private void mh_MouseWheelEvent(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             totalMouseScrolls++;
@@ -169,7 +159,7 @@ namespace TimeTracker.ViewModels
             totalKeysPressed++;
             // Check if the key is not a control key (like Shift, Alt, Ctrl)
             if (!e.Control && !e.Alt && !e.Shift && !char.IsControl((char)e.KeyValue))
-            {                // Use the KeyCode to get the actual readable key
+            { // Use the KeyCode to get the actual readable key
                 string keyText = e.KeyCode.ToString();
 
                 // Handle special cases (e.g., Space, Enter)
@@ -182,7 +172,7 @@ namespace TimeTracker.ViewModels
                     CurrentInput += " ";
                 }
             }
-        }       
+        }
 
         private void OnRequestClose()
         {
@@ -191,7 +181,7 @@ namespace TimeTracker.ViewModels
 
         #endregion
 
-        #region Public Properties                
+        #region Public Properties
 
         private string title = "";
         public string Title
@@ -203,7 +193,6 @@ namespace TimeTracker.ViewModels
                 OnPropertyChanged(nameof(Title));
             }
         }
-
 
         private string startStopButtontext = "Start";
         public string StartStopButtontext
@@ -225,7 +214,7 @@ namespace TimeTracker.ViewModels
                 currentInput = value;
                 OnPropertyChanged(nameof(CurrentInput));
             }
-        }      
+        }
 
         private string currentImagePath;
         public string CurrentImagePath
@@ -337,18 +326,18 @@ namespace TimeTracker.ViewModels
             }
         }
 
-		private String taskDescription;
-		public string TaskDescription
-		{
-			get { return taskDescription; }
-			set
-			{
-				taskDescription = value;
-				OnPropertyChanged(nameof(TaskDescription));
-			}
-		}
+        private String taskDescription;
+        public string TaskDescription
+        {
+            get { return taskDescription; }
+            set
+            {
+                taskDescription = value;
+                OnPropertyChanged(nameof(TaskDescription));
+            }
+        }
 
-		private bool canSendReport = true;
+        private bool canSendReport = true;
 
         public bool CanSendReport
         {
@@ -429,7 +418,7 @@ namespace TimeTracker.ViewModels
         {
             get { return _selectedproject; }
             set
-            {                
+            {
                 _selectedproject = value;
                 OnPropertyChanged("SelectedProject");
                 OnPropertyChanged("AllowTaskSelection");
@@ -445,7 +434,7 @@ namespace TimeTracker.ViewModels
         {
             get { return _selectedprojectName; }
             set
-            {                
+            {
                 _selectedprojectName = value;
                 OnPropertyChanged("SelectedProjectName");
             }
@@ -470,7 +459,7 @@ namespace TimeTracker.ViewModels
             {
                 _selectedtask = value;
                 TaskDescription = _selectedtask?.description;
-				OnPropertyChanged("SelectedTask");
+                OnPropertyChanged("SelectedTask");
             }
         }
 
@@ -544,6 +533,18 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        private bool _isLoggingEnabled;
+        public bool IsLoggingEnabled
+        {
+            get => _isLoggingEnabled;
+            set
+            {
+                _isLoggingEnabled = value;
+                OnPropertyChanged(nameof(IsLoggingEnabled));
+                // Add logic to enable/disable logging dynamically here
+            }
+        }
+
         #endregion
 
         #region commands
@@ -552,7 +553,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand EODReportsCommand { get; set; }
         public RelayCommand LogoutCommand { get; set; }
         public RelayCommand RefreshCommand { get; set; }
-        public RelayCommand LogCommand { get; set; }        
+        public RelayCommand LogCommand { get; set; }
         public RelayCommand DeleteScreenshotCommand { get; set; }
         public RelayCommand SaveScreenshotCommand { get; set; }
         public RelayCommand OpenDashboardCommand { get; set; }
@@ -561,8 +562,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand CreateNewTaskCommand { get; set; }
         public RelayCommand TaskOpenCommand { get; set; }
         public RelayCommand SwitchTrackerYesCommand { get; set; }
-        public RelayCommand SwitchTrackerNoCommand { get ; set; }
-
+        public RelayCommand SwitchTrackerNoCommand { get; set; }
 
         ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
 
@@ -599,11 +599,12 @@ namespace TimeTracker.ViewModels
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-				LogManager.Logger.Error(ex);
-			}
+                LogManager.Logger.Error(ex);
+            }
         }
+
         public void LogoutCommandExecute()
         {
             try
@@ -620,7 +621,7 @@ namespace TimeTracker.ViewModels
                 if (GlobalSetting.Instance.LoginView == null)
                 {
                     GlobalSetting.Instance.LoginView = new TimeTracker.Views.Login(false);
-                }                
+                }
                 GlobalSetting.Instance.LoginView.Show();
                 // Close the window.
             }
@@ -628,14 +629,15 @@ namespace TimeTracker.ViewModels
             {
                 LogManager.Logger.Error(ex);
             }
-		}
+        }
+
         public async void StartStopCommandExecute()
-        {            
+        {
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
                 ShowErrorMessage("No task selected");
                 return;
-            }            
+            }
             ProgressWidthStart = 30;
             try
             {
@@ -657,14 +659,14 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-				LogManager.Logger.Error(ex);
-		}
+                LogManager.Logger.Error(ex);
+            }
             finally
             {
                 ProgressWidthStart = 0;
             }
-        }        
-        
+        }
+
         private static string getFileName(int r, int c, List<string> files)
         {
             var result = "";
@@ -680,10 +682,11 @@ namespace TimeTracker.ViewModels
             }
             return result;
         }
+
         public void RefreshCommandExecute()
         {
             try
-            {               
+            {
                 LogManager.Logger.Info($"refeshcommandexecute starts");
                 populateUserName();
                 BindProjectList();
@@ -691,47 +694,50 @@ namespace TimeTracker.ViewModels
                 taskName = string.Empty;
                 TaskDescription = string.Empty;
                 SelectedTask = null;
-				LogManager.Logger.Info($"refreshcommand execution ends");
-			}
-			catch (Exception ex)
-			{
-				LogManager.Logger.Error(ex);
-			}
-		}
+                LogManager.Logger.Info($"refreshcommand execution ends");
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
+        }
+
         public async void LogCommandExecute()
         {
             try
             {
-                var rest = new REST(new HttpProviders());
-                var errorLogList = await rest.GetErrorLogs(GlobalSetting.Instance.LoginResult.data.user.id);
-                if (errorLogList != null && errorLogList?.status.ToUpper() == "SUCCESS" && errorLogList?.data?.errorLogList?.Count > 0)
+                // Get the path to the "logs" folder in the application's directory
+                string logsFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+
+                // Check if the folder exists
+                if (!Directory.Exists(logsFolderPath))
                 {
-                    if (errorLogList.data.errorLogList.Any(e => e.createdOn.Date == DateTime.UtcNow.Date))
-                    {
-                        var errors = errorLogList.data.errorLogList.Where(e => e.createdOn.Date == DateTime.UtcNow.Date);
-                        ShowLog(errors);
-                    }
-                    else
-                    {
-                        ShowErrorMessage("Log not found");
-                    }
+                    // Optionally, create the folder if it doesn't exist
+                    Directory.CreateDirectory(logsFolderPath);
                 }
-                else
-                {
-                    ShowErrorMessage("Log not found");
-                }
+
+                // Open the folder in File Explorer
+                Process.Start(
+                    new ProcessStartInfo
+                    {
+                        FileName = logsFolderPath,
+                        UseShellExecute = true,
+                        Verb = "open"
+                    }
+                );
             }
-			catch (Exception ex)
-			{
-				LogManager.Logger.Error(ex);
-			}
-		}        
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
+        }
+
         public void DeleteScreenshotCommandExecute()
         {
             try
             {
-				LogManager.Logger.Info($"delete screenshot starts");
-				DeleteImagePath = CurrentImagePath;
+                LogManager.Logger.Info($"delete screenshot starts");
+                DeleteImagePath = CurrentImagePath;
                 CurrentImagePath = null;
                 saveDispatcherTimer.Stop();
                 CanShowScreenshot = false;
@@ -740,44 +746,50 @@ namespace TimeTracker.ViewModels
                 deleteImagePath.Tick += new EventHandler(deleteImagePath_Tick);
                 deleteImagePath.Interval = new TimeSpan(0, 1, 0);
                 deleteImagePath.Start();
-				LogManager.Logger.Info($"delete screenshot ends");
-			}
-			catch (Exception ex)
-			{
-				LogManager.Logger.Error(ex);
-			}
-		}
+                LogManager.Logger.Info($"delete screenshot ends");
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
+        }
+
         public void SaveScreenshotCommandExecute()
         {
             CanShowScreenshot = false;
         }
+
         public void OpenDashboardCommandExecute()
         {
             try
             {
                 string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/screenshots";
-                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+                Process.Start(
+                    new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true }
+                );
             }
-			catch (Exception ex)
-			{
-				LogManager.Logger.Error(ex);
-			}
-		}
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
+        }
+
         public void ProductivityApplicationCommandExecute()
         {
             try
             {
-                GlobalSetting.Instance.ProductivityAppsSettings = new TimeTracker.Views.ProductivityAppsSettings();
+                GlobalSetting.Instance.ProductivityAppsSettings =
+                    new TimeTracker.Views.ProductivityAppsSettings();
                 GlobalSetting.Instance.ProductivityAppsSettings.Show();
             }
-			catch (Exception ex)
-			{
-				LogManager.Logger.Error(ex);
-			}
-		} 
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
+        }
+
         public async void TaskCompleteCommandExecute()
         {
-
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
                 ShowErrorMessage("No task selected");
@@ -790,13 +802,13 @@ namespace TimeTracker.ViewModels
 
                 dynamic task = new ExpandoObject();
                 task.status = "Done";
-                task.project = SelectedProject._id; 
-				var result = await rest.CompleteATask(SelectedTask._id, task);
+                task.project = SelectedProject._id;
+                var result = await rest.CompleteATask(SelectedTask._id, task);
                 if (result.data != null)
                 {
                     ShowErrorMessage("Task has been marked as completed");
                     if (SelectedProject != null)
-                    {                        
+                    {
                         await getTaskList();
                     }
                 }
@@ -804,13 +816,14 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-				LogManager.Logger.Error(ex);			
-		}
+                LogManager.Logger.Error(ex);
+            }
             finally
             {
                 ProgressWidthStart = 0;
             }
         }
+
         public async void CreateNewTaskCommandExecute()
         {
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
@@ -821,7 +834,7 @@ namespace TimeTracker.ViewModels
             ProgressWidthStart = 30;
             try
             {
-                CreateNewTask();                
+                CreateNewTask();
             }
             catch (Exception ex)
             {
@@ -832,6 +845,7 @@ namespace TimeTracker.ViewModels
                 ProgressWidthStart = 0;
             }
         }
+
         public async void TaskOpenCommandExecute()
         {
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
@@ -842,10 +856,10 @@ namespace TimeTracker.ViewModels
             ProgressWidthStart = 30;
             try
             {
-                var taskUrl = $"{GlobalSetting.portalBaseUrl}#/edit-task?taskId={this.SelectedTask._id}";
-				Process.Start(new ProcessStartInfo(taskUrl) { UseShellExecute = true });
-
-			}
+                var taskUrl =
+                    $"{GlobalSetting.portalBaseUrl}#/edit-task?taskId={this.SelectedTask._id}";
+                Process.Start(new ProcessStartInfo(taskUrl) { UseShellExecute = true });
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
@@ -855,6 +869,7 @@ namespace TimeTracker.ViewModels
                 ProgressWidthStart = 0;
             }
         }
+
         public void SwitchTrackerNoCommandExecute()
         {
             PopupForSwitchTracker = false;
@@ -869,6 +884,7 @@ namespace TimeTracker.ViewModels
             saveDispatcherTimer.Stop();
             CurrentInput = string.Empty;
         }
+
         public async void SwitchTrackerYesCommandExecute()
         {
             try
@@ -888,9 +904,14 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
-                TempLog($"Catch block for Save time logs (switching the machine) #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLogForSwitchingMachine.startTime} #time end {timeLogForSwitchingMachine.endTime}");
+                TempLog(
+                    $"Catch block for Save time logs (switching the machine) #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLogForSwitchingMachine.startTime} #time end {timeLogForSwitchingMachine.endTime}"
+                );
                 unsavedTimeLogs.Add(timeLogForSwitchingMachine);
-                AddErrorLog("SaveTimeSlot (switching the machine) Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                AddErrorLog(
+                    "SaveTimeSlot (switching the machine) Error",
+                    $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}"
+                );
                 LogManager.Logger.Info(ex);
             }
             timeLogForSwitchingMachine = new TimeLog();
@@ -920,7 +941,8 @@ namespace TimeTracker.ViewModels
                 {
                     CreateNewTask();
                 }
-                activeWorker.activeApplicationInfomationCollector._focusedApplication = new Dictionary<string, FocushedApplicationDetails>();
+                activeWorker.activeApplicationInfomationCollector._focusedApplication =
+                    new Dictionary<string, FocushedApplicationDetails>();
                 StartApplicationTracker();
                 usedAppDetector.Start();
             }
@@ -928,29 +950,43 @@ namespace TimeTracker.ViewModels
             CanShowRefresh = trackerIsOn ? "Hidden" : "Visible";
             return true;
         }
+
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             try
-            {                
+            {
+                LogManager.Logger.Info("executing dispatcherTimer_Tick");
                 if (trackerIsOn)
                 {
                     var lastInterval = dispatcherTimer.Interval;
                     var currentMinutes = DateTime.UtcNow.Minute;
                     minutesTracked += 10;
                     var randonTime = (rand.Next(2, 9));
-                    double forTimerInterval = ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime) - currentMinutes;
+                    double forTimerInterval =
+                        ((currentMinutes - (currentMinutes % 10)) + 10 + randonTime)
+                        - currentMinutes;
                     dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
                     var filepath = CaptureScreen();
                     CurrentImagePath = filepath;
-
                     saveDispatcherTimer = new DispatcherTimer();
+                    LogManager.Logger.Info(
+                        @$"lastInterval = {dispatcherTimer.Interval};\r\n                    
+                                              currentMinutes = {DateTime .UtcNow .Minute};\r\n                    
+                                              CurrentImagePath = {filepath}"
+                    );
                     saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
                     saveDispatcherTimer.Interval = new TimeSpan(0, 0, 10);
                     saveDispatcherTimer.Start();
-                    var task = Task.Run(async () => await saveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now));
+                    var task = Task.Run(
+                        async () =>
+                            await saveBrowserHistory(
+                                DateTime.Now.Subtract(lastInterval),
+                                DateTime.Now
+                            )
+                    );
                     task.Wait();
-                    
                 }
+                LogManager.Logger.Info("dispatcherTimer_Tick completed");
             }
             catch (Exception ex)
             {
@@ -958,62 +994,74 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Error(ex);
             }
         }
-        private async void  saveTimeSlot_Tick(object sender, EventArgs e)
+
+        private async void saveTimeSlot_Tick(object sender, EventArgs e)
         {
             try
             {
-                CanShowScreenshot = false;                
+                LogManager.Logger.Info(@$"starting saveTimeSlot_Tick");
+
+                CanShowScreenshot = false;
                 var task = Task.Run(async () => await SaveTimeSlot(CurrentImagePath));
-                    task.Wait();
+                task.Wait();
                 var statusCode = task?.Result.statusCode; // Retrieve the result
                 if (statusCode == HttpStatusCode.Unauthorized)
                 {
                     StartStopCommand.Execute(null);
                     Messenger.Default.Send(new NotificationMessage("RestoreWindowMethod"));
                     await ShowErrorMessage("Unauthorized access detected. You will be logged out.");
-                    LogoutCommand.Execute(null);                    
+                    LogoutCommand.Execute(null);
                 }
                 totalKeysPressed = 0;
-                    totalMouseClick = 0;
-                    totalMouseScrolls = 0;
-                    ShowTimeTracked(false);
-                    ShowCurrentTimeTracked();
-                    saveDispatcherTimer.Stop();
-                    CurrentInput = string.Empty;
-            }                        
+                totalMouseClick = 0;
+                totalMouseScrolls = 0;
+                ShowTimeTracked(false);
+                ShowCurrentTimeTracked();
+                saveDispatcherTimer.Stop();
+                CurrentInput = string.Empty;
+                LogManager.Logger.Info(@$"completed saveTimeSlot_Tick");
+            }
             catch (Exception ex)
             {
                 LogManager.Logger.Error(ex);
             }
         }
+
         private string CaptureScreen()
         {
             try
             {
                 AddErrorLog("Info", $"screen captured at: {DateTime.UtcNow}");
                 currentImagePath = Utilities.TimeManager.CaptureMyScreen();
-                var playScreenCaptureSound = Task.Run(async () => await APIService.GetEnableBeepSoundSetting()).Result;
-                
+                var playScreenCaptureSound = Task.Run(
+                    async () => await APIService.GetEnableBeepSoundSetting()
+                ).Result;
+
                 if (playScreenCaptureSound)
                 {
                     PlayMedia.PlayScreenCaptureSound();
                 }
                 CanShowScreenshot = true;
-                Countdown(10, TimeSpan.FromSeconds(1), cur => CountdownTimer = "(" + cur + ")".ToString());
+                Countdown(
+                    10,
+                    TimeSpan.FromSeconds(1),
+                    cur => CountdownTimer = "(" + cur + ")".ToString()
+                );
                 return currentImagePath;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-				LogManager.Logger.Error(ex);
+                LogManager.Logger.Error(ex);
                 throw ex;
-			}
+            }
         }
+
         private void IdlTimeDetectionTimer_Tick(object sender, EventArgs e)
         {
             try
             {
-				LogManager.Logger.Info($"IdlTimeDetectionTimer_Tick execution starts");
-				if (trackerIsOn || userIsInactive)
+                LogManager.Logger.Info($"IdlTimeDetectionTimer_Tick execution starts");
+                if (trackerIsOn || userIsInactive)
                 {
                     var idleTime = IdleTimeDetector.GetIdleTimeInfo();
 
@@ -1042,48 +1090,61 @@ namespace TimeTracker.ViewModels
                         }
                     }
                 }
-				LogManager.Logger.Info($"IdlTimeDetectionTimer_Tick execution ends");
-			}
-            catch(Exception ex)
+                LogManager.Logger.Info($"IdlTimeDetectionTimer_Tick execution ends");
+            }
+            catch (Exception ex)
             {
                 LogManager.Logger.Error(ex);
             }
         }
+
         private void UsedAppDetector_Tick(object sender, EventArgs e)
         {
             StopApplicationTracker();
             StartApplicationTracker();
         }
+
         private async void getCurrentSavedTime()
         {
             timeTrackedSaved = await GetCurrrentdateTimeTracked();
         }
+
         private async Task<TimeSpan> GetCurrrentdateTimeTracked()
         {
             var totalTime = new TimeSpan();
             try
             {
                 var rest = new REST(new HttpProviders());
-                var result = await rest.GetTimeLogs(new TimeLog()
-                {
-                    user = UserId,
-                    date = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)
-                });
+                var result = await rest.GetTimeLogs(
+                    new TimeLog()
+                    {
+                        user = UserId,
+                        date = new DateTime(
+                            DateTime.UtcNow.Year,
+                            DateTime.UtcNow.Month,
+                            DateTime.UtcNow.Day
+                        )
+                    }
+                );
 
                 if (result.data != null)
                 {
                     foreach (var timeLog in result.data)
                     {
                         var trackedTime = timeLog.endTime.Subtract(timeLog.startTime);
-                        totalTime += new TimeSpan(trackedTime.Hours, trackedTime.Minutes, trackedTime.Seconds);
+                        totalTime += new TimeSpan(
+                            trackedTime.Hours,
+                            trackedTime.Minutes,
+                            trackedTime.Seconds
+                        );
                     }
                 }
                 return totalTime;
             }
             catch (Exception ex)
             {
-				LogManager.Logger.Error(ex);
-				return totalTime;
+                LogManager.Logger.Error(ex);
+                return totalTime;
             }
         }
 
@@ -1095,12 +1156,22 @@ namespace TimeTracker.ViewModels
                 var startDateOfWeek = DateTime.Today.AddDays(-1 * (dayOfWeekToday - 1));
                 var totalTime = new TimeSpan();
                 var rest = new REST(new HttpProviders());
-                var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
-                {
-                    user = UserId,
-                    startDate = new DateTime(startDateOfWeek.Date.Year, startDateOfWeek.Date.Month, startDateOfWeek.Date.Day),
-                    endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day),
-                });
+                var result = await rest.GetCurrentWeekTotalTime(
+                    new CurrentWeekTotalTime()
+                    {
+                        user = UserId,
+                        startDate = new DateTime(
+                            startDateOfWeek.Date.Year,
+                            startDateOfWeek.Date.Month,
+                            startDateOfWeek.Date.Day
+                        ),
+                        endDate = new DateTime(
+                            DateTime.UtcNow.Year,
+                            DateTime.UtcNow.Date.Month,
+                            DateTime.UtcNow.Date.Day
+                        ),
+                    }
+                );
                 totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
                 return totalTime;
             }
@@ -1116,12 +1187,22 @@ namespace TimeTracker.ViewModels
             {
                 var totalTime = new TimeSpan();
                 var rest = new REST(new HttpProviders());
-                var result = await rest.GetCurrentWeekTotalTime(new CurrentWeekTotalTime()
-                {
-                    user = UserId,
-                    startDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, 1),
-                    endDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Date.Month, DateTime.UtcNow.Date.Day),
-                });
+                var result = await rest.GetCurrentWeekTotalTime(
+                    new CurrentWeekTotalTime()
+                    {
+                        user = UserId,
+                        startDate = new DateTime(
+                            DateTime.UtcNow.Year,
+                            DateTime.UtcNow.Date.Month,
+                            1
+                        ),
+                        endDate = new DateTime(
+                            DateTime.UtcNow.Year,
+                            DateTime.UtcNow.Date.Month,
+                            DateTime.UtcNow.Date.Day
+                        ),
+                    }
+                );
                 totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
                 return totalTime;
             }
@@ -1135,19 +1216,23 @@ namespace TimeTracker.ViewModels
         {
             return !string.IsNullOrEmpty(taskName) && taskName.Length > 0;
         }
+
         private void ShowTimeTracked(bool currentSessionSaved = false)
         {
             var sessionTimeTracked = TimeSpan.FromMinutes(minutesTracked);
-            CurrentSessionTimeTracked = $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
+            CurrentSessionTimeTracked =
+                $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
             if (currentSessionSaved)
             {
                 TimeSpan totalTimeTracked = timeTrackedSaved;
-                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+                CurrentDayTimeTracked =
+                    $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
             }
             else
             {
-                TimeSpan totalTimeTracked = timeTrackedSaved + TimeSpan.FromMinutes(minutesTracked);// (timeTrackedSaved + sessionTimeTracked);
-                CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+                TimeSpan totalTimeTracked = timeTrackedSaved + TimeSpan.FromMinutes(minutesTracked); // (timeTrackedSaved + sessionTimeTracked);
+                CurrentDayTimeTracked =
+                    $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
             }
         }
 
@@ -1156,17 +1241,21 @@ namespace TimeTracker.ViewModels
             var currentWeekTimeTracked = await GetCurrrentWeekTimeTracked();
             if (currentWeekTimeTracked != null)
             {
-                CurrentWeekTimeTracked = $" {(currentWeekTimeTracked?.Days * 24) + currentWeekTimeTracked?.Hours} hrs {currentWeekTimeTracked?.Minutes.ToString("00")} m";
+                CurrentWeekTimeTracked =
+                    $" {(currentWeekTimeTracked?.Days * 24) + currentWeekTimeTracked?.Hours} hrs {currentWeekTimeTracked?.Minutes.ToString("00")} m";
             }
 
             var currentMonthTimeTracked = await GetCurrrentMonthTimeTracked();
             if (currentMonthTimeTracked != null)
             {
-                CurrentMonthTimeTracked = $"{(currentMonthTimeTracked?.Days * 24) + currentMonthTimeTracked?.Hours} hrs {currentMonthTimeTracked?.Minutes.ToString("00")} m";
+                CurrentMonthTimeTracked =
+                    $"{(currentMonthTimeTracked?.Days * 24) + currentMonthTimeTracked?.Hours} hrs {currentMonthTimeTracked?.Minutes.ToString("00")} m";
             }
         }
 
-        private async Task<(TimeLog timeLog, HttpStatusCode statusCode)> SaveTimeSlot(string filePath)
+        private async Task<(TimeLog timeLog, HttpStatusCode statusCode)> SaveTimeSlot(
+            string filePath
+        )
         {
             Byte[] bytes = File.ReadAllBytes(filePath);
             String file = Convert.ToBase64String(bytes);
@@ -1182,7 +1271,7 @@ namespace TimeTracker.ViewModels
                 fileString = file,
                 filePath = fileName,
                 keysPressed = totalKeysPressed,
-                allKeysPressed= CurrentInput,
+                allKeysPressed = CurrentInput,
                 clicks = totalMouseClick,
                 scrolls = totalMouseScrolls,
                 project = SelectedProject._id,
@@ -1193,8 +1282,12 @@ namespace TimeTracker.ViewModels
             {
                 if (!CheckInternetConnectivity.IsConnectedToInternet())
                 {
-                    LogManager.Logger.Info($"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}");
-                    TempLog($"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}");
+                    LogManager.Logger.Info(
+                        $"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}"
+                    );
+                    TempLog(
+                        $"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}"
+                    );
                     unsavedTimeLogs.Add(timeLog);
                     ShowErrorMessage("Please check your internet connectivity.");
                     return (null, HttpStatusCode.OK);
@@ -1206,15 +1299,21 @@ namespace TimeTracker.ViewModels
                     return (null, HttpStatusCode.Unauthorized);
                 }
                 AddErrorLog("Info", $"machineId {machineId} Message {result?.data?.message ?? ""}");
-                LogManager.Logger.Info($"machineId {machineId} Message {result?.data?.message ?? ""}");
+                LogManager.Logger.Info(
+                    $"machineId {machineId} Message {result?.data?.message ?? ""}"
+                );
                 if (!string.IsNullOrEmpty(result.data.message))
                 {
-                    if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
+                    if (
+                        result.data.message.Contains(
+                            "User is logged in on another device, Do you want to make it active?"
+                        )
+                    )
                     {
                         PopupForSwitchTracker = true;
                         timeLogForSwitchingMachine = timeLog;
                         minutesTracked = 0;
-                        return (null,HttpStatusCode.OK);
+                        return (null, HttpStatusCode.OK);
 
                         #region"not in use"
                         //var isConfirm = MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo);
@@ -1233,31 +1332,45 @@ namespace TimeTracker.ViewModels
                         #endregion
                     }
                 }
-                else if(unsavedTimeLogs.Count > 0)
+                else if (unsavedTimeLogs.Count > 0)
                 {
                     timeLog = null;
                     var tempUnsavedTimeLogs = unsavedTimeLogs;
                     foreach (var unsavedTimeLog in tempUnsavedTimeLogs.ToArray())
                     {
-                        TempLog($"Save unsaved time #logs start Time {unsavedTimeLog.startTime} #log end Time {unsavedTimeLog.endTime}");
+                        TempLog(
+                            $"Save unsaved time #logs start Time {unsavedTimeLog.startTime} #log end Time {unsavedTimeLog.endTime}"
+                        );
                         AddErrorLog("Info", $"Save unsaved log from SaveTimeSlot");
-                        LogManager.Logger.Info($"Save unsaved time #logs start Time {unsavedTimeLog.startTime} #log end Time {unsavedTimeLog.endTime}");
+                        LogManager.Logger.Info(
+                            $"Save unsaved time #logs start Time {unsavedTimeLog.startTime} #log end Time {unsavedTimeLog.endTime}"
+                        );
                         var unsavedLogResult = await rest.AddTimeLog(unsavedTimeLog);
                         unsavedTimeLogs.Remove(unsavedTimeLog);
                     }
                     tempUnsavedTimeLogs = null;
                 }
-                return  (result?.data, result?.statusCode ?? HttpStatusCode.InternalServerError); ;
-            }            
+                LogManager.Logger.Info(@$"completed SaveTimeSlot");
+                return (result?.data, result?.statusCode ?? HttpStatusCode.InternalServerError);
+                ;
+            }
             catch (Exception ex)
             {
-                TempLog($"Catch block for Save time logs #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLog.startTime} #time end {timeLog.endTime}");
+                TempLog(
+                    $"Catch block for Save time logs #Local Time {DateTime.Now} #UTC Time {DateTime.UtcNow} #time start {timeLog.startTime} #time end {timeLog.endTime}"
+                );
                 if (timeLog != null)
                 {
                     unsavedTimeLogs.Add(timeLog);
                 }
-                AddErrorLog("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-				LogManager.Logger.Error("SaveTimeSlot Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                AddErrorLog(
+                    "SaveTimeSlot Error",
+                    $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}"
+                );
+                LogManager.Logger.Error(
+                    "SaveTimeSlot Error",
+                    $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}"
+                );
                 return default;
             }
         }
@@ -1271,13 +1384,15 @@ namespace TimeTracker.ViewModels
                 if (SelectedProject != null && SelectedProject._id.Length > 0)
                 {
                     var rest = new REST(new HttpProviders());
-                    var taskList = await rest.GetTaskListByProject(new TaskRequest()
-                    {
-                        projectId = SelectedProject._id,
-                        userId = GlobalSetting.Instance.LoginResult.data.user.id,
-                        skip="",
-                        next=""
-                    });
+                    var taskList = await rest.GetTaskListByProject(
+                        new TaskRequest()
+                        {
+                            projectId = SelectedProject._id,
+                            userId = GlobalSetting.Instance.LoginResult.data.user.id,
+                            skip = "",
+                            next = ""
+                        }
+                    );
 
                     if (taskList.status == "success" && taskList.taskList != null)
                     {
@@ -1285,21 +1400,22 @@ namespace TimeTracker.ViewModels
                         taskList.taskList.ForEach(t =>
                         {
                             if (t.status.ToLower() != "closed" && t.status.ToLower() != "done")
-                                projectTaskList.Add(new ProjectTask()
-                                {
-                                    taskName = t.taskName,
-                                    description = t.description,
-                                    _id = t.id
-                                });
+                                projectTaskList.Add(
+                                    new ProjectTask()
+                                    {
+                                        taskName = t.taskName,
+                                        description = t.description,
+                                        _id = t.id
+                                    }
+                                );
                         });
                         Tasks = projectTaskList;
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
+            finally
             {
-            }
-            finally {
                 ProgressWidthStart = 0;
             }
         }
@@ -1356,20 +1472,16 @@ namespace TimeTracker.ViewModels
                 //    details = details
                 //});
             }
-            catch (Exception ex)
-            {
-
-            }
+            catch (Exception ex) { }
         }
 
         private async void BindProjectList()
         {
             Projects = null;
             var rest = new REST(new HttpProviders());
-            var projectList = await rest.GetProjectListByUserId(new ProjectRequest
-            {
-                userId = GlobalSetting.Instance.LoginResult.data.user.id
-            });
+            var projectList = await rest.GetProjectListByUserId(
+                new ProjectRequest { userId = GlobalSetting.Instance.LoginResult.data.user.id }
+            );
 
             if (projectList.status == "success" && projectList.data != null)
             {
@@ -1377,8 +1489,10 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private async void populateUserName() {
-            UserFullName = $"Welcome, {GlobalSetting.Instance.LoginResult.data.user.firstName} {GlobalSetting.Instance.LoginResult.data.user.lastName}.";             
+        private async void populateUserName()
+        {
+            UserFullName =
+                $"Welcome, {GlobalSetting.Instance.LoginResult.data.user.firstName} {GlobalSetting.Instance.LoginResult.data.user.lastName}.";
         }
 
         private async void CreateNewTask()
@@ -1387,31 +1501,34 @@ namespace TimeTracker.ViewModels
             {
                 var taskUsers = new string[] { GlobalSetting.Instance.LoginResult.data.user.id };
                 var rest = new REST(new HttpProviders());
-                var newTaskResult = await rest.AddNewTask(new CreateTaskRequest
-                {
-                    taskName = taskName,
-                    comment = "Created by TimeTracker",
-                    project = SelectedProject._id,
-                    taskUsers = taskUsers,
-                    user = GlobalSetting.Instance.LoginResult.data.user.id,
-                    description = TaskDescription,
-                    endDate = null,
-                    priority = null,
-                    startDate = DateTime.UtcNow,
-                    startTime = DateTime.UtcNow,
-                    taskAttachments = null,
-                    title = "Task",
-                    status = "In Progress"
-                });
+                var newTaskResult = await rest.AddNewTask(
+                    new CreateTaskRequest
+                    {
+                        taskName = taskName,
+                        comment = "Created by TimeTracker",
+                        project = SelectedProject._id,
+                        taskUsers = taskUsers,
+                        user = GlobalSetting.Instance.LoginResult.data.user.id,
+                        description = TaskDescription,
+                        endDate = null,
+                        priority = null,
+                        startDate = DateTime.UtcNow,
+                        startTime = DateTime.UtcNow,
+                        taskAttachments = null,
+                        title = "Task",
+                        status = "In Progress"
+                    }
+                );
                 if (newTaskResult?.status.ToUpper() == "SUCCESS")
                 {
                     ShowInformationMessage("Task has been created");
                     SelectedTask = newTaskResult.data.newTask;
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 LogManager.Logger.Error($"Error in CreateNewTask(): {ex}");
-			}
+            }
         }
 
         private void ShowLog(IEnumerable<ErrorLog> errorLogList)
@@ -1436,7 +1553,10 @@ namespace TimeTracker.ViewModels
                 }
                 foreach (var errorLog in errorLogList)
                 {
-                    sw.WriteLine("{0}", $"{errorLog.createdOn.ToLocalTime()} {errorLog.error} {errorLog.details}");
+                    sw.WriteLine(
+                        "{0}",
+                        $"{errorLog.createdOn.ToLocalTime()} {errorLog.error} {errorLog.details}"
+                    );
                 }
                 sw.Flush();
                 sw.Close();
@@ -1445,10 +1565,13 @@ namespace TimeTracker.ViewModels
             }
             catch (Exception ex)
             {
-                AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                AddErrorLog(
+                    "Error",
+                    $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}"
+                );
                 MessageBox.Show(ex.Message);
-				LogManager.Logger.Error(ex);
-			}
+                LogManager.Logger.Error(ex);
+            }
         }
 
         private void TempStoreApplicationUsed(Dictionary<string, FocushedApplicationDetails> ne)
@@ -1483,62 +1606,77 @@ namespace TimeTracker.ViewModels
                     totalmous += ne[j].TotalMouseClick;
                     totalmousesc += ne[j].TotalMouseScrolls;
                     totalKeybo += ne[j].TotalKeysPressed;
-                    sw.WriteLine("{0}", $"{j} ## {ne[j].AppTitle} ## {ne[j].Duration} # Keycount # {ne[j].TotalKeysPressed} # Mouse Count # {ne[j].TotalMouseClick} # Scroll Count # {ne[j].TotalMouseScrolls} # total Inactive # {ne[j].TotalIdletime}");
+                    sw.WriteLine(
+                        "{0}",
+                        $"{j} ## {ne[j].AppTitle} ## {ne[j].Duration} # Keycount # {ne[j].TotalKeysPressed} # Mouse Count # {ne[j].TotalMouseClick} # Scroll Count # {ne[j].TotalMouseScrolls} # total Inactive # {ne[j].TotalIdletime}"
+                    );
                 }
-                sw.WriteLine("{0}", $" totalMilisecons {totalMilisecons} # totalIdleTime {totalIdleTime} # mouse {totalmous} # mousescro {totalmousesc} # keyboard {totalKeybo}");
+                sw.WriteLine(
+                    "{0}",
+                    $" totalMilisecons {totalMilisecons} # totalIdleTime {totalIdleTime} # mouse {totalmous} # mousescro {totalmousesc} # keyboard {totalKeybo}"
+                );
                 sw.Flush();
                 sw.Close();
             }
             catch (Exception ex)
             {
-                AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                AddErrorLog(
+                    "Error",
+                    $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}"
+                );
                 MessageBox.Show(ex.Message);
             }
         }
 
         private void StartApplicationTracker()
         {
-            System.Threading.Thread activeThread = new System.Threading.Thread(activeWorker.StartThread);
+            System.Threading.Thread activeThread = new System.Threading.Thread(
+                activeWorker.StartThread
+            );
             activeWorker.StopThread(true);
             activeThread.Start();
         }
 
         private async void StopApplicationTracker()
         {
-            try {
+            try
+            {
                 activeWorker.StopThread(false);
-                var focusedApplication = activeWorker.activeApplicationInfomationCollector._focusedApplication;
+                var focusedApplication = activeWorker
+                    .activeApplicationInfomationCollector
+                    ._focusedApplication;
 
                 if (focusedApplication != null)
                 {
                     // Create a snapshot of the keys to avoid modifying the collection during iteration
                     foreach (var key in focusedApplication.Keys)
                     {
-                        await AddUsedApplicationLog(new ApplicationLog
-                        {
-                            appWebsite = key,
-                            type = "App",
-                            ApplicationTitle = focusedApplication[key].AppTitle,
-                            projectReference = SelectedProject._id,
-                            userReference = GlobalSetting.Instance.LoginResult.data.user.id,
-                            date = DateTime.UtcNow,
-                            inactive = focusedApplication[key].TotalIdletime,
-                            keyboardStrokes = focusedApplication[key].TotalKeysPressed,
-                            mouseClicks = focusedApplication[key].TotalMouseClick,
-                            scrollingNumber = focusedApplication[key].TotalMouseScrolls,
-                            ModuleName = SelectedProject.projectName,
-                            TimeSpent = focusedApplication[key].Duration,
-                            total = focusedApplication[key].Duration
-                        });
+                        await AddUsedApplicationLog(
+                            new ApplicationLog
+                            {
+                                appWebsite = key,
+                                type = "App",
+                                ApplicationTitle = focusedApplication[key].AppTitle,
+                                projectReference = SelectedProject._id,
+                                userReference = GlobalSetting.Instance.LoginResult.data.user.id,
+                                date = DateTime.UtcNow,
+                                inactive = focusedApplication[key].TotalIdletime,
+                                keyboardStrokes = focusedApplication[key].TotalKeysPressed,
+                                mouseClicks = focusedApplication[key].TotalMouseClick,
+                                scrollingNumber = focusedApplication[key].TotalMouseScrolls,
+                                ModuleName = SelectedProject.projectName,
+                                TimeSpent = focusedApplication[key].Duration,
+                                total = focusedApplication[key].Duration
+                            }
+                        );
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-            }            
+            }
         }
-
 
         private async Task AddUsedApplicationLog(ApplicationLog applicationLog)
         {
@@ -1551,7 +1689,7 @@ namespace TimeTracker.ViewModels
                 if (unsavedApplicationLog.Count > 0)
                 {
                     var tempApplicationLog = unsavedApplicationLog;
-                    foreach(var app in tempApplicationLog.ToArray())
+                    foreach (var app in tempApplicationLog.ToArray())
                     {
                         TempLog($"Save unsaved app and website used # {app.ModuleName}");
                         AddErrorLog("Info", $"Save unsaved app and website used");
@@ -1567,7 +1705,10 @@ namespace TimeTracker.ViewModels
                 {
                     unsavedApplicationLog.Add(applicationLog);
                 }
-                AddErrorLog("Error AddUsedApplicationLog", $"Message: {ex?.Message} ex.StackTrace:{ex?.StackTrace} InnerException: {ex?.InnerException?.InnerException}");
+                AddErrorLog(
+                    "Error AddUsedApplicationLog",
+                    $"Message: {ex?.Message} ex.StackTrace:{ex?.StackTrace} InnerException: {ex?.InnerException?.InnerException}"
+                );
             }
         }
 
@@ -1589,7 +1730,11 @@ namespace TimeTracker.ViewModels
 
             foreach (var baseboard in win32BaseBoard.Get())
             {
-                if (!string.IsNullOrEmpty(Convert.ToString(baseboard.GetPropertyValue("SerialNumber"))))
+                if (
+                    !string.IsNullOrEmpty(
+                        Convert.ToString(baseboard.GetPropertyValue("SerialNumber"))
+                    )
+                )
                 {
                     machineId += baseboard.GetPropertyValue("SerialNumber").ToString();
                     break;
@@ -1610,7 +1755,11 @@ namespace TimeTracker.ViewModels
             LogManager.Logger.Info($"checkForUnsavedLog() called on close");
             if (unsavedTimeLogs?.Count > 0)
             {
-                var isConfirm = MessageBox.Show($"There are some logs saved locally. Do you want to save this to the server before closing the application? Otherwise, the data will be lost.", "Confirmation", MessageBoxButtons.YesNo);
+                var isConfirm = MessageBox.Show(
+                    $"There are some logs saved locally. Do you want to save this to the server before closing the application? Otherwise, the data will be lost.",
+                    "Confirmation",
+                    MessageBoxButtons.YesNo
+                );
                 if (isConfirm == DialogResult.Yes)
                 {
                     if (!CheckInternetConnectivity.IsConnectedToInternet())
@@ -1624,16 +1773,36 @@ namespace TimeTracker.ViewModels
                     foreach (var unsavedTimeLog in tempUnsavedTimeLogs.ToArray())
                     {
                         var result = await rest.AddTimeLog(unsavedTimeLog);
-                        AddErrorLog("Info saved from checkForUnsavedLog()", $"machineId {machineId} Message {result?.data?.message ?? ""}");
-                        LogManager.Logger.Info("Info saved from checkForUnsavedLog() after save time log", $"machineId {machineId} Message {result?.data?.message ?? ""}");
+                        AddErrorLog(
+                            "Info saved from checkForUnsavedLog()",
+                            $"machineId {machineId} Message {result?.data?.message ?? ""}"
+                        );
+                        LogManager.Logger.Info(
+                            "Info saved from checkForUnsavedLog() after save time log",
+                            $"machineId {machineId} Message {result?.data?.message ?? ""}"
+                        );
                         if (!string.IsNullOrEmpty(result?.data?.message))
                         {
-                            if (result.data.message.Contains("User is logged in on another device, Do you want to make it active?"))
+                            if (
+                                result.data.message.Contains(
+                                    "User is logged in on another device, Do you want to make it active?"
+                                )
+                            )
                             {
-                                if (MessageBox.Show(new Form() { TopMost = true }, $"{result.data.message}", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                if (
+                                    MessageBox.Show(
+                                        new Form() { TopMost = true },
+                                        $"{result.data.message}",
+                                        "Confirmation",
+                                        MessageBoxButtons.YesNo
+                                    ) == DialogResult.Yes
+                                )
                                 {
                                     unsavedTimeLog.makeThisDeviceActive = true;
-                                    LogManager.Logger.Info("Info saved from checkForUnsavedLog() after save time log for other system", $"machineId {machineId} Message {result?.data?.message ?? ""}");
+                                    LogManager.Logger.Info(
+                                        "Info saved from checkForUnsavedLog() after save time log for other system",
+                                        $"machineId {machineId} Message {result?.data?.message ?? ""}"
+                                    );
                                     result = await rest.AddTimeLog(unsavedTimeLog);
                                 }
                             }
@@ -1641,12 +1810,10 @@ namespace TimeTracker.ViewModels
                         unsavedTimeLogs.Remove(unsavedTimeLog);
                     }
                     SystemWindows.Application.Current.Shutdown();
-
                 }
                 else
                 {
                     SystemWindows.Application.Current.Shutdown();
-
                 }
             }
         }
@@ -1654,10 +1821,19 @@ namespace TimeTracker.ViewModels
         #region "Live screen functions"
         private async void ShareLiveScreen_Tick(object sender, EventArgs e)
         {
-            Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            Bitmap screenshot = new Bitmap(
+                Screen.PrimaryScreen.Bounds.Width,
+                Screen.PrimaryScreen.Bounds.Height
+            );
             using (Graphics g = Graphics.FromImage(screenshot))
             {
-                g.CopyFromScreen(Screen.PrimaryScreen.Bounds.X, Screen.PrimaryScreen.Bounds.Y, 0, 0, screenshot.Size);
+                g.CopyFromScreen(
+                    Screen.PrimaryScreen.Bounds.X,
+                    Screen.PrimaryScreen.Bounds.Y,
+                    0,
+                    0,
+                    screenshot.Size
+                );
             }
 
             using (MemoryStream stream = new MemoryStream())
@@ -1666,10 +1842,9 @@ namespace TimeTracker.ViewModels
 
                 screenshot.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
 
-                await rest.sendLiveScreenDataV1(new LiveImageRequest
-                {
-                    fileString = Convert.ToBase64String(stream.ToArray())
-                });
+                await rest.sendLiveScreenDataV1(
+                    new LiveImageRequest { fileString = Convert.ToBase64String(stream.ToArray()) }
+                );
             }
         }
 
@@ -1677,10 +1852,19 @@ namespace TimeTracker.ViewModels
         {
             try
             {
-                Bitmap screenshot = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+                Bitmap screenshot = new Bitmap(
+                    Screen.PrimaryScreen.Bounds.Width,
+                    Screen.PrimaryScreen.Bounds.Height
+                );
                 using (Graphics g = Graphics.FromImage(screenshot))
                 {
-                    g.CopyFromScreen(Screen.PrimaryScreen.Bounds.X, Screen.PrimaryScreen.Bounds.Y, 0, 0, screenshot.Size);
+                    g.CopyFromScreen(
+                        Screen.PrimaryScreen.Bounds.X,
+                        Screen.PrimaryScreen.Bounds.Y,
+                        0,
+                        0,
+                        screenshot.Size
+                    );
                 }
 
                 using (MemoryStream stream = new MemoryStream())
@@ -1689,10 +1873,12 @@ namespace TimeTracker.ViewModels
 
                     screenshot.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
 
-                    await rest.sendLiveScreenDataV1(new LiveImageRequest
-                    {
-                        fileString = Convert.ToBase64String(stream.ToArray())
-                    });
+                    await rest.sendLiveScreenDataV1(
+                        new LiveImageRequest
+                        {
+                            fileString = Convert.ToBase64String(stream.ToArray())
+                        }
+                    );
                 }
             }
             catch (Exception ex)
@@ -1707,10 +1893,7 @@ namespace TimeTracker.ViewModels
             try
             {
                 var rest = new REST(new HttpProviders());
-                var response = await rest.checkLiveScreen(new TaskUser
-                {
-                    user = UserId
-                });
+                var response = await rest.checkLiveScreen(new TaskUser { user = UserId });
 
                 if (response != null)
                 {
@@ -1719,7 +1902,12 @@ namespace TimeTracker.ViewModels
                         if (!isLiveImageRunning)
                         {
                             isLiveImageRunning = true;
-                            sendImageRegularly = new System.Threading.Timer(async (_) => await SendLiveImage(), null, TimeSpan.Zero, TimeSpan.FromMilliseconds(frequencyOfLiveImage));
+                            sendImageRegularly = new System.Threading.Timer(
+                                async (_) => await SendLiveImage(),
+                                null,
+                                TimeSpan.Zero,
+                                TimeSpan.FromMilliseconds(frequencyOfLiveImage)
+                            );
 
                             //isLiveImageRunning = true;
                             //System.Windows.Forms.Application.Current.Dispatcher.Invoke(async () =>
@@ -1754,10 +1942,12 @@ namespace TimeTracker.ViewModels
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 TempLog($"live screen error CheckForLiveScreen_Tick : {ex.Message}");
-                LogManager.Logger.Error($"live screen error CheckForLiveScreen_Tick : {ex.Message}");
+                LogManager.Logger.Error(
+                    $"live screen error CheckForLiveScreen_Tick : {ex.Message}"
+                );
             }
         }
         #endregion
@@ -1784,7 +1974,7 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 LogManager.Logger.Error($"Error while saveBrowserHistory(): {ex}");
-			}
+            }
         }
         #endregion
 
@@ -1807,10 +1997,7 @@ namespace TimeTracker.ViewModels
                 //    ListenForWebSocketMessages();
                 //}
             }
-            catch (Exception ex)
-            {
-
-            }
+            catch (Exception ex) { }
         }
 
         private async void ListenForWebSocketMessages()
@@ -1821,21 +2008,29 @@ namespace TimeTracker.ViewModels
 
                 while (webSocket.State == WebSocketState.Open)
                 {
-                    var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    var result = await webSocket.ReceiveAsync(
+                        new ArraySegment<byte>(buffer),
+                        CancellationToken.None
+                    );
 
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        await webSocket.CloseAsync(
+                            WebSocketCloseStatus.NormalClosure,
+                            "",
+                            CancellationToken.None
+                        );
                         //break;
                     }
 
                     if (result.MessageType == WebSocketMessageType.Text)
                     {
                         // Parse incoming message to determine event to trigger
-                        var eventData = JsonConvert.DeserializeObject<EventData>(Encoding.UTF8.GetString(buffer, 0, result.Count));
+                        var eventData = JsonConvert.DeserializeObject<EventData>(
+                            Encoding.UTF8.GetString(buffer, 0, result.Count)
+                        );
 
-                        Thread thread = new Thread(() =>
-                        {
+                        Thread thread = new Thread(() => {
                             //DispatcherTimerThread(shareLiveScreen);
                         });
 
@@ -1852,9 +2047,10 @@ namespace TimeTracker.ViewModels
                     }
                 }
             }
-            catch (Exception ex) {
-				LogManager.Logger.Error(ex);
-			}
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(ex);
+            }
         }
 
         private static void DispatcherTimerThread(DispatcherTimer shareLiveScreen)
@@ -1864,7 +2060,8 @@ namespace TimeTracker.ViewModels
 
             // Keep the thread alive so that the timer can continue executing
             Dispatcher.Run();
-        }        
+        }
+
         private async Task ShowErrorMessage(string errorMessage)
         {
             MessageColor = "red";
@@ -1894,12 +2091,16 @@ namespace TimeTracker.ViewModels
         }
 
         #endregion
+
         #region "Save log into Temp"
         private void TempLog(string message)
         {
             string tempPath = Path.GetTempPath();
             //string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now.ToString("ddMMyyyyHHmmss")}.log");
-            string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now.ToString("ddMMyyyy")}.log");
+            string path = Path.Combine(
+                tempPath,
+                $"trackerlog_{DateTime.Now.ToString("ddMMyyyy")}.log"
+            );
             try
             {
                 StreamWriter sw;
@@ -1913,18 +2114,23 @@ namespace TimeTracker.ViewModels
                 }
 
                 sw.WriteLine($"{DateTime.Now.ToString()} Info : {message}");
-                
+
                 sw.Flush();
                 sw.Close();
             }
             catch (Exception ex)
             {
-                LogManager.Logger.Error($"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
-                AddErrorLog("Error", $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}");
+                LogManager.Logger.Error(
+                    $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}"
+                );
+                AddErrorLog(
+                    "Error",
+                    $"Message: {ex?.Message} StackTrace: {ex?.StackTrace} innerException: {ex?.InnerException?.InnerException}"
+                );
                 MessageBox.Show(ex.Message);
-				LogManager.Logger.Error(ex);
-			}
-        }       
+                LogManager.Logger.Error(ex);
+            }
+        }
         #endregion
     }
 }

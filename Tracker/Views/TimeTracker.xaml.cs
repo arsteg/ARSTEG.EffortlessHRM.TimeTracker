@@ -1,12 +1,11 @@
-using Microsoft.Win32;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -17,11 +16,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using TimeTracker.ViewModels;
+using GalaSoft.MvvmLight.Messaging;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using TimeTracker.Models;
 using TimeTracker.Trace;
-using System.Drawing;
-using GalaSoft.MvvmLight.Messaging;
+using TimeTracker.ViewModels;
 
 namespace TimeTracker.Views
 {
@@ -32,38 +32,43 @@ namespace TimeTracker.Views
     {
         public TimeTracker()
         {
-            try { 
-            InitializeComponent();
-
-            UpdatePopupPosition();
-            System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
-            ni.Icon = ConvertImageToIcon(@$"{System.AppDomain.CurrentDomain.BaseDirectory}Media\Images\smallLogo.png");
-            ni.Text = "EffortlessHRM- Time Tracker";
-            ni.Visible = true;                
-            ni.DoubleClick +=
-            delegate (object sender, EventArgs args)
+            try
             {
-                this.Show();
-                this.WindowState = WindowState.Normal;
-            };                
+                InitializeComponent();
+
+                UpdatePopupPosition();
+                System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
+                ni.Icon = ConvertImageToIcon(
+                    @$"{System.AppDomain.CurrentDomain.BaseDirectory}Media\Images\smallLogo.png"
+                );
+                ni.Text = "EffortlessHRM- Time Tracker";
+                ni.Visible = true;
+                ni.DoubleClick += delegate(object sender, EventArgs args)
+                {
+                    this.Show();
+                    this.WindowState = WindowState.Normal;
+                };
 
                 // Register to listen for the message
-                Messenger.Default.Register<NotificationMessage>(this, message =>
-                {
-                    if (message.Notification == "RestoreWindowMethod")
+                Messenger.Default.Register<NotificationMessage>(
+                    this,
+                    message =>
                     {
-                        RestoreWindow();
+                        if (message.Notification == "RestoreWindowMethod")
+                        {
+                            RestoreWindow();
+                        }
                     }
-                });                
+                );
+                LoadUserSettings();
             }
             catch (Exception ex)
             {
                 LogManager.Logger.Error(ex);
             }
-
         }
 
-        private System.Drawing.Icon ConvertImageToIcon( string imagePath )
+        private System.Drawing.Icon ConvertImageToIcon(string imagePath)
         {
             using (Bitmap bitmap = new Bitmap(imagePath))
             {
@@ -102,10 +107,11 @@ namespace TimeTracker.Views
             var popupHeight = popupControl.ActualHeight;
 
             popupControl.PlacementRectangle = new Rect(
-              screenWidth + 140,
-              screenHeight - popupHeight,
-              popupWidth,
-              popupHeight);
+                screenWidth + 140,
+                screenHeight - popupHeight,
+                popupWidth,
+                popupHeight
+            );
         }
 
         private void Thumb_OnDragDelta(object sender, DragDeltaEventArgs e)
@@ -118,6 +124,7 @@ namespace TimeTracker.Views
         {
             this.WindowState = WindowState.Minimized;
         }
+
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -125,16 +132,18 @@ namespace TimeTracker.Views
                 this.DragMove();
             }
         }
+
         private void BtnActionMinimize_OnClick(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
+
         private void btnActionClose_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
 
-        private void btnActionClose_Click( object sender, MouseButtonEventArgs e )
+        private void btnActionClose_Click(object sender, MouseButtonEventArgs e)
         {
             Application.Current.Shutdown();
         }
@@ -148,6 +157,34 @@ namespace TimeTracker.Views
             }
             this.Activate();
             this.Focus();
-        }        
+        }
+
+        private void LoggingToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.Tag is string logLevel)
+            {
+                LogManager.SetLoggingEnabled(logLevel, true);
+            }
+        }
+
+        private void LoggingToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.Tag is string logLevel)
+            {
+                LogManager.SetLoggingEnabled(logLevel, false);
+            }
+        }
+
+        private void LoadUserSettings()
+        {
+            LogManager.SetLoggingEnabled("Info", Properties.Settings.Default.EnableInfoLogging);
+            LogManager.SetLoggingEnabled("Warn", Properties.Settings.Default.EnableWarnLogging);
+            LogManager.SetLoggingEnabled("Error", Properties.Settings.Default.EnableErrorLogging);
+
+            // Update UI
+            InfoCheckBox.IsChecked = Properties.Settings.Default.EnableInfoLogging;
+            WarnCheckBox.IsChecked = Properties.Settings.Default.EnableWarnLogging;
+            ErrorCheckBox.IsChecked = Properties.Settings.Default.EnableErrorLogging;
+        }
     }
 }

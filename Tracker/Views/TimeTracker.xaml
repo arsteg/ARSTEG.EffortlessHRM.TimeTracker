@@ -160,9 +160,28 @@
                                             </Icons:PackIconMaterial>
                                         </MenuItem.Icon>
                                         <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
-                                        <MenuItem Header="Log" Command="{Binding LogCommand}">
-                                        </MenuItem>                                        
+                                        
                                         <MenuItem Header="Productivity Applications" Command="{Binding ProductivityApplicationCommand}">
+                                        </MenuItem>
+                                        <MenuItem Header="View Logs" Command="{Binding LogCommand}"/>
+                                        <MenuItem Header="Enable Logging">
+                                            <StackPanel Orientation="Vertical">
+                                                <CheckBox Content="Enable Info Logging" x:Name="InfoCheckBox"
+              IsChecked="True"
+              Checked="LoggingToggle_Checked"
+              Unchecked="LoggingToggle_Unchecked"
+              Tag="Info" />
+                                                <CheckBox Content="Enable Warning Logging" x:Name="WarnCheckBox"
+              IsChecked="True"
+              Checked="LoggingToggle_Checked"
+              Unchecked="LoggingToggle_Unchecked"
+              Tag="Warn" />
+                                                <CheckBox Content="Enable Error Logging" x:Name="ErrorCheckBox"
+              IsChecked="True"
+              Checked="LoggingToggle_Checked"
+              Unchecked="LoggingToggle_Unchecked"
+              Tag="Error" />
+                                            </StackPanel>
                                         </MenuItem>
                                     </MenuItem>
                                 </Menu>

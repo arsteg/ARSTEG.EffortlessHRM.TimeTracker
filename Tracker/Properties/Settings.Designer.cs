@@ -46,5 +46,41 @@ namespace TimeTracker.Properties {
                 this["userPassword"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableInfoLogging {
+            get {
+                return ((bool)(this["EnableInfoLogging"]));
+            }
+            set {
+                this["EnableInfoLogging"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableWarnLogging {
+            get {
+                return ((bool)(this["EnableWarnLogging"]));
+            }
+            set {
+                this["EnableWarnLogging"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableErrorLogging {
+            get {
+                return ((bool)(this["EnableErrorLogging"]));
+            }
+            set {
+                this["EnableErrorLogging"] = value;
+            }
+        }
     }
 }

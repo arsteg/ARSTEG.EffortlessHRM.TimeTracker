@@ -13,19 +13,19 @@ namespace TimeTracker.Models
         public Window LoginView { get; set; }
 
         public Window ProductivityAppsSettings { get; set; }
-        //public const string apiBaseUrl = "http://localhost:8080";                
-        public const string apiBaseUrl = "https://effortlesshrmapi.azurewebsites.net";
-        //public const string apiBaseUrl = "https://effortlesshrm-e029cd6a5095.herokuapp.com";        
-        
+
+        //public const string apiBaseUrl = "http://localhost:8080";
+        //public const string apiBaseUrl = "https://effortlesshrmapi.azurewebsites.net";
+        public const string apiBaseUrl = "https://effortlesshrm-e029cd6a5095.herokuapp.com";
+
         public const string portalBaseUrl = "https://www.effortlesshrm.com/";
 
-        
         public const string EmailReceiver = "info@arsteg.com";
 
         public const string ApiKey = "ec86b9ecfee30654";
-        public GlobalSetting()
-        {
-        }
+
+        public GlobalSetting() { }
+
         public static GlobalSetting Instance { get; } = new GlobalSetting();
 
         private string ExtractBaseUri(string endpoint)

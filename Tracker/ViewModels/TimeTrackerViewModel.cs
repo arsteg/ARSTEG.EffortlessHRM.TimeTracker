@@ -857,7 +857,7 @@ namespace TimeTracker.ViewModels
             try
             {
                 var taskUrl =
-                    $"{GlobalSetting.portalBaseUrl}#/edit-task?taskId={this.SelectedTask._id}";
+                    $"{GlobalSetting.portalBaseUrl}#/home/edit-task?taskId={this.SelectedTask._id}";
                 Process.Start(new ProcessStartInfo(taskUrl) { UseShellExecute = true });
             }
             catch (Exception ex)

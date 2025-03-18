@@ -39,7 +39,7 @@ namespace TimeTracker.ViewModels
         private DispatcherTimer deleteImagePath = new DispatcherTimer();
         private DispatcherTimer usedAppDetector = new DispatcherTimer();
 
-        //private DispatcherTimer shareLiveScreen = new DispatcherTimer();
+        private DispatcherTimer shareLiveScreen = new DispatcherTimer();
         private DispatcherTimer checkForLiveScreen = new DispatcherTimer();
         private System.Threading.Timer sendImageRegularly;
         private double frequencyOfLiveImage = 1000;
@@ -99,11 +99,11 @@ namespace TimeTracker.ViewModels
             usedAppDetector.Interval = TimeSpan.FromMinutes(10);
 
             #region "live screen"
-            //shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
-            //shareLiveScreen.Interval = TimeSpan.FromMilliseconds(1000);
-            //checkForLiveScreen.Tick += new EventHandler(CheckForLiveScreen_Tick);
-            //checkForLiveScreen.Interval = new TimeSpan(00, 00, 30);
-            //checkForLiveScreen.Start();
+            shareLiveScreen.Tick += new EventHandler(ShareLiveScreen_Tick);
+            shareLiveScreen.Interval = TimeSpan.FromMilliseconds(5000);
+            checkForLiveScreen.Tick += new EventHandler(CheckForLiveScreen_Tick);
+            checkForLiveScreen.Interval = new TimeSpan(00, 00, 30);
+            checkForLiveScreen.Start();
             #endregion
 
             minutesTracked = 0;
@@ -1821,28 +1821,53 @@ namespace TimeTracker.ViewModels
         #region "Live screen functions"
         private async void ShareLiveScreen_Tick(object sender, EventArgs e)
         {
-            Bitmap screenshot = new Bitmap(
-                Screen.PrimaryScreen.Bounds.Width,
-                Screen.PrimaryScreen.Bounds.Height
-            );
+            // Reduce resolution more aggressively (1/4 of original)
+            int width = Screen.PrimaryScreen.Bounds.Width / 4;
+            int height = Screen.PrimaryScreen.Bounds.Height / 4;
+
+            using (
+                Bitmap screenshot = new Bitmap(
+                    width,
+                    height,
+                    System.Drawing.Imaging.PixelFormat.Format16bppRgb555
+                )
+            ) // Reduced color depth
             using (Graphics g = Graphics.FromImage(screenshot))
+            using (MemoryStream stream = new MemoryStream())
             {
+                // Optimize graphics settings
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Low;
+                g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+
                 g.CopyFromScreen(
                     Screen.PrimaryScreen.Bounds.X,
                     Screen.PrimaryScreen.Bounds.Y,
                     0,
                     0,
-                    screenshot.Size
+                    Screen.PrimaryScreen.Bounds.Size
                 );
-            }
 
-            using (MemoryStream stream = new MemoryStream())
-            {
-                var rest = new REST(new HttpProviders());
+                var encoder = System
+                    .Drawing.Imaging.ImageCodecInfo.GetImageEncoders()
+                    .First(c => c.MimeType == "image/jpeg");
 
-                screenshot.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                var parameters = new System.Drawing.Imaging.EncoderParameters(2); // Using 2 parameters
+                parameters.Param[0] = new System.Drawing.Imaging.EncoderParameter(
+                    System.Drawing.Imaging.Encoder.Quality,
+                    20L // Even lower quality (was 50)
+                );
+                parameters.Param[1] = new System.Drawing.Imaging.EncoderParameter(
+                    System.Drawing.Imaging.Encoder.ColorDepth,
+                    16L // Reduced color depth
+                );
 
-                await rest.sendLiveScreenDataV1(
+                screenshot.Save(stream, encoder, parameters);
+
+                // Clear bitmap data before sending to help GC
+                screenshot.Dispose();
+
+                await new REST(new HttpProviders()).sendLiveScreenDataV1(
                     new LiveImageRequest { fileString = Convert.ToBase64String(stream.ToArray()) }
                 );
             }

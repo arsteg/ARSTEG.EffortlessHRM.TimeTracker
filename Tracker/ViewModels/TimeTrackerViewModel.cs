@@ -952,7 +952,14 @@ namespace TimeTracker.ViewModels
                 trackingStartedAt = now;
                 minutesTracked = 0;
                 StartTracker();
-                if (!string.IsNullOrEmpty(taskName))
+
+                // Check if taskName is not empty and not present in Tasks
+                if (
+                    !string.IsNullOrEmpty(taskName)
+                    && !Tasks.Any(t =>
+                        t.taskName.Equals(taskName, StringComparison.OrdinalIgnoreCase)
+                    )
+                )
                 {
                     CreateNewTask();
                 }
@@ -1520,7 +1527,7 @@ namespace TimeTracker.ViewModels
                 new ProjectRequest { userId = GlobalSetting.Instance.LoginResult.data.user.id }
             );
 
-            if (projectList.status == "success" && projectList.data != null)
+            if (projectList != null && projectList.status == "success" && projectList.data != null)
             {
                 Projects = projectList.data.projectList;
             }

@@ -297,7 +297,7 @@
 
                         <Button Grid.Column="1" Content="Logout" Style="{StaticResource logoutButton}" Command="{Binding LogoutCommand}"/>
                         <Button Grid.Column="2" Content="Close" Style="{StaticResource closeButton}" Command="{Binding CloseCommand}"/>
-                        <Button Grid.Column="3" Style="{StaticResource startButton}" Command="{Binding StartStopCommand}" Content="{Binding StartStopButtontext}"/>
+                        <Button Grid.Column="3" Style="{StaticResource startButton}" Command="{Binding StartStopCommand}" Content="{Binding StartStopButtonText}"/>
 
                         <Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}" AllowsTransparency="True" Placement="Absolute">
                             <Border Style="{StaticResource CoreBorderStyle}" Background="{DynamicResource WindowBackgroundBrush}" >

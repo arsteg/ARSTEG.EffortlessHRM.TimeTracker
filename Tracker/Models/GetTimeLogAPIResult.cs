@@ -1,9 +1,9 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
 namespace TimeTracker.Models
 {
@@ -12,18 +12,19 @@ namespace TimeTracker.Models
         public HttpStatusCode statusCode { get; set; }
         public string status { get; set; }
     }
-    public class GetTimeLogAPIResult: BaseResponse
-    {        
+
+    public class GetTimeLogAPIResult : BaseResponse
+    {
         public List<TimeLogBaseResponse> data { get; set; }
     }
-    public class AddTimeLogAPIResult: BaseResponse
-    {     
-        public TimeLog data { get; set; }       
 
+    public class AddTimeLogAPIResult : BaseResponse
+    {
+        public TimeLog data { get; set; }
     }
 
-    public class AddErrorLogAPIResult: BaseResponse
-    {     
+    public class AddErrorLogAPIResult : BaseResponse
+    {
         public AddErrorLog data { get; set; }
     }
 
@@ -32,8 +33,8 @@ namespace TimeTracker.Models
         public ErrorLog ErrorLog { get; set; }
     }
 
-    public class GetProjectListAPIResult: BaseResponse
-    {        
+    public class GetProjectListAPIResult : BaseResponse
+    {
         public ProjectList data { get; set; }
     }
 
@@ -53,8 +54,8 @@ namespace TimeTracker.Models
         public List<ProjectTask> taskList { get; set; }
     }
 
-    public class GetTaskListAPIResult: BaseResponse
-    {        
+    public class GetTaskListAPIResult : BaseResponse
+    {
         public List<TaskList> taskList { get; set; }
         public int taskCount { get; set; }
     }
@@ -62,10 +63,9 @@ namespace TimeTracker.Models
     public class TaskList
     {
         public string id { get; set; }
-        public string taskName { get; set; }		
+        public string taskName { get; set; }
         public string description { get; set; }
         public string status { get; set; }
-
     }
 
     public class ProjectTask
@@ -74,15 +74,15 @@ namespace TimeTracker.Models
         public string taskName { get; set; }
         public string description { get; set; }
         public string status { get; set; }
-
     }
 
     public class NewtaskData
     {
         public ProjectTask newTask { get; set; }
     }
-    public class NewTaskResult: BaseResponse
-    {        
+
+    public class NewTaskResult : BaseResponse
+    {
         public NewtaskData data { get; set; }
     }
 
@@ -90,24 +90,24 @@ namespace TimeTracker.Models
     {
         public List<ErrorLog> errorLogList { get; set; }
     }
-    public class GetErrorLogResult: BaseResponse
-    {        
+
+    public class GetErrorLogResult : BaseResponse
+    {
         public ErrorLogList data { get; set; }
     }
 
-    public class ProductivityAppResult: BaseResponse
-    {        
+    public class ProductivityAppResult : BaseResponse
+    {
         public List<ProductivityModel> data { get; set; }
     }
 
-    public class ProductivityAppDeleteResult: BaseResponse
-    {        
+    public class ProductivityAppDeleteResult : BaseResponse
+    {
         public ProductivityModel data { get; set; }
     }
 
-    public class ProductivityAppAddResult: ProductivityAppDeleteResult 
-    { 
-    }
+    public class ProductivityAppAddResult : ProductivityAppDeleteResult { }
+
     public class TimeLogBaseResponse
     {
         public string _id { get; set; }
@@ -123,6 +123,7 @@ namespace TimeTracker.Models
         public string url { get; set; }
         public int scrolls { get; set; }
     }
+
     public class User
     {
         public string _id { get; set; }
@@ -137,9 +138,43 @@ namespace TimeTracker.Models
     {
         public bool Success { get; set; }
     }
-    public class EnableBeepSoundResult: BaseResponse
-    {        
+
+    public class EnableBeepSoundResult : BaseResponse
+    {
         public bool data { get; set; }
     }
 
+    // UserDevice model representing the MongoDB document
+    public class UserDevice
+    {
+        public string userId { get; set; }
+        public string machineId { get; set; }
+        public bool isOnline { get; set; }
+        public string company { get; set; } // Assuming company is stored as a string (ObjectId as string)
+        public string _id { get; set; } // MongoDB document ID
+    }
+
+    // Data wrapper for success case
+    public class UpdateOnlineStatusData
+    {
+        public UserDevice userDevice { get; set; }
+    }
+
+    // Data wrapper for success case
+    public class GetOnlineUsersData
+    {
+        public List<UserDevice> onlineUsers { get; set; }
+    }
+
+    // Response for updateOnlineStatus
+    public class UpdateOnlineStatusResult : BaseResponse
+    {
+        public UpdateOnlineStatusData data { get; set; }
+    }
+
+    // Response for getOnlineUsersByCompany
+    public class GetOnlineUsersByCompanyResult : BaseResponse
+    {
+        public GetOnlineUsersData data { get; set; }
+    }
 }

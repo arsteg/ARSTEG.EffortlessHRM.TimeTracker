@@ -60,6 +60,7 @@ namespace TimeTracker.ViewModels
         private int totalMouseScrolls = 0;
         private string machineId = string.Empty;
         private TimeLog timeLogForSwitchingMachine = new TimeLog();
+        private readonly REST RESTService = new REST(new HttpProviders());
 
         MouseHook mh;
         public event EventHandler RequestClose;
@@ -194,14 +195,14 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private string startStopButtontext = "Start";
-        public string StartStopButtontext
+        private string startStopButtonText = "Start";
+        public string StartStopButtonText
         {
-            get { return startStopButtontext; }
+            get { return startStopButtonText; }
             set
             {
-                startStopButtontext = value;
-                OnPropertyChanged(nameof(StartStopButtontext));
+                startStopButtonText = value;
+                OnPropertyChanged(nameof(StartStopButtonText));
             }
         }
 
@@ -922,33 +923,69 @@ namespace TimeTracker.ViewModels
 
         private async Task<bool> SetTrackerStatus()
         {
+            const string START_TEXT = "Start";
+            const string STOP_TEXT = "Stop";
+            const string LOG_LEVEL_INFO = "Info";
+            const string VISIBILITY_HIDDEN = "Hidden";
+            const string VISIBILITY_VISIBLE = "Visible";
+
+            bool previousState = trackerIsOn;
+            DateTime now = DateTime.UtcNow;
+
+            var onlineStatusResult = Task.Run(
+                async () => await RESTService.UpdateOnlineStatus(UserId, machineId, !trackerIsOn)
+            ).Result;
+
             if (trackerIsOn)
             {
-                StartStopButtontext = "Start";
                 AddErrorLog("Info", $"stopped at {DateTime.UtcNow}");
                 trackingStopedAt = DateTime.UtcNow;
-                StopApplicationTracker();
-                usedAppDetector.Stop();
+                StopTracker();
+                trackerIsOn = false;
+                StartStopButtonText = START_TEXT;
+                CanShowRefresh = VISIBILITY_VISIBLE;
             }
             else
             {
-                AddErrorLog("Info", $"started at {DateTime.UtcNow}");
-                StartStopButtontext = "Stop";
-                dispatcherTimer.Start();
-                trackingStartedAt = DateTime.UtcNow;
+                // Starting the tracker
+                AddErrorLog(LOG_LEVEL_INFO, $"Started at {now}");
+                trackingStartedAt = now;
                 minutesTracked = 0;
-                if (taskName.Length > 0)
+                StartTracker();
+                if (!string.IsNullOrEmpty(taskName))
                 {
                     CreateNewTask();
                 }
+                ResetActiveApplicationData();
+                trackerIsOn = true;
+                StartStopButtonText = STOP_TEXT;
+                CanShowRefresh = VISIBILITY_HIDDEN;
+            }
+            return true;
+        }
+
+        // Helper methods to improve single responsibility
+        private void StartTracker()
+        {
+            dispatcherTimer?.Start();
+            StartApplicationTracker();
+            usedAppDetector?.Start();
+        }
+
+        private void StopTracker()
+        {
+            StopApplicationTracker();
+            usedAppDetector?.Stop();
+            dispatcherTimer?.Stop();
+        }
+
+        private void ResetActiveApplicationData()
+        {
+            if (activeWorker?.activeApplicationInfomationCollector != null)
+            {
                 activeWorker.activeApplicationInfomationCollector._focusedApplication =
                     new Dictionary<string, FocushedApplicationDetails>();
-                StartApplicationTracker();
-                usedAppDetector.Start();
             }
-            trackerIsOn = !trackerIsOn;
-            CanShowRefresh = trackerIsOn ? "Hidden" : "Visible";
-            return true;
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)

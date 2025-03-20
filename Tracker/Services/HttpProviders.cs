@@ -239,9 +239,10 @@ namespace TimeTracker.Services
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(serialized);
-                TResult result = await Task.Run(
-                    () => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings)
-                );
+                TResult result = await Task.Run(() =>
+                {
+                    return JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
+                });
 
                 return result;
             }

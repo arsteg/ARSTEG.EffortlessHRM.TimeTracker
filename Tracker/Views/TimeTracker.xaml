@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:TimeTracker"
+        xmlns:converters="clr-namespace:TimeTracker.Converters"
       mc:Ignorable="d" Height="500" Width="800" WindowStartupLocation="CenterScreen"
       DataContext="{Binding TimeTracker, Source={StaticResource Locator}}"
       xmlns:Icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
@@ -21,6 +22,7 @@
 
     <Window.Resources>
         <local:ValueConverter x:Key="ValueConverter" />
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <Style TargetType="Button" x:Key="RoundButton">
             <Style.Resources>
@@ -110,36 +112,39 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding UserFullName,Mode=TwoWay}" Foreground="#3AB19B"></TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1" Margin="0,0,5,0" >
-                        
-                        <Button Command="{Binding CreateNewTaskCommand}" BorderThickness="0" Background="Transparent" Height="20" Width="20"  Margin="5,0,0,0">
-                            <Icons:PackIconMaterial Kind="PlusBox"  Style="{StaticResource gridButtonIcon}"  Foreground="Green">
+
+                        <Button Command="{Binding CreateNewTaskCommand}" Style="{StaticResource customButtonStyle}" IsEnabled="{Binding ButtonEventInProgress,Converter={StaticResource InverseBooleanConverter}}">
+                            <Icons:PackIconMaterial Kind="PlusBox" Style="{StaticResource gridButtonIcon}">
                                 <Icons:PackIconMaterial.ToolTip>
-                                    <ToolTip Content="Create a new task" />
+                                    <ToolTip Content="Create a new task"/>
                                 </Icons:PackIconMaterial.ToolTip>
                             </Icons:PackIconMaterial>
                         </Button>
-                        
-                        <Button Command="{Binding TaskCompleteCommand}" BorderThickness="0" Background="Transparent" Height="20" Width="20" Margin="5,0,0,0" >
-                            <Icons:PackIconMaterial Kind="MarkerCheck"  Style="{StaticResource gridButtonIcon}" Foreground="Green">
+
+                        <Button Command="{Binding TaskCompleteCommand}" Style="{StaticResource customButtonStyle}" IsEnabled="{Binding ButtonEventInProgress,Converter={StaticResource InverseBooleanConverter}}">
+                            <Icons:PackIconMaterial Kind="MarkerCheck" Style="{StaticResource gridButtonIcon}">
                                 <Icons:PackIconMaterial.ToolTip>
                                     <ToolTip Content="Close Selected Task" />
                                 </Icons:PackIconMaterial.ToolTip>
                             </Icons:PackIconMaterial>
                         </Button>
-                        <Button Command="{Binding RefreshCommand}" BorderThickness="0" Background="Transparent" Height="20" Width="20" Margin="5,0,0,0">
-                            <Icons:PackIconMaterial Kind="Refresh" Style="{StaticResource gridButtonIcon}" Foreground="Green">
+
+                        <Button Command="{Binding RefreshCommand}" Style="{StaticResource customButtonStyle}" IsEnabled="{Binding ButtonEventInProgress,Converter={StaticResource InverseBooleanConverter}}">
+                            <Icons:PackIconMaterial Kind="Refresh" Style="{StaticResource gridButtonIcon}">
                                 <Icons:PackIconMaterial.ToolTip>
                                     <ToolTip Content="Refresh" />
                                 </Icons:PackIconMaterial.ToolTip>
                             </Icons:PackIconMaterial>
                         </Button>
-                        <Button Command="{Binding TaskOpenCommand}" BorderThickness="0" Background="Transparent" Height="20" Width="20" Margin="5,0,0,0">
-                            <Icons:PackIconMaterial Kind="OpenInNew" Style="{StaticResource gridButtonIcon}" Foreground="Green">
+
+                        <Button Command="{Binding TaskOpenCommand}" Style="{StaticResource customButtonStyle}" IsEnabled="{Binding ButtonEventInProgress,Converter={StaticResource InverseBooleanConverter}}">
+                            <Icons:PackIconMaterial Kind="OpenInNew" Style="{StaticResource gridButtonIcon}">
                                 <Icons:PackIconMaterial.ToolTip>
                                     <ToolTip Content="Open Task in Browser" />
                                 </Icons:PackIconMaterial.ToolTip>
                             </Icons:PackIconMaterial>
                         </Button>
+                        
                     </StackPanel>
                 </Grid>                
                 <Border  CornerRadius="5" BorderThickness="1" BorderBrush="LightGray" Margin="5 0 5 0">

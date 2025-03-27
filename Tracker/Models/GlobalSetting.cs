@@ -14,7 +14,11 @@ namespace TimeTracker.Models
 
         public Window ProductivityAppsSettings { get; set; }
 
+#if DEBUG
         public const string apiBaseUrl = "http://localhost:8080";
+#else
+        public const string apiBaseUrl = "https://effortlesshrm-e029cd6a5095.herokuapp.com";
+#endif
 
         //public const string apiBaseUrl = "https://effortlesshrmapi.azurewebsites.net";
         //public const string apiBaseUrl = "https://effortlesshrm-e029cd6a5095.herokuapp.com";

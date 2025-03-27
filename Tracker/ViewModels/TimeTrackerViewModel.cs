@@ -546,6 +546,18 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        private bool _buttonEventInProgress = false;
+        public bool ButtonEventInProgress
+        {
+            get => _buttonEventInProgress;
+            set
+            {
+                _buttonEventInProgress = value;
+                OnPropertyChanged(nameof(ButtonEventInProgress));
+                // Add logic to enable/disable logging dynamically here
+            }
+        }
+
         #endregion
 
         #region commands
@@ -686,6 +698,7 @@ namespace TimeTracker.ViewModels
 
         public void RefreshCommandExecute()
         {
+            ButtonEventInProgress = true;
             try
             {
                 LogManager.Logger.Info($"refeshcommandexecute starts");
@@ -700,6 +713,10 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 LogManager.Logger.Error(ex);
+            }
+            finally
+            {
+                ButtonEventInProgress = false;
             }
         }
 
@@ -791,6 +808,7 @@ namespace TimeTracker.ViewModels
 
         public async void TaskCompleteCommandExecute()
         {
+            ButtonEventInProgress = true;
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
                 ShowErrorMessage("No task selected");
@@ -822,6 +840,7 @@ namespace TimeTracker.ViewModels
             finally
             {
                 ProgressWidthStart = 0;
+                ButtonEventInProgress = false;
             }
         }
 
@@ -829,7 +848,7 @@ namespace TimeTracker.ViewModels
         {
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                ShowErrorMessage("Please specify task details");
+                await ShowErrorMessage("Please specify task details");
                 return;
             }
             ProgressWidthStart = 30;
@@ -849,9 +868,11 @@ namespace TimeTracker.ViewModels
 
         public async void TaskOpenCommandExecute()
         {
+            ButtonEventInProgress = true;
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
                 ShowErrorMessage("No task is selected");
+                ButtonEventInProgress = false;
                 return;
             }
             ProgressWidthStart = 30;
@@ -868,6 +889,7 @@ namespace TimeTracker.ViewModels
             finally
             {
                 ProgressWidthStart = 0;
+                ButtonEventInProgress = false;
             }
         }
 
@@ -1541,6 +1563,7 @@ namespace TimeTracker.ViewModels
 
         private async void CreateNewTask()
         {
+            ButtonEventInProgress = true;
             try
             {
                 var taskUsers = new string[] { GlobalSetting.Instance.LoginResult.data.user.id };
@@ -1568,10 +1591,22 @@ namespace TimeTracker.ViewModels
                     ShowInformationMessage("Task has been created");
                     SelectedTask = newTaskResult.data.newTask;
                 }
+                else if (newTaskResult?.status.ToUpper() == "FAILURE")
+                {
+                    await ShowErrorMessage(newTaskResult?.message);
+                }
+                else
+                {
+                    await ShowErrorMessage("Someting went wrong while creating the task.");
+                }
             }
             catch (Exception ex)
             {
                 LogManager.Logger.Error($"Error in CreateNewTask(): {ex}");
+            }
+            finally
+            {
+                ButtonEventInProgress = false;
             }
         }
 
@@ -2148,14 +2183,14 @@ namespace TimeTracker.ViewModels
         private async void ShowInformationMessage(string errorMessage)
         {
             MessageColor = "green";
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            await Task.Delay(TimeSpan.FromSeconds(10));
             // Show the error message in the label
             ErrorMessage = errorMessage;
 
-            // Wait for 10 seconds using Task.Delay without blocking the UI thread
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            // Wait for 20 seconds using Task.Delay without blocking the UI thread
+            await Task.Delay(TimeSpan.FromSeconds(20));
 
-            // Clear the error message after 10 seconds
+            // Clear the error message after 20 seconds
             ErrorMessage = string.Empty;
         }
 

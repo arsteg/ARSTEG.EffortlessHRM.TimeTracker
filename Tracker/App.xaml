@@ -637,12 +637,42 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Define the Button Style -->
+        <Style x:Key="customButtonStyle" TargetType="Button">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="Opacity" Value="1"/>
+            <!-- Default opacity -->
+            <Style.Triggers>
+                <!-- When the button is disabled -->
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                    <!-- Reduce opacity -->
+                    <!-- Optionally, you can add more setters here, like changing cursor -->
+                    <Setter Property="Cursor" Value="No"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Update the PackIconMaterial Style to Change Foreground When Disabled -->
         <Style x:Key="gridButtonIcon" TargetType="Icons:PackIconMaterial">
             <Setter Property="Width" Value="12"/>
             <Setter Property="Height" Value="12"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>            
-        </Style>    
-        
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="Green"/>
+            <!-- Default foreground -->
+            <Style.Triggers>
+                <!-- When the parent button is disabled -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=IsEnabled}" Value="False">
+                    <Setter Property="Foreground" Value="Gray"/>
+                    <!-- Muted color for disabled state -->
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <!--#Region DataGrid Style-->
 
         <Style x:Key="DataGridRowStyle1" TargetType="{x:Type DataGridRow}">

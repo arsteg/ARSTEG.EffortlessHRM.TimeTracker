@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -262,15 +263,29 @@ namespace TimeTracker.Services
             }
             catch (Exception ex)
             {
-                var payload = new StringContent(
-                    JsonConvert.SerializeObject(data),
-                    Encoding.UTF8,
-                    "application/json"
-                );
-                LogManager.Logger.Error(
-                    ex,
-                    $"error in PostWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri} \n\n. Payload ${payload}"
-                );
+                try
+                {
+                    TResult result = await Task.Run(() =>
+                    {
+                        return JsonConvert.DeserializeObject<TResult>(
+                            ex.Message,
+                            _serializerSettings
+                        );
+                    });
+                    return result;
+                }
+                catch
+                {
+                    var payload = new StringContent(
+                        JsonConvert.SerializeObject(data),
+                        Encoding.UTF8,
+                        "application/json"
+                    );
+                    LogManager.Logger.Error(
+                        ex,
+                        $"error in PostWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri} \n\n. Payload ${payload}"
+                    );
+                }
                 return default;
             }
         }
@@ -424,7 +439,10 @@ namespace TimeTracker.Services
                     throw new HttpRequestExceptionEx(response.StatusCode, content);
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public async Task<TResult> PutWithTokenAsync<TResult, T>(string uri, T data, string token)

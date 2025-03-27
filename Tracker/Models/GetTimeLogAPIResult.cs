@@ -11,6 +11,8 @@ namespace TimeTracker.Models
     {
         public HttpStatusCode statusCode { get; set; }
         public string status { get; set; }
+
+        public string message { get; set; }
     }
 
     public class GetTimeLogAPIResult : BaseResponse

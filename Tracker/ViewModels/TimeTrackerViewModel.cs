@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -12,6 +13,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using GalaSoft.MvvmLight.CommandWpf;
@@ -124,6 +126,10 @@ namespace TimeTracker.ViewModels
             initializeUI();
             LogManager.Logger.Info("after initializeUI method");
             LogManager.Logger.Info($"timetracker constructor ends");
+
+            _tasks = new ObservableCollection<ProjectTask>();
+            _tasksView = CollectionViewSource.GetDefaultView(_tasks);
+            _tasksView.Filter = FilterTasks;
         }
 
         private void initializeUI()
@@ -316,14 +322,22 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private String taskName;
+        private string taskName;
         public string Taskname
         {
-            get { return taskName; }
+            get => taskName;
             set
             {
                 taskName = value;
                 OnPropertyChanged(nameof(Taskname));
+                LogManager.Logger.Info($"Taskname changed to: '{taskName}'");
+                if (_tasksView != null)
+                {
+                    _tasksView.Refresh();
+                    LogManager.Logger.Info(
+                        $"TasksView refreshed. Filtered count: {_tasksView.Cast<object>().Count()}"
+                    );
+                }
             }
         }
 
@@ -441,28 +455,42 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        private List<ProjectTask> _tasks;
-        public List<ProjectTask> Tasks
-        {
-            get { return _tasks; }
-            set
-            {
-                _tasks = value;
-                OnPropertyChanged("Tasks");
-            }
-        }
+        private ObservableCollection<ProjectTask> _tasks;
+
+        //public ObservableCollection<ProjectTask> Tasks
+        //{
+        //    get { return _tasks; }
+        //    set
+        //    {
+        //        _tasks = value;
+        //        OnPropertyChanged(nameof(Tasks));
+        //    }
+        //}
 
         private ProjectTask _selectedtask;
         public ProjectTask SelectedTask
         {
-            get { return _selectedtask; }
+            get => _selectedtask;
             set
             {
                 _selectedtask = value;
                 TaskDescription = _selectedtask?.description;
-                OnPropertyChanged("SelectedTask");
+                OnPropertyChanged(nameof(SelectedTask));
+                LogManager.Logger.Info($"SelectedTask set to: '{_selectedtask?.taskName}'");
             }
         }
+
+        public ICollectionView Tasks
+        {
+            get => _tasksView;
+            private set
+            {
+                _tasksView = value;
+                OnPropertyChanged(nameof(Tasks));
+            }
+        }
+
+        private ICollectionView _tasksView;
 
         public bool AllowTaskSelection
         {
@@ -704,7 +732,7 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Info($"refeshcommandexecute starts");
                 populateUserName();
                 BindProjectList();
-                Tasks = null;
+                _tasks = null;
                 taskName = string.Empty;
                 TaskDescription = string.Empty;
                 SelectedTask = null;
@@ -825,7 +853,7 @@ namespace TimeTracker.ViewModels
                 var result = await rest.CompleteATask(SelectedTask._id, task);
                 if (result.data != null)
                 {
-                    ShowErrorMessage("Task has been marked as completed");
+                    await ShowErrorMessage("Task has been marked as completed");
                     if (SelectedProject != null)
                     {
                         await getTaskList();
@@ -978,7 +1006,7 @@ namespace TimeTracker.ViewModels
                 // Check if taskName is not empty and not present in Tasks
                 if (
                     !string.IsNullOrEmpty(taskName)
-                    && !Tasks.Any(t =>
+                    && !_tasks.Any(t =>
                         t.taskName.Equals(taskName, StringComparison.OrdinalIgnoreCase)
                     )
                 )
@@ -1446,7 +1474,9 @@ namespace TimeTracker.ViewModels
             ProgressWidthStart = 30;
             try
             {
-                Tasks = null;
+                _tasks.Clear(); // Clear existing tasks
+                LogManager.Logger.Info("getTaskList: Cleared existing tasks");
+
                 if (SelectedProject != null && SelectedProject._id.Length > 0)
                 {
                     var rest = new REST(new HttpProviders());
@@ -1462,11 +1492,11 @@ namespace TimeTracker.ViewModels
 
                     if (taskList.status == "success" && taskList.taskList != null)
                     {
-                        var projectTaskList = new List<ProjectTask>();
-                        taskList.taskList.ForEach(t =>
+                        foreach (var t in taskList.taskList)
                         {
                             if (t.status.ToLower() != "closed" && t.status.ToLower() != "done")
-                                projectTaskList.Add(
+                            {
+                                _tasks.Add(
                                     new ProjectTask()
                                     {
                                         taskName = t.taskName,
@@ -1474,12 +1504,34 @@ namespace TimeTracker.ViewModels
                                         _id = t.id
                                     }
                                 );
-                        });
-                        Tasks = projectTaskList;
+                            }
+                        }
+                        LogManager.Logger.Info($"getTaskList: Loaded {_tasks.Count} tasks");
+                        foreach (var task in _tasks)
+                        {
+                            LogManager.Logger.Info($"Task loaded: '{task.taskName}'");
+                        }
+                        _tasksView.Refresh();
+                        LogManager.Logger.Info(
+                            $"TasksView refreshed after loading. Filtered count: {_tasksView.Cast<object>().Count()}"
+                        );
+                    }
+                    else
+                    {
+                        LogManager.Logger.Info(
+                            "getTaskList: No tasks returned or status not success"
+                        );
                     }
                 }
+                else
+                {
+                    LogManager.Logger.Info("getTaskList: No SelectedProject or invalid ID");
+                }
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"getTaskList error: {ex.Message}", ex);
+            }
             finally
             {
                 ProgressWidthStart = 0;
@@ -2235,6 +2287,29 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Error(ex);
             }
         }
+
+        private bool FilterTasks(object obj)
+        {
+            if (string.IsNullOrWhiteSpace(Taskname))
+            {
+                LogManager.Logger.Info("FilterTasks: Taskname is empty, showing all tasks");
+                return true; // Show all tasks if no text is entered
+            }
+
+            var task = obj as ProjectTask;
+            if (task == null)
+            {
+                LogManager.Logger.Info("FilterTasks: Object is not a ProjectTask");
+                return false;
+            }
+
+            bool result = task.taskName.Contains(Taskname, StringComparison.OrdinalIgnoreCase);
+            LogManager.Logger.Info(
+                $"FilterTasks: Checking '{task.taskName}' against '{Taskname}' - Result: {result}"
+            );
+            return result;
+        }
+
         #endregion
     }
 }

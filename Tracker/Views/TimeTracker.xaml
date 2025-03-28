@@ -257,17 +257,24 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" x:Name="lblTask" Text="Task:" Style="{StaticResource textBlock}"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Grid.ColumnSpan="3" Margin="-50,0,0,0">
-                        <ComboBox Grid.Column="1" Name="cmbt" IsTextSearchEnabled="True" IsEditable="True"
-                      HorizontalAlignment="Left" Text="{Binding Taskname}"
-                    IsEnabled="{Binding AllowTaskSelection}"
-                      ItemsSource="{Binding Path=Tasks}"
-                    SelectedItem="{Binding Path=SelectedTask}"
-                    DisplayMemberPath="taskName" Style="{StaticResource comboBox}" MinWidth="330" MaxWidth="330">
+                        <ComboBox Grid.Column="1" 
+          Name="cmbt" 
+          IsTextSearchEnabled="True" 
+          IsEditable="True"
+          HorizontalAlignment="Left" 
+          Text="{Binding Taskname, UpdateSourceTrigger=PropertyChanged}"
+          IsEnabled="{Binding AllowTaskSelection}"
+          ItemsSource="{Binding Path=Tasks}"
+          SelectedItem="{Binding Path=SelectedTask}"
+          DisplayMemberPath="taskName" 
+          Style="{StaticResource comboBox}" 
+          MinWidth="330" 
+          MaxWidth="330">
                             <ComboBox.InputBindings>
                                 <KeyBinding Key="Enter" Command="{Binding CreateNewTaskCommand}"/>
                             </ComboBox.InputBindings>
                         </ComboBox>
-                        
+
                     </StackPanel>
                     <StackPanel  Grid.Row="1" Grid.Column="0" Margin="0,3,0,1">
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Description:" Style="{StaticResource textBlock}"/>

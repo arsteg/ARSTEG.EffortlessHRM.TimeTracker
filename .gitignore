@@ -37,3 +37,11 @@ TimeTracker.Installer/Debug/setup.exe
 /TimeTracker.Bootstrapper/obj/Debug
 /TimeTracker.Bootstrapper/obj/Debug
 /TimeTracker.Bootstrapper/obj
+/TimeTracker.Bootstrapper/obj
+/TimeTracker.Bootstrapper/obj
+/TimeTracker.Bootstrapper/obj
+TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.FileList.txt
+TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.BindOutputsFileList.txt
+TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.BindContentsFileList.txt
+TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.BindBuiltOutputsFileList.txt
+TimeTracker.Bootstrapper/obj/Debug/Bundle.wixobj

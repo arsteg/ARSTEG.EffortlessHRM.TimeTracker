@@ -352,7 +352,9 @@ namespace TimeTracker.Services
         public async Task<UpdateOnlineStatusResult> UpdateOnlineStatus(
             string userId,
             string machineId,
-            bool isOnline
+            bool isOnline,
+            string project,
+            string task
         )
         {
             var uri = CombineUri(GlobalSetting.apiBaseUrl, "/api/v1/common/onlineStatus");
@@ -360,10 +362,12 @@ namespace TimeTracker.Services
             {
                 userId,
                 machineId,
-                isOnline
+                isOnline,
+                project,
+                task
             };
             LogManager.Logger.Info(
-                $"Calling UpdateOnlineStatus with userId={userId}, machineId={machineId}, isOnline={isOnline}"
+                $"Calling UpdateOnlineStatus with userId={userId}, machineId={machineId}, isOnline={isOnline}, project ={project} , task ={task}"
             );
             var res = await _httpProvider.PostWithTokenAsync<UpdateOnlineStatusResult, object>(
                 uri,

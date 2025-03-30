@@ -140,6 +140,7 @@ namespace TimeTracker.ViewModels
                 //ConnectWebSocket();
                 DeleteTempFolder();
                 populateUserName();
+                RefreshCommandExecute();
             }
             catch (Exception ex)
             {
@@ -983,7 +984,14 @@ namespace TimeTracker.ViewModels
             DateTime now = DateTime.UtcNow;
 
             var onlineStatusResult = Task.Run(
-                async () => await RESTService.UpdateOnlineStatus(UserId, machineId, !trackerIsOn)
+                async () =>
+                    await RESTService.UpdateOnlineStatus(
+                        UserId,
+                        machineId,
+                        !trackerIsOn,
+                        _selectedproject._id,
+                        _selectedtask._id
+                    )
             ).Result;
 
             if (trackerIsOn)
@@ -1952,14 +1960,24 @@ namespace TimeTracker.ViewModels
         #region "Live screen functions"
         private async void ShareLiveScreen_Tick(object sender, EventArgs e)
         {
-            // Reduce resolution more aggressively (1/4 of original)
-            int width = Screen.PrimaryScreen.Bounds.Width / 4;
-            int height = Screen.PrimaryScreen.Bounds.Height / 4;
+            // Get all screens and calculate the total virtual desktop bounds
+            var allScreens = Screen.AllScreens;
+            int minX = allScreens.Min(screen => screen.Bounds.X);
+            int minY = allScreens.Min(screen => screen.Bounds.Y);
+            int maxX = allScreens.Max(screen => screen.Bounds.X + screen.Bounds.Width);
+            int maxY = allScreens.Max(screen => screen.Bounds.Y + screen.Bounds.Height);
+
+            int totalWidth = maxX - minX;
+            int totalHeight = maxY - minY;
+
+            // Reduce resolution to 1/4 of the total virtual desktop size
+            int captureWidth = totalWidth / 4;
+            int captureHeight = totalHeight / 4;
 
             using (
                 Bitmap screenshot = new Bitmap(
-                    width,
-                    height,
+                    captureWidth,
+                    captureHeight,
                     System.Drawing.Imaging.PixelFormat.Format16bppRgb555
                 )
             ) // Reduced color depth
@@ -1971,22 +1989,23 @@ namespace TimeTracker.ViewModels
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
 
+                // Capture the entire virtual desktop starting from the leftmost/topmost point
                 g.CopyFromScreen(
-                    Screen.PrimaryScreen.Bounds.X,
-                    Screen.PrimaryScreen.Bounds.Y,
-                    0,
-                    0,
-                    Screen.PrimaryScreen.Bounds.Size
+                    minX, // Start at the leftmost X coordinate
+                    minY, // Start at the topmost Y coordinate
+                    0, // Destination X in the bitmap
+                    0, // Destination Y in the bitmap
+                    new Size(totalWidth, totalHeight) // Source size (full virtual desktop)
                 );
 
                 var encoder = System
                     .Drawing.Imaging.ImageCodecInfo.GetImageEncoders()
                     .First(c => c.MimeType == "image/jpeg");
 
-                var parameters = new System.Drawing.Imaging.EncoderParameters(2); // Using 2 parameters
+                var parameters = new System.Drawing.Imaging.EncoderParameters(2);
                 parameters.Param[0] = new System.Drawing.Imaging.EncoderParameter(
                     System.Drawing.Imaging.Encoder.Quality,
-                    20L // Even lower quality (was 50)
+                    20L // Low quality
                 );
                 parameters.Param[1] = new System.Drawing.Imaging.EncoderParameter(
                     System.Drawing.Imaging.Encoder.ColorDepth,

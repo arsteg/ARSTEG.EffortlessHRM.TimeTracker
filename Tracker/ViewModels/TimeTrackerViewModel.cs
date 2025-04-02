@@ -1391,7 +1391,7 @@ namespace TimeTracker.ViewModels
                         $"No internet #Local Time {DateTime.Now} #UTC {DateTime.UtcNow} #Start time {timeLog.startTime} #End Time {timeLog.endTime}"
                     );
                     unsavedTimeLogs.Add(timeLog);
-                    ShowErrorMessage("Please check your internet connectivity.");
+                    await ShowErrorMessage("Please check your internet connectivity.");
                     return (null, HttpStatusCode.OK);
                 }
                 var rest = new REST(new HttpProviders());
@@ -1509,7 +1509,7 @@ namespace TimeTracker.ViewModels
                                     {
                                         taskName = t.taskName,
                                         description = t.description,
-                                        _id = t.id
+                                        _id = t._id
                                     }
                                 );
                             }

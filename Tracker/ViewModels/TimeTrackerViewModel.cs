@@ -619,12 +619,14 @@ namespace TimeTracker.ViewModels
                 {
                     if (trackerIsOn)
                     {
-                        ShowErrorMessage("Please stop the tracker before closing the application.");
+                        await ShowErrorMessage(
+                            "Please stop the tracker before closing the application."
+                        );
                         return;
                     }
                     else
                     {
-                        checkForUnsavedLog();
+                        await checkForUnsavedLog();
                         SystemWindows.Application.Current.Shutdown();
                     }
                 }
@@ -632,12 +634,14 @@ namespace TimeTracker.ViewModels
                 {
                     if (trackerIsOn)
                     {
-                        ShowErrorMessage("Please stop the tracker before closing the application.");
+                        await ShowErrorMessage(
+                            "Please stop the tracker before closing the application."
+                        );
                         args.Cancel = true;
                     }
                     else
                     {
-                        checkForUnsavedLog();
+                        await checkForUnsavedLog();
                     }
                 }
             }
@@ -1879,6 +1883,7 @@ namespace TimeTracker.ViewModels
                     break;
                 }
             }
+            GlobalSetting.Instance.MachineId = machineId;
             //foreach (var baseboard in win32DiskDrive.Get())
             //{
             //    if (!string.IsNullOrEmpty(Convert.ToString(baseboard.GetPropertyValue("SerialNumber"))))

@@ -45,3 +45,5 @@ TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.BindOutputsF
 TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.BindContentsFileList.txt
 TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.BindBuiltOutputsFileList.txt
 TimeTracker.Bootstrapper/obj/Debug/Bundle.wixobj
+/TimeTrackerX/obj
+/TimeTrackerX/bin

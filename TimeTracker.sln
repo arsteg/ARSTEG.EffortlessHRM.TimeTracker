@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrowserHistoryGatherer", "B
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TimeTracker.Installer", "TimeTracker.Installer\TimeTracker.Installer.wixproj", "{82B9F1A9-4EC8-4B2C-9A69-7EA68233A248}"
 EndProject
-Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "TimeTracker.Bootstrapper", "TimeTracker.Bootstrapper\TimeTracker.Bootstrapper.wixproj", "{DF409280-4D33-43D5-A5B5-1A5BB99DCBD9}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TimeTracker.Bootstrapper", "TimeTracker.Bootstrapper\TimeTracker.Bootstrapper.wixproj", "{DF409280-4D33-43D5-A5B5-1A5BB99DCBD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTrackerX", "TimeTrackerX\TimeTrackerX.csproj", "{40636FCE-0742-47A6-8872-5E5E23DCE086}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,14 @@ Global
 		{DF409280-4D33-43D5-A5B5-1A5BB99DCBD9}.Release|Any CPU.Build.0 = Release|x86
 		{DF409280-4D33-43D5-A5B5-1A5BB99DCBD9}.Release|x86.ActiveCfg = Release|x86
 		{DF409280-4D33-43D5-A5B5-1A5BB99DCBD9}.Release|x86.Build.0 = Release|x86
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Debug|x86.Build.0 = Debug|Any CPU
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Release|x86.ActiveCfg = Release|Any CPU
+		{40636FCE-0742-47A6-8872-5E5E23DCE086}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,155 +1,155 @@
-﻿<Window x:Class="TimeTracker.Views.Login"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"     
-        xmlns:fa="http://schemas.fontawesome.io/icons/"   
-        xmlns:local="clr-namespace:TimeTracker"
-        mc:Ignorable="d"
-        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-        Title="Login" Height="500" Width="800"
-        FocusManager.FocusedElement="{Binding ElementName=txtUsername}" 
-        WindowStartupLocation="CenterScreen"  DataContext="{Binding Login, Source={StaticResource Locator}}"
-        WindowState="Normal"
-        Background="Transparent" AllowsTransparency="True" WindowStyle="None">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="1.5*"/>
-        </Grid.ColumnDefinitions>
-        <Grid Grid.Column="1" Panel.ZIndex="1">
+﻿    <Window x:Class="TimeTracker.Views.Login"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"     
+            xmlns:fa="http://schemas.fontawesome.io/icons/"   
+            xmlns:local="clr-namespace:TimeTracker"
+            mc:Ignorable="d"
+            xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+            Title="Login" Height="500" Width="800"
+            FocusManager.FocusedElement="{Binding ElementName=txtUsername}" 
+            WindowStartupLocation="CenterScreen"  DataContext="{Binding Login, Source={StaticResource Locator}}"
+            WindowState="Normal"
+            Background="Transparent" AllowsTransparency="True" WindowStyle="None">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="1.5*"/>
             </Grid.ColumnDefinitions>
-            <Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgClose}" MouseLeftButtonDown="BtnActionMinimize_OnClick"/>
-            <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="btnActionClose_Click"/>
+            <Grid Grid.Column="1" Panel.ZIndex="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgClose}" MouseLeftButtonDown="BtnActionMinimize_OnClick"/>
+                <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="btnActionClose_Click"/>
         
-        </Grid>
+            </Grid>
         
 
         
-        <Thumb Opacity="100" Background="White" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
+            <Thumb Opacity="100" Background="White" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
         
-        <Border CornerRadius="10,0 0 10" MouseDown="Border_MouseDown">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="White" Offset="0"/>
-                    <GradientStop Color="#B8E3DC" Offset="0.3"/>
-                    <GradientStop Color="#70C7B8" Offset="0.6"/>
-                    <GradientStop Color="#3AADA1" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>            
-        </Border>
-        <Grid>
-            <Canvas>
-                <Polygon Points="0,20,230,140,0,270" Fill="#4EB1B6"/>
-                <Polygon Points="100,400,200,370,180,470" Fill="#4EB1B6"/>
-                <Ellipse Margin="250 450 0 0" Width="40" Height="40" Fill="#4EB1B6" />
-                <Ellipse Margin="50 400 0 0" Width="20" Height="20" Fill="#4EB1B6" />                
-            </Canvas>
-            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                <Viewbox Stretch="Uniform" Height="25" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-                    <Canvas Height="200" Width="500">
-                        <Path Fill="#27455b" Data="M222.49,173.86V83.51h12.27v37.11h46.86V83.51h12.32v90.35H281.62V131.54H234.76v42.32Z" />
-                        <Path Fill="#27455b" Data="M313.33,83.51h35a76.65,76.65,0,0,1,12.54.74,24.52,24.52,0,0,1,7.21,2.45,21.17,21.17,0,0,1,8.68,8.71,27.57,27.57,0,0,1,3,13.13A23.69,23.69,0,0,1,376.62,121a21.06,21.06,0,0,1-9.32,8.12q5.26,1.47,7.51,5c1.49,2.33,2.43,6.28,2.79,11.84l1,14.9A24.58,24.58,0,0,0,379.9,168a6.17,6.17,0,0,0,2.86,3.34v2.52H368.59c-1.15-1.89-1.95-5.91-2.39-12.09v-.36l-.74-11.78q-.61-9.07-3.86-11.78t-16.26-2.7H325.47v38.71H313.33Zm12,10.61v30.61h21q11.35,0,16-3.68t4.69-12.27q0-8-4.41-11.35t-16.32-3.31Z" />
-                        <Path Fill="#27455b" Data="M408,96.88v77H396.74V83.51h17.54l22.39,69.12q1,3,1.44,4.57c.3,1.09.54,2,.7,2.85.33-1.51.66-2.86,1-4s.68-2.31,1-3.38L464,83.51h17.6v90.35H469.73v-77q-.44,2-1,4c-.36,1.33-.75,2.65-1.16,4l-23.25,69.07H432.74l-22.69-69.07c-.41-1.14-.78-2.37-1.11-3.68S408.31,98.4,408,96.88Z" />
-                        <Path Fill="#3ab19b" Data="M222.83,71.26V25.17h19.34v5.92H231.25V44.35h8.59v5.86h-8.59V65.45h11v5.81Z" />
-                        <Path Fill="#3ab19b" Data="M247.18,71.26V25.17h18.95V31H255.6V44.4h8.59v5.86H255.6v21Z" />
-                        <Path Fill="#3ab19b" Data="M270.51,71.26V25.17h18.94V31H278.93V44.4h8.59v5.86h-8.59v21Z" />
-                        <Path Fill="#3ab19b" Data="M306.52,71.88a14.47,14.47,0,0,1-7.79-1.82,10.07,10.07,0,0,1-4.16-5.23,23.61,23.61,0,0,1-1.25-8.08V39.51a22.8,22.8,0,0,1,1.25-8,9.85,9.85,0,0,1,4.16-5.1,18.32,18.32,0,0,1,15.67,0,10,10,0,0,1,4.15,5.1,22.09,22.09,0,0,1,1.28,8v17.3a22.43,22.43,0,0,1-1.28,8A10.33,10.33,0,0,1,314.4,70,14.4,14.4,0,0,1,306.52,71.88Zm0-6.2a4.47,4.47,0,0,0,3.1-.91,4.57,4.57,0,0,0,1.34-2.5,16.4,16.4,0,0,0,.34-3.47V37.57A16,16,0,0,0,311,34.1a4.34,4.34,0,0,0-1.34-2.41,4.57,4.57,0,0,0-3.1-.89,4.47,4.47,0,0,0-3,.89,4.26,4.26,0,0,0-1.37,2.41,16,16,0,0,0-.34,3.47V58.8a17.91,17.91,0,0,0,.31,3.47,4.39,4.39,0,0,0,1.34,2.5A4.49,4.49,0,0,0,306.52,65.68Z" />
-                        <Path Fill="#3ab19b" Data="M326,71.26V25.17h11A24.32,24.32,0,0,1,345,26.28a9.06,9.06,0,0,1,4.9,3.78,13.76,13.76,0,0,1,1.67,7.29,22.36,22.36,0,0,1-.51,5,9.58,9.58,0,0,1-1.73,3.79,7.91,7.91,0,0,1-3.39,2.42l6.43,22.7H343.9l-5.58-21.11h-3.86V71.26Zm8.42-26.4h2.61a9,9,0,0,0,3.9-.71,4.2,4.2,0,0,0,2.08-2.28,11.07,11.07,0,0,0,.62-4,8.72,8.72,0,0,0-1.28-5.21q-1.27-1.72-4.86-1.73h-3.07Z" />
-                        <Path Fill="#3ab19b" Data="M362.33,71.26V31.37H355v-6.2h23v6.2h-7.23V71.26Z" />
-                        <Path Fill="#3ab19b" Data="M382.19,71.26V25.17h8.42V65.45h11.15v5.81Z" />
-                        <Path Fill="#3ab19b" Data="M405.91,71.26V25.17h19.35v5.92H414.34V44.35h8.59v5.86h-8.59V65.45h11v5.81Z" />
-                        <Path Fill="#3ab19b" Data="M441.87,71.88a13.63,13.63,0,0,1-6.94-1.62,10.19,10.19,0,0,1-4.21-4.75,20.33,20.33,0,0,1-1.59-7.68l7.22-1.42a22.65,22.65,0,0,0,.66,4.72,6.87,6.87,0,0,0,1.65,3.16,4,4,0,0,0,2.93,1.11,3.28,3.28,0,0,0,2.9-1.23,5.28,5.28,0,0,0,.85-3.1,8.39,8.39,0,0,0-1.36-5,21.54,21.54,0,0,0-3.64-3.87l-5.81-5.12a17.17,17.17,0,0,1-3.89-4.69,12.92,12.92,0,0,1-1.46-6.4c0-3.64,1.07-6.45,3.19-8.42s5-3,8.71-3a12.8,12.8,0,0,1,5.4,1,8.57,8.57,0,0,1,3.44,2.75,12.44,12.44,0,0,1,1.91,4,23.1,23.1,0,0,1,.79,4.75l-7.16,1.25a24.55,24.55,0,0,0-.49-3.87,5.25,5.25,0,0,0-1.31-2.67,3.64,3.64,0,0,0-2.76-1A3.51,3.51,0,0,0,438,32.14a4.7,4.7,0,0,0-1,3A7.05,7.05,0,0,0,438,39a15.4,15.4,0,0,0,2.79,3.1l5.75,5.06a23.77,23.77,0,0,1,4.86,5.6,14.32,14.32,0,0,1,2,7.77A11.66,11.66,0,0,1,452,66.42a10.38,10.38,0,0,1-4,4A12.13,12.13,0,0,1,441.87,71.88Z" />
-                        <Path Fill="#3ab19b" Data="M469.52,71.88a13.63,13.63,0,0,1-6.94-1.62,10.19,10.19,0,0,1-4.21-4.75,20.33,20.33,0,0,1-1.59-7.68L464,56.41a22.65,22.65,0,0,0,.66,4.72,6.87,6.87,0,0,0,1.65,3.16,4,4,0,0,0,2.93,1.11,3.28,3.28,0,0,0,2.9-1.23,5.28,5.28,0,0,0,.85-3.1,8.39,8.39,0,0,0-1.36-5A21.54,21.54,0,0,0,468,52.25l-5.81-5.12a17.17,17.17,0,0,1-3.89-4.69,12.92,12.92,0,0,1-1.46-6.4c0-3.64,1.07-6.45,3.19-8.42s5-3,8.7-3a12.81,12.81,0,0,1,5.41,1,8.57,8.57,0,0,1,3.44,2.75,12.44,12.44,0,0,1,1.91,4,23.8,23.8,0,0,1,.79,4.75l-7.16,1.25a24.55,24.55,0,0,0-.49-3.87,5.25,5.25,0,0,0-1.31-2.67,3.64,3.64,0,0,0-2.76-1,3.49,3.49,0,0,0-2.87,1.22,4.7,4.7,0,0,0-1,3,7.05,7.05,0,0,0,1,3.84,15.4,15.4,0,0,0,2.79,3.1l5.75,5.06a24,24,0,0,1,4.86,5.6,14.32,14.32,0,0,1,2,7.77,11.66,11.66,0,0,1-1.45,5.86,10.38,10.38,0,0,1-4,4A12.18,12.18,0,0,1,469.52,71.88Z" />
-                        <Ellipse Fill="#3ab19b" Canvas.Left="18.379999999999995" Canvas.Top="13" Width="174" Height="174" />
-                        <Ellipse Fill="#27455b" Canvas.Left="69.320000000000007" Canvas.Top="34.65" Width="25.22" Height="25.22" />
-                        <Polygon Fill="#27455b" Points="72.59 160.95 72.59 133.59 114.18 133.59 114.18 160.95 125.12 160.95 125.12 138.93 116.47 123.9 114.18 123.9 83.59 123.9 72.59 123.9 72.59 78.84 61.71 77.29 61.71 160.95 72.59 160.95" />
-                        <Path Fill="#fff" Data="M129.32,115l-10.09,5.81L140.61,158a5.83,5.83,0,0,0,5,2.92,5.74,5.74,0,0,0,2.9-.78,5.82,5.82,0,0,0,2.15-7.95Zm31.76,10.65L136.84,96.16a5.84,5.84,0,0,0-7.4-1.35l-16.22,9.34L101,72l19-18.11a3.87,3.87,0,0,0-1.58-6.53L97,40.48a16.34,16.34,0,0,1,1.47,6.78,18,18,0,0,1-.1,1.81l11.58,3.71-.49.46c-5.78,5.52-13,8.89-20.6,11.09l0,4.47,9.81,18L97.17,93l-5.7-2.8-5-20.62-4-3.2-.54.09h0a49.73,49.73,0,0,1-13.57,0l-7.66-1.09,8.26-8a16.36,16.36,0,0,1-3.29-7.62l-16,15.41A4,4,0,0,0,48.35,68a3.88,3.88,0,0,0,3.33,4l23.8,3.38,15.06,42.12a9.69,9.69,0,0,0,14.09,5.14l7-4.11a4.22,4.22,0,0,0,.65-.3L131,107.37l21.11,25.72a5.83,5.83,0,0,0,9-7.4Z" />
-                    </Canvas>
-                </Viewbox>
-            </StackPanel>
-            <StackPanel VerticalAlignment="Center">
-                
-                <TextBlock Text="Sign Up" Style="{StaticResource titleText}"></TextBlock>
-                <TextBlock Text="Enter your personal info and create new account to connect us" Style="{StaticResource normalText}" Opacity="0.8" Margin="20 30"></TextBlock>
-                <Button Content="Sign Up" Style="{StaticResource button}" Command="{Binding OpenSignUpPageCommand}"></Button>
-                
-            </StackPanel>
-            <StackPanel VerticalAlignment="Bottom">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Version" Margin="0,0,5,0" />
-                    <TextBlock x:Name="currentVersion" Text="1.0.0"/>
+            <Border CornerRadius="10,0 0 10" MouseDown="Border_MouseDown">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="White" Offset="0"/>
+                        <GradientStop Color="#B8E3DC" Offset="0.3"/>
+                        <GradientStop Color="#70C7B8" Offset="0.6"/>
+                        <GradientStop Color="#3AADA1" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>            
+            </Border>
+            <Grid>
+                <Canvas>
+                    <Polygon Points="0,20,230,140,0,270" Fill="#4EB1B6"/>
+                    <Polygon Points="100,400,200,370,180,470" Fill="#4EB1B6"/>
+                    <Ellipse Margin="250 450 0 0" Width="40" Height="40" Fill="#4EB1B6" />
+                    <Ellipse Margin="50 400 0 0" Width="20" Height="20" Fill="#4EB1B6" />                
+                </Canvas>
+                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <Viewbox Stretch="Uniform" Height="25" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                        <Canvas Height="200" Width="500">
+                            <Path Fill="#27455b" Data="M222.49,173.86V83.51h12.27v37.11h46.86V83.51h12.32v90.35H281.62V131.54H234.76v42.32Z" />
+                            <Path Fill="#27455b" Data="M313.33,83.51h35a76.65,76.65,0,0,1,12.54.74,24.52,24.52,0,0,1,7.21,2.45,21.17,21.17,0,0,1,8.68,8.71,27.57,27.57,0,0,1,3,13.13A23.69,23.69,0,0,1,376.62,121a21.06,21.06,0,0,1-9.32,8.12q5.26,1.47,7.51,5c1.49,2.33,2.43,6.28,2.79,11.84l1,14.9A24.58,24.58,0,0,0,379.9,168a6.17,6.17,0,0,0,2.86,3.34v2.52H368.59c-1.15-1.89-1.95-5.91-2.39-12.09v-.36l-.74-11.78q-.61-9.07-3.86-11.78t-16.26-2.7H325.47v38.71H313.33Zm12,10.61v30.61h21q11.35,0,16-3.68t4.69-12.27q0-8-4.41-11.35t-16.32-3.31Z" />
+                            <Path Fill="#27455b" Data="M408,96.88v77H396.74V83.51h17.54l22.39,69.12q1,3,1.44,4.57c.3,1.09.54,2,.7,2.85.33-1.51.66-2.86,1-4s.68-2.31,1-3.38L464,83.51h17.6v90.35H469.73v-77q-.44,2-1,4c-.36,1.33-.75,2.65-1.16,4l-23.25,69.07H432.74l-22.69-69.07c-.41-1.14-.78-2.37-1.11-3.68S408.31,98.4,408,96.88Z" />
+                            <Path Fill="#3ab19b" Data="M222.83,71.26V25.17h19.34v5.92H231.25V44.35h8.59v5.86h-8.59V65.45h11v5.81Z" />
+                            <Path Fill="#3ab19b" Data="M247.18,71.26V25.17h18.95V31H255.6V44.4h8.59v5.86H255.6v21Z" />
+                            <Path Fill="#3ab19b" Data="M270.51,71.26V25.17h18.94V31H278.93V44.4h8.59v5.86h-8.59v21Z" />
+                            <Path Fill="#3ab19b" Data="M306.52,71.88a14.47,14.47,0,0,1-7.79-1.82,10.07,10.07,0,0,1-4.16-5.23,23.61,23.61,0,0,1-1.25-8.08V39.51a22.8,22.8,0,0,1,1.25-8,9.85,9.85,0,0,1,4.16-5.1,18.32,18.32,0,0,1,15.67,0,10,10,0,0,1,4.15,5.1,22.09,22.09,0,0,1,1.28,8v17.3a22.43,22.43,0,0,1-1.28,8A10.33,10.33,0,0,1,314.4,70,14.4,14.4,0,0,1,306.52,71.88Zm0-6.2a4.47,4.47,0,0,0,3.1-.91,4.57,4.57,0,0,0,1.34-2.5,16.4,16.4,0,0,0,.34-3.47V37.57A16,16,0,0,0,311,34.1a4.34,4.34,0,0,0-1.34-2.41,4.57,4.57,0,0,0-3.1-.89,4.47,4.47,0,0,0-3,.89,4.26,4.26,0,0,0-1.37,2.41,16,16,0,0,0-.34,3.47V58.8a17.91,17.91,0,0,0,.31,3.47,4.39,4.39,0,0,0,1.34,2.5A4.49,4.49,0,0,0,306.52,65.68Z" />
+                            <Path Fill="#3ab19b" Data="M326,71.26V25.17h11A24.32,24.32,0,0,1,345,26.28a9.06,9.06,0,0,1,4.9,3.78,13.76,13.76,0,0,1,1.67,7.29,22.36,22.36,0,0,1-.51,5,9.58,9.58,0,0,1-1.73,3.79,7.91,7.91,0,0,1-3.39,2.42l6.43,22.7H343.9l-5.58-21.11h-3.86V71.26Zm8.42-26.4h2.61a9,9,0,0,0,3.9-.71,4.2,4.2,0,0,0,2.08-2.28,11.07,11.07,0,0,0,.62-4,8.72,8.72,0,0,0-1.28-5.21q-1.27-1.72-4.86-1.73h-3.07Z" />
+                            <Path Fill="#3ab19b" Data="M362.33,71.26V31.37H355v-6.2h23v6.2h-7.23V71.26Z" />
+                            <Path Fill="#3ab19b" Data="M382.19,71.26V25.17h8.42V65.45h11.15v5.81Z" />
+                            <Path Fill="#3ab19b" Data="M405.91,71.26V25.17h19.35v5.92H414.34V44.35h8.59v5.86h-8.59V65.45h11v5.81Z" />
+                            <Path Fill="#3ab19b" Data="M441.87,71.88a13.63,13.63,0,0,1-6.94-1.62,10.19,10.19,0,0,1-4.21-4.75,20.33,20.33,0,0,1-1.59-7.68l7.22-1.42a22.65,22.65,0,0,0,.66,4.72,6.87,6.87,0,0,0,1.65,3.16,4,4,0,0,0,2.93,1.11,3.28,3.28,0,0,0,2.9-1.23,5.28,5.28,0,0,0,.85-3.1,8.39,8.39,0,0,0-1.36-5,21.54,21.54,0,0,0-3.64-3.87l-5.81-5.12a17.17,17.17,0,0,1-3.89-4.69,12.92,12.92,0,0,1-1.46-6.4c0-3.64,1.07-6.45,3.19-8.42s5-3,8.71-3a12.8,12.8,0,0,1,5.4,1,8.57,8.57,0,0,1,3.44,2.75,12.44,12.44,0,0,1,1.91,4,23.1,23.1,0,0,1,.79,4.75l-7.16,1.25a24.55,24.55,0,0,0-.49-3.87,5.25,5.25,0,0,0-1.31-2.67,3.64,3.64,0,0,0-2.76-1A3.51,3.51,0,0,0,438,32.14a4.7,4.7,0,0,0-1,3A7.05,7.05,0,0,0,438,39a15.4,15.4,0,0,0,2.79,3.1l5.75,5.06a23.77,23.77,0,0,1,4.86,5.6,14.32,14.32,0,0,1,2,7.77A11.66,11.66,0,0,1,452,66.42a10.38,10.38,0,0,1-4,4A12.13,12.13,0,0,1,441.87,71.88Z" />
+                            <Path Fill="#3ab19b" Data="M469.52,71.88a13.63,13.63,0,0,1-6.94-1.62,10.19,10.19,0,0,1-4.21-4.75,20.33,20.33,0,0,1-1.59-7.68L464,56.41a22.65,22.65,0,0,0,.66,4.72,6.87,6.87,0,0,0,1.65,3.16,4,4,0,0,0,2.93,1.11,3.28,3.28,0,0,0,2.9-1.23,5.28,5.28,0,0,0,.85-3.1,8.39,8.39,0,0,0-1.36-5A21.54,21.54,0,0,0,468,52.25l-5.81-5.12a17.17,17.17,0,0,1-3.89-4.69,12.92,12.92,0,0,1-1.46-6.4c0-3.64,1.07-6.45,3.19-8.42s5-3,8.7-3a12.81,12.81,0,0,1,5.41,1,8.57,8.57,0,0,1,3.44,2.75,12.44,12.44,0,0,1,1.91,4,23.8,23.8,0,0,1,.79,4.75l-7.16,1.25a24.55,24.55,0,0,0-.49-3.87,5.25,5.25,0,0,0-1.31-2.67,3.64,3.64,0,0,0-2.76-1,3.49,3.49,0,0,0-2.87,1.22,4.7,4.7,0,0,0-1,3,7.05,7.05,0,0,0,1,3.84,15.4,15.4,0,0,0,2.79,3.1l5.75,5.06a24,24,0,0,1,4.86,5.6,14.32,14.32,0,0,1,2,7.77,11.66,11.66,0,0,1-1.45,5.86,10.38,10.38,0,0,1-4,4A12.18,12.18,0,0,1,469.52,71.88Z" />
+                            <Ellipse Fill="#3ab19b" Canvas.Left="18.379999999999995" Canvas.Top="13" Width="174" Height="174" />
+                            <Ellipse Fill="#27455b" Canvas.Left="69.320000000000007" Canvas.Top="34.65" Width="25.22" Height="25.22" />
+                            <Polygon Fill="#27455b" Points="72.59 160.95 72.59 133.59 114.18 133.59 114.18 160.95 125.12 160.95 125.12 138.93 116.47 123.9 114.18 123.9 83.59 123.9 72.59 123.9 72.59 78.84 61.71 77.29 61.71 160.95 72.59 160.95" />
+                            <Path Fill="#fff" Data="M129.32,115l-10.09,5.81L140.61,158a5.83,5.83,0,0,0,5,2.92,5.74,5.74,0,0,0,2.9-.78,5.82,5.82,0,0,0,2.15-7.95Zm31.76,10.65L136.84,96.16a5.84,5.84,0,0,0-7.4-1.35l-16.22,9.34L101,72l19-18.11a3.87,3.87,0,0,0-1.58-6.53L97,40.48a16.34,16.34,0,0,1,1.47,6.78,18,18,0,0,1-.1,1.81l11.58,3.71-.49.46c-5.78,5.52-13,8.89-20.6,11.09l0,4.47,9.81,18L97.17,93l-5.7-2.8-5-20.62-4-3.2-.54.09h0a49.73,49.73,0,0,1-13.57,0l-7.66-1.09,8.26-8a16.36,16.36,0,0,1-3.29-7.62l-16,15.41A4,4,0,0,0,48.35,68a3.88,3.88,0,0,0,3.33,4l23.8,3.38,15.06,42.12a9.69,9.69,0,0,0,14.09,5.14l7-4.11a4.22,4.22,0,0,0,.65-.3L131,107.37l21.11,25.72a5.83,5.83,0,0,0,9-7.4Z" />
+                        </Canvas>
+                    </Viewbox>
                 </StackPanel>
-            </StackPanel>
-        </Grid>
-        <Border Background="#ffffff" Grid.Column="1" CornerRadius="0 10 1 0" MouseDown="Border_MouseDown">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">                    
-                    <TextBlock Text="Sign in to App" Style="{StaticResource titleText}" Foreground="#3AB19B"/>
-                    <fa:ImageAwesome Icon="Refresh" Spin="True" Height="25" Width="{Binding ProgressWidth}" Foreground="#3AB19B" Margin="5 0 0 0" />
-                </StackPanel>                
-                <StackPanel Orientation="Horizontal" Margin="0 20" HorizontalAlignment="Center">
-                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="googlePageURL">
-                        <Image  Source="/icons/google.png" Height="15"/>
-                    </Button>
-                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="facebookPageURL">
-                        <Image Source="/icons/facebook.png" Height="15"/>
-                    </Button>
-                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="linkedInPageURL">
-                        <Image Source="/icons/linkedin.png" Height="15"/>
-                    </Button>
-                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="xPageURL">
-                        <Image  Source="/icons/x.png" Height="15"/>
-                    </Button>
-                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="youtubePageURL">
-                        <Image Source="/icons/youtube.png" Height="15"/>
-                    </Button>
-                    <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="instagramPageURL">
-                        <Image Source="/icons/instagram.png" Height="15"/>
-                    </Button>
+                <StackPanel VerticalAlignment="Center">
+                
+                    <TextBlock Text="Sign Up" Style="{StaticResource titleText}"></TextBlock>
+                    <TextBlock Text="Enter your personal info and create new account to connect us" Style="{StaticResource normalText}" Opacity="0.8" Margin="20 30"></TextBlock>
+                    <Button Content="Sign Up" Style="{StaticResource button}" Command="{Binding OpenSignUpPageCommand}"></Button>
+                
                 </StackPanel>
-                <TextBlock Text="or use your email info :" Style="{StaticResource normalText}" Foreground="#878787" Margin="0 10 0 15"/>
-                <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70 7" CornerRadius="5">
-                    <Grid Margin="15 5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Image Source="/icons/email.png" Height="20"/>
-                        <TextBlock x:Name="textEmail" Text="Email" Style="{StaticResource textHint}" MouseDown="textEmail_MouseDown"/>
-                        <TextBox Style="{StaticResource textBox}" Name="txtUsername"  CharacterCasing="Lower" Text="{Binding UserName}" TextChanged="txtUsername_TextChanged"/>
-                    </Grid>                    
-                </Border>
-                <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70 7" CornerRadius="5">
-                    <Grid Margin="15 5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Image Source="/icons/lock.png" Height="20"/>
-                        <TextBlock x:Name="passwordHint" Text="Password" Style="{StaticResource textHint}" MouseDown="TextBlock_MouseDown"/>
-                        <PasswordBox Style="{StaticResource textBox}" Name="txtPassword" PasswordChanged="txtPassword_PasswordChanged" />
-                    </Grid>
-                </Border>
-                <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70 7" CornerRadius="5">
-                    <Grid Margin="15 5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Image Height="20"/>
-                        <CheckBox x:Name="chkRememberMe" Content="Remember Me"  
-                          IsChecked="{Binding RememberMe}" Style="{StaticResource textCheckBox}"/>
-                    </Grid>                    
-                </Border>
-                <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource normalText}" Foreground="red" Margin="0 15 0 15"/>
-                <Button x:Name="btnLogOn" Content="Sign In" Style="{StaticResource mainButton}" Command="{Binding LoginCommand}" IsEnabled="{Binding EnableLoginButton}"/>                
-            </StackPanel>
-        </Border>
-    </Grid>  
-</Window>
+                <StackPanel VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Version" Margin="0,0,5,0" />
+                        <TextBlock x:Name="currentVersion" Text="1.0.0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+            <Border Background="#ffffff" Grid.Column="1" CornerRadius="0 10 1 0" MouseDown="Border_MouseDown">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">                    
+                        <TextBlock Text="Sign in to App" Style="{StaticResource titleText}" Foreground="#3AB19B"/>
+                        <fa:ImageAwesome Icon="Refresh" Spin="True" Height="25" Width="{Binding ProgressWidth}" Foreground="#3AB19B" Margin="5 0 0 0" />
+                    </StackPanel>                
+                    <StackPanel Orientation="Horizontal" Margin="0 20" HorizontalAlignment="Center">
+                        <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="googlePageURL">
+                            <Image  Source="/icons/google.png" Height="15"/>
+                        </Button>
+                        <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="facebookPageURL">
+                            <Image Source="/icons/facebook.png" Height="15"/>
+                        </Button>
+                        <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="linkedInPageURL">
+                            <Image Source="/icons/linkedin.png" Height="15"/>
+                        </Button>
+                        <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="xPageURL">
+                            <Image  Source="/icons/x.png" Height="15"/>
+                        </Button>
+                        <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="youtubePageURL">
+                            <Image Source="/icons/youtube.png" Height="15"/>
+                        </Button>
+                        <Button Style="{StaticResource buttonCircle}" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="instagramPageURL">
+                            <Image Source="/icons/instagram.png" Height="15"/>
+                        </Button>
+                    </StackPanel>
+                    <TextBlock Text="or use your email info :" Style="{StaticResource normalText}" Foreground="#878787" Margin="0 10 0 15"/>
+                    <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70 7" CornerRadius="5">
+                        <Grid Margin="15 5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="/icons/email.png" Height="20"/>
+                            <TextBlock x:Name="textEmail" Text="Email" Style="{StaticResource textHint}" MouseDown="textEmail_MouseDown"/>
+                            <TextBox Style="{StaticResource textBox}" Name="txtUsername"  CharacterCasing="Lower" Text="{Binding UserName}" TextChanged="txtUsername_TextChanged"/>
+                        </Grid>                    
+                    </Border>
+                    <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70 7" CornerRadius="5">
+                        <Grid Margin="15 5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="/icons/lock.png" Height="20"/>
+                            <TextBlock x:Name="passwordHint" Text="Password" Style="{StaticResource textHint}" MouseDown="TextBlock_MouseDown"/>
+                            <PasswordBox Style="{StaticResource textBox}" Name="txtPassword" PasswordChanged="txtPassword_PasswordChanged" />
+                        </Grid>
+                    </Border>
+                    <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70 7" CornerRadius="5">
+                        <Grid Margin="15 5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Height="20"/>
+                            <CheckBox x:Name="chkRememberMe" Content="Remember Me"  
+                              IsChecked="{Binding RememberMe}" Style="{StaticResource textCheckBox}"/>
+                        </Grid>                    
+                    </Border>
+                    <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource normalText}" Foreground="red" Margin="0 15 0 15"/>
+                    <Button x:Name="btnLogOn" Content="Sign In" Style="{StaticResource mainButton}" Command="{Binding LoginCommand}" IsEnabled="{Binding EnableLoginButton}"/>                
+                </StackPanel>
+            </Border>
+        </Grid>  
+    </Window>
 

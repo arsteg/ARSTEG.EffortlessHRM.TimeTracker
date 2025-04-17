@@ -151,24 +151,30 @@
           <!--<Image Source="/Assets/refresh.png" Height="25"   Margin="5,0,0,0"/>-->
         </StackPanel>
         <StackPanel Orientation="Horizontal" Margin="0,20" HorizontalAlignment="Center">
-          <!--<Button Classes="buttonCircle" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="googlePageURL">
-            <Image Source="/Assets/google.png" Height="15"/>
-          </Button>
-          <Button Classes="buttonCircle" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="facebookPageURL">
-            <Image Source="/Assets/facebook.png" Height="15"/>
-          </Button>
-          <Button Classes="buttonCircle" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="linkedInPageURL">
-            <Image Source="/Assets/linkedin.png" Height="15"/>
-          </Button>
-          <Button Classes="buttonCircle" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="xPageURL">
-            <Image Source="/Assets/x.png" Height="15"/>
-          </Button>
-          <Button Classes="buttonCircle" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="youtubePageURL">
-            <Image Source="/Assets/youtube.png" Height="15"/>
-          </Button>
-          <Button Classes="buttonCircle" Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="instagramPageURL">
-            <Image Source="/Assets/instagram.png" Height="15"/>
-          </Button>-->
+          <controls:Button   Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="googlePageURL"
+                            Background="Transparent"   Width="50">
+            <controls:Image Source="/Assets/google.png" Height="15"/>
+          </controls:Button>
+            <controls:Button  Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="facebookPageURL" 
+                              Background="Transparent" Width="50">
+              <controls:Image Source="/Assets/facebook.png" Height="15" />
+            </controls:Button>
+          <controls:Button  Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="linkedInPageURL" 
+                            Background="Transparent" Width="50">
+            <controls:Image Source="/Assets/linkedIn.png" Height="15"/>
+          </controls:Button>
+          <controls:Button  Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="xPageURL"  
+                            Background="Transparent" Width="50">
+            <controls:Image Source="/Assets/x.png" Height="15" />
+          </controls:Button>
+          <controls:Button  Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="youtubePageURL"  
+                            Background="Transparent" Width="50">
+            <controls:Image Source="/Assets/youtube.png" Height="15" />
+          </controls:Button>
+          <controls:Button  Command="{Binding OpenSocialMediaPageCommand}" CommandParameter="instagramPageURL"  
+                            Background="Transparent" Width="50">
+            <controls:Image Source="/Assets/instagram.png" Height="15"/>
+          </controls:Button>
         </StackPanel>
         <TextBlock Text="or use your email info :" Classes="normalText" Foreground="#878787" Margin="0,10,0,15"/>
         <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70,7" CornerRadius="5">
@@ -177,12 +183,9 @@
               <ColumnDefinition Width="Auto"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <!--<Image Source="/Assets/email.png" Height="20"/>-->
-            
-              <TextBlock x:Name="textEmail" Text="Email" Classes="textHint"/>
-              <TextBox Classes="textBox" Name="txtUsername" Text="{Binding UserName}" />
-           
-          
+            <controls:Image Source="/Assets/email.png" Height="20"/>            
+              <TextBlock x:Name="textEmail" Text="Email" FontSize="14" Grid.Column="1" Margin="10,0,0,0" Foreground="#acb0af"/>
+              <TextBox x:Name="txtUsername" Text="{Binding UserName}" FontSize="14" Grid.Column="1" Margin="10 0 0 0" Foreground="#878787" BorderBrush="Transparent" BorderThickness="0"/>  
           </Grid>
         </Border>
         <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70,7" CornerRadius="5">
@@ -191,9 +194,10 @@
               <ColumnDefinition Width="Auto"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <!--<Image Source="/Assets/lock.png" Height="20"/>-->
-            <TextBlock x:Name="passwordHint" Text="Password" Classes="textHint"/>
-            <controls:TextBox  Name="txtPassword" PasswordChar="*" />
+            <controls:Image Source="/Assets/lock.png" Height="20"/>
+            <TextBlock x:Name="passwordHint" Text="Password" FontSize="14" Grid.Column="1" Margin="10,0,0,0" Foreground="#acb0af" />
+            <controls:TextBox  Name="txtPassword" PasswordChar="*" FontSize="14" Grid.Column="1" Margin="10 0 0 0" Foreground="#878787" 
+                               BorderBrush="Transparent" BorderThickness="0" Text="{Binding Password}" />
           </Grid>
         </Border>
         <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70 7" CornerRadius="5">
@@ -207,8 +211,11 @@
               IsChecked="{Binding RememberMe}"/>
           </Grid>
         </Border>
-        <controls:TextBlock Text="{Binding ErrorMessage}"  Foreground="red" Margin="0 15 0 15"/>
-        <controls:Button x:Name="btnLogOn" Content="Sign In"  Command="{Binding LoginCommand}" IsEnabled="{Binding EnableLoginButton}"/>
+        <controls:TextBlock Text="{Binding ErrorMessage}"    Margin="0 15 0 15" 
+                            FontSize="16" LineHeight="28" TextWrapping="Wrap" TextAlignment="Center"  Foreground="#ffffff"/>
+        <controls:Button x:Name="btnLogOn" Content="Sign In"  Command="{Binding LoginCommand}"
+                         IsEnabled="{Binding EnableLoginButton}" Classes="button"/>
+        
       </StackPanel>
     </Border>
   </Grid>

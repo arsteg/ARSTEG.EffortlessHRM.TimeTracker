@@ -12,7 +12,23 @@
   </Application.DataTemplates>
 
   <Application.Styles>
-    <FluentTheme />
+    <Style Selector="CheckBox">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="Grid.Column" Value="1"/>
+      <Setter Property="Foreground" Value="#878787"/>
+    </Style>
+
+    <Style  Selector="Button">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="Width" Value="200"/>
+      <Setter Property="Margin" Value="0 20 0 0"/>
+      <Setter Property="Background" Value="#3AB19B"/>
+      <Setter Property="Foreground" Value="#FDFEFE"/>    
+     
+    </Style>
+
+
+    
   </Application.Styles>
 
   <Application.Resources>
@@ -35,6 +51,7 @@
     
     <!-- Style for titleText targeting TextBlock -->
 
+    
     <Style x:Key="logoutButton" Selector="Button">
       <Setter Property="FontSize" Value="14"/>
       <Setter Property="Width" Value="105"/>
@@ -93,12 +110,7 @@
       </Style.Triggers>-->
     </Style>
 
-    <Style x:Key="textCheckBox" Selector="CheckBox">
-      <Setter Property="FontSize" Value="14"/>
-      <Setter Property="Grid.Column" Value="1"/>
-      <Setter Property="Foreground" Value="#878787"/>
-
-    </Style>
+   
 
     <Style x:Key="imgClose" Selector="Image">
       <Setter Property="Width" Value="20"/>

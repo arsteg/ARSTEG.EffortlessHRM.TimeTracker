@@ -76,7 +76,7 @@ namespace TimeTrackerX.ViewModels
             //_keyEventService = keyEventService;
             //_restService = restService;
             //_notificationService = notificationService;
-
+            _restService = new REST(new HttpProviders());
             InitializeCommands();
             InitializeTimers();
             InitializeInputHooks();

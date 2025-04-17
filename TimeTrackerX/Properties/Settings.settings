@@ -6,7 +6,7 @@
       <Value Profile="(Default)">mohdrafionline@gmail.com</Value>
     </Setting>
     <Setting Name="userPassword" Type="System.String" Scope="User">
-      <Value Profile="(Default)">12345</Value>
+      <Value Profile="(Default)">12345678</Value>
     </Setting>
     <Setting Name="EnableInfoLogging" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

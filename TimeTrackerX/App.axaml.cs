@@ -15,7 +15,6 @@ using MsBox.Avalonia.Enums;
 using TimeTrackerX.Models;
 using TimeTrackerX.Services;
 using TimeTrackerX.Services.Interfaces;
-using TimeTrackerX.Views;
 
 namespace TimeTrackerX
 {

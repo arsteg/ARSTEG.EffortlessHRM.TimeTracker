@@ -1,5 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
+        mc:Ignorable="d"
         xmlns:vm="using:TimeTrackerX.ViewModels"
         x:Class="TimeTrackerX.LoginView"
         Title="LoginView"
@@ -179,15 +183,15 @@
           </Grid>
         </Border>
         <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70,7" CornerRadius="5">
-          <!--<Grid Margin="15,5">
+          <Grid Margin="15,5">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Image Source="/Assets/lock.png" Height="20"/>
+            <!--<Image Source="/Assets/lock.png" Height="20"/>-->
             <TextBlock x:Name="passwordHint" Text="Password" Classes="textHint"/>
-            <PasswordBox Classes="textBox" Name="txtPassword" PasswordChar="*" GotFocus="PasswordHint_OnGotFocus" PasswordChanged="TxtPassword_OnPasswordChanged"/>
-          </Grid>-->
+            <controls:TextBox Name="PasswordInput" PasswordChar="*" />
+          </Grid>
         </Border>
         <Border BorderThickness="1" BorderBrush="#acb0af" Margin="70,7" CornerRadius="5">
           <Grid Margin="15,5">

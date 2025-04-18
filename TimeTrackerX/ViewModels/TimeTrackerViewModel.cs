@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Media;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +22,7 @@ using Timer = System.Timers.Timer;
 
 namespace TimeTrackerX.ViewModels
 {
-    public partial class TimeTrackerViewModel : ObservableObject
+    public partial class TimeTrackerViewModel : ViewModelBase
     {
         #region Private Members
         private readonly IConfiguration _configuration;
@@ -32,13 +33,16 @@ namespace TimeTrackerX.ViewModels
         private readonly INotificationService _notificationService;
 
         private bool _trackerIsOn;
-        private readonly Timer _dispatcherTimer = new Timer();
-        private readonly Timer _idleTimeDetectionTimer = new Timer();
-        private readonly Timer _saveDispatcherTimer = new Timer();
-        private readonly Timer _deleteImagePathTimer = new Timer();
-        private readonly Timer _usedAppDetector = new Timer();
-        private readonly Timer _shareLiveScreen = new Timer();
-        private readonly Timer _checkForLiveScreen = new Timer();
+
+        private Timer dispatcherTimer = new Timer();
+        private Timer idlTimeDetectionTimer = new Timer();
+        private Timer saveDispatcherTimer = new Timer();
+        private Timer deleteImagePath = new Timer();
+        private Timer usedAppDetector = new Timer();
+
+        private DispatcherTimer shareLiveScreen = new DispatcherTimer();
+        private DispatcherTimer checkForLiveScreen = new DispatcherTimer();
+
         private System.Threading.Timer _sendImageRegularly;
         private double _frequencyOfLiveImage = 1000;
         private bool _isLiveImageRunning;
@@ -76,6 +80,11 @@ namespace TimeTrackerX.ViewModels
             //_keyEventService = keyEventService;
             //_restService = restService;
             //_notificationService = notificationService;
+
+            //dispatcherTimer.Interval = TimeSpan.FromMinutes( 9 );
+            UserName = GlobalSetting.Instance.LoginResult.data.user.email;
+            UserId = GlobalSetting.Instance.LoginResult.data.user.id;
+            CreateMachineId();
             _restService = new REST(new HttpProviders());
             InitializeCommands();
             InitializeTimers();
@@ -107,21 +116,21 @@ namespace TimeTrackerX.ViewModels
 
         private void InitializeTimers()
         {
-            _dispatcherTimer.Interval = TimeSpan.FromMinutes(9).TotalMilliseconds;
-            _dispatcherTimer.Elapsed += DispatcherTimer_Tick;
+            //_dispatcherTimer.Interval = TimeSpan.FromMinutes(9).TotalMilliseconds;
+            //_dispatcherTimer.Elapsed += DispatcherTimer_Tick;
 
-            _idleTimeDetectionTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
-            _idleTimeDetectionTimer.Elapsed += IdleTimeDetectionTimer_Tick;
+            //_idleTimeDetectionTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
+            //_idleTimeDetectionTimer.Elapsed += IdleTimeDetectionTimer_Tick;
 
-            _usedAppDetector.Interval = TimeSpan.FromMinutes(10).TotalMilliseconds;
-            _usedAppDetector.Elapsed += UsedAppDetector_Tick;
+            //_usedAppDetector.Interval = TimeSpan.FromMinutes(10).TotalMilliseconds;
+            //_usedAppDetector.Elapsed += UsedAppDetector_Tick;
 
-            _shareLiveScreen.Interval = TimeSpan.FromSeconds(5).TotalMilliseconds;
-            _shareLiveScreen.Elapsed += ShareLiveScreen_Tick;
+            //_shareLiveScreen.Interval = TimeSpan.FromSeconds(5).TotalMilliseconds;
+            //_shareLiveScreen.Elapsed += ShareLiveScreen_Tick;
 
-            _checkForLiveScreen.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
-            _checkForLiveScreen.Elapsed += CheckForLiveScreen_Tick;
-            _checkForLiveScreen.Start();
+            //_checkForLiveScreen.Interval = TimeSpan.FromSeconds(30).TotalMilliseconds;
+            //_checkForLiveScreen.Elapsed += CheckForLiveScreen_Tick;
+            //_checkForLiveScreen.Start();
         }
 
         private void InitializeInputHooks()
@@ -340,12 +349,12 @@ namespace TimeTrackerX.ViewModels
             {
                 if (_trackerIsOn)
                 {
-                    _idleTimeDetectionTimer.Stop();
+                    //idleTimeDetectionTimer.Stop();
                     CanSendReport = true;
                 }
                 else
                 {
-                    _idleTimeDetectionTimer.Start();
+                    //idleTimeDetectionTimer.Start();
                     CanSendReport = false;
                 }
                 await SetTrackerStatus();
@@ -414,12 +423,12 @@ namespace TimeTrackerX.ViewModels
             {
                 DeleteImagePath = CurrentImagePath;
                 CurrentImagePath = null;
-                _saveDispatcherTimer.Stop();
+                saveDispatcherTimer.Stop();
                 CanShowScreenshot = false;
 
-                _deleteImagePathTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
-                _deleteImagePathTimer.Elapsed += DeleteImagePath_Tick;
-                _deleteImagePathTimer.Start();
+                //deleteImagePathTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
+                //deleteImagePathTimer.Elapsed += DeleteImagePath_Tick;
+                //deleteImagePathTimer.Start();
             }
             catch (Exception ex)
             {
@@ -569,7 +578,7 @@ namespace TimeTrackerX.ViewModels
             _totalKeysPressed = 0;
             _totalMouseClicks = 0;
             _totalMouseScrolls = 0;
-            _saveDispatcherTimer.Stop();
+            saveDispatcherTimer.Stop();
             CurrentInput = string.Empty;
         }
 
@@ -586,7 +595,7 @@ namespace TimeTrackerX.ViewModels
                 _totalMouseScrolls = 0;
                 ShowTimeTracked(false);
                 ShowCurrentTimeTracked();
-                _saveDispatcherTimer.Stop();
+                saveDispatcherTimer.Stop();
                 CurrentInput = string.Empty;
             }
             catch (Exception ex)
@@ -646,14 +655,14 @@ namespace TimeTrackerX.ViewModels
 
         private void StartTracker()
         {
-            _dispatcherTimer?.Start();
-            _usedAppDetector?.Start();
+            dispatcherTimer?.Start();
+            usedAppDetector?.Start();
         }
 
         private void StopTracker()
         {
-            _usedAppDetector?.Stop();
-            _dispatcherTimer?.Stop();
+            usedAppDetector?.Stop();
+            dispatcherTimer?.Stop();
         }
 
         private async void DispatcherTimer_Tick(object? sender, ElapsedEventArgs e)
@@ -662,22 +671,22 @@ namespace TimeTrackerX.ViewModels
             {
                 if (_trackerIsOn)
                 {
-                    var lastInterval = TimeSpan.FromMilliseconds(_dispatcherTimer.Interval);
+                    var lastInterval = TimeSpan.FromMilliseconds(dispatcherTimer.Interval);
                     var currentMinutes = DateTime.UtcNow.Minute;
                     _minutesTracked += 10;
                     var randomTime = _rand.Next(2, 9);
                     double forTimerInterval =
                         ((currentMinutes - (currentMinutes % 10)) + 10 + randomTime)
                         - currentMinutes;
-                    _dispatcherTimer.Interval = TimeSpan
+                    dispatcherTimer.Interval = TimeSpan
                         .FromMinutes(forTimerInterval)
                         .TotalMilliseconds;
                     var filepath = await CaptureScreen();
                     CurrentImagePath = filepath;
                     //_saveDispatcherTimer = new Timer();
-                    _saveDispatcherTimer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
-                    _saveDispatcherTimer.Elapsed += SaveTimeSlot_Tick;
-                    _saveDispatcherTimer.Start();
+                    saveDispatcherTimer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
+                    saveDispatcherTimer.Elapsed += SaveTimeSlot_Tick;
+                    saveDispatcherTimer.Start();
                     await SaveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now);
                 }
             }
@@ -704,7 +713,7 @@ namespace TimeTrackerX.ViewModels
                 _totalMouseScrolls = 0;
                 ShowTimeTracked(false);
                 ShowCurrentTimeTracked();
-                _saveDispatcherTimer.Stop();
+                saveDispatcherTimer.Stop();
                 CurrentInput = string.Empty;
             }
             catch (Exception ex)
@@ -1038,16 +1047,16 @@ namespace TimeTrackerX.ViewModels
                 {
                     File.Delete(DeleteImagePath);
                     DeleteImagePath = "";
-                    _deleteImagePathTimer.Stop();
+                    //deleteImagePathTimer.Stop();
                 }
                 catch
                 {
-                    _deleteImagePathTimer.Stop();
+                    //deleteImagePathTimer.Stop();
                 }
             }
             else
             {
-                _deleteImagePathTimer.Stop();
+                //deleteImagePathTimer.Stop();
             }
         }
 
@@ -1316,6 +1325,39 @@ namespace TimeTrackerX.ViewModels
                 GlobalSetting.Instance.MachineId = _machineId;
             }
         }
+
+        partial void OnSelectedProjectChanged(Project oldValue, Project newValue)
+        {
+            // Clear existing tasks and task selection
+            Tasks.Clear();
+            SelectedTask = null;
+            TaskName = string.Empty;
+            TaskDescription = string.Empty;
+
+            // Fetch tasks for the new project
+            if (newValue != null)
+            {
+                _ = GetTaskList(); // Run asynchronously
+            }
+
+            // Notify UI that AllowTaskSelection may have changed
+            OnPropertyChanged(nameof(AllowTaskSelection));
+        }
+
+        partial void OnSelectedTaskChanged(ProjectTask oldValue, ProjectTask newValue)
+        {
+            if (newValue != null)
+            {
+                TaskName = newValue.taskName;
+                TaskDescription = newValue.description;
+            }
+            else
+            {
+                TaskName = string.Empty;
+                TaskDescription = string.Empty;
+            }
+        }
+
         #endregion
 
         #region WebSocket (Commented Out)

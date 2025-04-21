@@ -40,8 +40,8 @@ namespace TimeTrackerX.ViewModels
         private Timer deleteImagePath = new Timer();
         private Timer usedAppDetector = new Timer();
 
-        private DispatcherTimer shareLiveScreen = new DispatcherTimer();
-        private DispatcherTimer checkForLiveScreen = new DispatcherTimer();
+        private Timer shareLiveScreen = new Timer();
+        private Timer checkForLiveScreen = new Timer();
 
         private System.Threading.Timer _sendImageRegularly;
         private double _frequencyOfLiveImage = 1000;
@@ -66,8 +66,8 @@ namespace TimeTrackerX.ViewModels
 
         #region Constructor
         public TimeTrackerViewModel(
-        //IConfiguration configuration,
-        //IScreenshotService screenshotService,
+            //IConfiguration configuration,
+            IScreenshotService screenshotService
         //IMouseEventService mouseEventService,
         //IKeyEventService keyEventService,
         //REST restService,
@@ -75,16 +75,17 @@ namespace TimeTrackerX.ViewModels
         )
         {
             //_configuration = configuration;
-            //_screenshotService = screenshotService;
+            _screenshotService = screenshotService;
             //_mouseEventService = mouseEventService;
             //_keyEventService = keyEventService;
             //_restService = restService;
             //_notificationService = notificationService;
-
-            //dispatcherTimer.Interval = TimeSpan.FromMinutes( 9 );
+            dispatcherTimer.Elapsed += DispatcherTimer_Elapsed;
+            var nineMinutes = TimeSpan.FromMinutes(4).TotalMilliseconds;
+            dispatcherTimer.Interval = nineMinutes;
             UserName = GlobalSetting.Instance.LoginResult.data.user.email;
             UserId = GlobalSetting.Instance.LoginResult.data.user.id;
-            CreateMachineId();
+            this._machineId = new Machine().CreateMachineId();
             _restService = new REST(new HttpProviders());
             InitializeCommands();
             InitializeTimers();
@@ -92,6 +93,41 @@ namespace TimeTrackerX.ViewModels
             InitializeUI();
 
             _tasks = new ObservableCollection<ProjectTask>();
+        }
+
+        private async void DispatcherTimer_Elapsed(object? sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                if (_trackerIsOn)
+                {
+                    var lastInterval = TimeSpan.FromMilliseconds(dispatcherTimer.Interval);
+                    var currentMinutes = DateTime.UtcNow.Minute;
+                    _minutesTracked += 10;
+                    var randomTime = _rand.Next(2, 9);
+                    double forTimerInterval =
+                        ((currentMinutes - (currentMinutes % 10)) + 10 + randomTime)
+                        - currentMinutes;
+                    dispatcherTimer.Interval = TimeSpan
+                        .FromMinutes(forTimerInterval)
+                        .TotalMilliseconds;
+                    var filepath = await CaptureScreen();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        CurrentImagePath = filepath;
+                        CanShowScreenshot = true;
+                    });
+                    saveDispatcherTimer = new Timer();
+                    saveDispatcherTimer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
+                    saveDispatcherTimer.Elapsed += SaveTimeSlot_Tick;
+                    saveDispatcherTimer.Start();
+                    await SaveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempLog($"DispatcherTimer error: {ex.Message}");
+            }
         }
 
         private void InitializeCommands()
@@ -665,37 +701,6 @@ namespace TimeTrackerX.ViewModels
             dispatcherTimer?.Stop();
         }
 
-        private async void DispatcherTimer_Tick(object? sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                if (_trackerIsOn)
-                {
-                    var lastInterval = TimeSpan.FromMilliseconds(dispatcherTimer.Interval);
-                    var currentMinutes = DateTime.UtcNow.Minute;
-                    _minutesTracked += 10;
-                    var randomTime = _rand.Next(2, 9);
-                    double forTimerInterval =
-                        ((currentMinutes - (currentMinutes % 10)) + 10 + randomTime)
-                        - currentMinutes;
-                    dispatcherTimer.Interval = TimeSpan
-                        .FromMinutes(forTimerInterval)
-                        .TotalMilliseconds;
-                    var filepath = await CaptureScreen();
-                    CurrentImagePath = filepath;
-                    //_saveDispatcherTimer = new Timer();
-                    saveDispatcherTimer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
-                    saveDispatcherTimer.Elapsed += SaveTimeSlot_Tick;
-                    saveDispatcherTimer.Start();
-                    await SaveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now);
-                }
-            }
-            catch (Exception ex)
-            {
-                TempLog($"DispatcherTimer error: {ex.Message}");
-            }
-        }
-
         private async void SaveTimeSlot_Tick(object? sender, ElapsedEventArgs e)
         {
             try
@@ -727,8 +732,8 @@ namespace TimeTrackerX.ViewModels
             try
             {
                 TempLog($"Screen captured at: {DateTime.UtcNow}");
-                //var screenshot = await _screenshotService.CaptureScreenAsync();
-                //CurrentImagePath = screenshot.Path;
+                var screenshot = await _screenshotService.CaptureScreenAsync();
+                CurrentImagePath = screenshot;
                 CanShowScreenshot = true;
                 Countdown(10, TimeSpan.FromSeconds(1), cur => CountdownTimer = $"({cur})");
                 return CurrentImagePath;
@@ -930,13 +935,13 @@ namespace TimeTrackerX.ViewModels
                     makeThisDeviceActive = false
                 };
 
-                //if (!CheckInternetConnectivity.IsConnectedToInternet())
-                //{
-                //    TempLog($"No internet at {DateTime.UtcNow}");
-                //    _unsavedTimeLogs.Add(timeLog);
-                //    await ShowErrorMessage("Please check your internet connectivity.");
-                //    return (null, HttpStatusCode.OK);
-                //}
+                if (!CheckInternetConnectivity.IsConnectedToInternet())
+                {
+                    TempLog($"No internet at {DateTime.UtcNow}");
+                    _unsavedTimeLogs.Add(timeLog);
+                    await ShowErrorMessage("Please check your internet connectivity.");
+                    return (null, HttpStatusCode.OK);
+                }
 
                 var result = await _restService.AddTimeLog(timeLog);
                 if (result.statusCode == HttpStatusCode.Unauthorized)
@@ -947,7 +952,11 @@ namespace TimeTrackerX.ViewModels
                 TempLog($"machineId {_machineId} Message {result?.data?.message ?? ""}");
                 if (!string.IsNullOrEmpty(result.data.message))
                 {
-                    if (result.data.message.Contains("User is logged in on another device"))
+                    if (
+                        result.data.message.Contains(
+                            "The user is logged in on another device. Would you like to make this device active?"
+                        )
+                    )
                     {
                         PopupForSwitchTracker = true;
                         _timeLogForSwitchingMachine = timeLog;
@@ -1313,16 +1322,6 @@ namespace TimeTrackerX.ViewModels
             catch (Exception ex)
             {
                 //_notificationService.Show("Logging Error", $"Failed to log: {ex.Message}");
-            }
-        }
-
-        private void CreateMachineId()
-        {
-            _machineId = GlobalSetting.Instance.MachineId;
-            if (string.IsNullOrEmpty(_machineId))
-            {
-                _machineId = Guid.NewGuid().ToString();
-                GlobalSetting.Instance.MachineId = _machineId;
             }
         }
 

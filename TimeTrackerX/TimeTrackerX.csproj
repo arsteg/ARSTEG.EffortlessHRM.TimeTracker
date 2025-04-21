@@ -35,7 +35,14 @@
     <PackageReference Include="NLog" Version="5.4.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.4.0" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
+    <PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0-preview.1.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0-preview.1.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0-preview.1.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.0-preview.3.25171.5" />
+    <PackageReference Include="System.Management" Version="10.0.0-preview.3.25171.5" />
   </ItemGroup>
 
   <ItemGroup>

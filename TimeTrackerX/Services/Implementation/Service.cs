@@ -1,19 +1,127 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
+using SkiaSharp;
+using TimeTrackerX.Services.Interfaces;
+using TimeTrackerX.Utilities;
 
 namespace TimeTrackerX.Services.Implementation
 {
-    // Dummy implementation for IScreenshotService
-    public class DummyScreenshotService : Interfaces.IScreenshotService
+    public class ScreenshotService : IScreenshotService
     {
-        public byte[] CaptureScreen()
+        public async Task<string> CaptureScreenAsync()
         {
-            Console.WriteLine("DummyScreenshotService: Simulating screen capture.");
-            // Return a dummy byte array (e.g., empty or small data)
-            return new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }; // Minimal JPEG header simulation
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return await CaptureScreenWindowsAsync();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return Convert.ToBase64String(await CaptureScreenMacOSAsync());
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return Convert.ToBase64String(await CaptureScreenLinuxAsync());
+            }
+            else
+            {
+                throw new PlatformNotSupportedException(
+                    "Screenshot capture is not supported on this platform."
+                );
+            }
+        }
+
+        private async Task<string> CaptureScreenWindowsAsync()
+        {
+            try
+            {
+                var bytes = await ScreenshotUtility.CaptureMyScreen();
+
+                return bytes;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to capture screenshot on Windows.", ex);
+            }
+        }
+
+        private async Task<byte[]> CaptureScreenMacOSAsync()
+        {
+            // Use CGWindow APIs via P/Invoke or shell command (screencapture)
+            try
+            {
+                // For simplicity, use the `screencapture` command
+                var tempFile = Path.GetTempFileName() + ".png";
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "/usr/sbin/screencapture",
+                        Arguments = $"-x {tempFile}", // -x for silent capture
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+
+                process.Start();
+                await process.WaitForExitAsync();
+
+                if (!File.Exists(tempFile))
+                {
+                    throw new Exception("Failed to capture screenshot on macOS.");
+                }
+
+                var bytes = await File.ReadAllBytesAsync(tempFile);
+                File.Delete(tempFile); // Clean up
+                return bytes;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to capture screenshot on macOS.", ex);
+            }
+        }
+
+        private async Task<byte[]> CaptureScreenLinuxAsync()
+        {
+            // Use `scrot` or `gnome-screenshot` for Linux
+            try
+            {
+                var tempFile = Path.GetTempFileName() + ".png";
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "scrot",
+                        Arguments = $"{tempFile}", // Save to temp file
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+
+                process.Start();
+                process.WaitForExit();
+
+                if (!File.Exists(tempFile))
+                {
+                    throw new Exception("Failed to capture screenshot on Linux.");
+                }
+
+                var bytes = File.ReadAllBytes(tempFile);
+                File.Delete(tempFile); // Clean up
+                return bytes;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to capture screenshot on Linux.", ex);
+            }
         }
     }
 

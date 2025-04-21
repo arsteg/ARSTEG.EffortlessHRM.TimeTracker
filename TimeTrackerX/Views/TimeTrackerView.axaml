@@ -9,7 +9,7 @@
         xmlns:vm="clr-namespace:TimeTrackerX.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="using:Avalonia.Controls"
+         xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
         mc:Ignorable="d"      
            xmlns:local="clr-namespace:TimeTrackerX"
           xmlns:converters="clr-namespace:TimeTracker.Converters"
@@ -293,7 +293,7 @@
             </Grid.ColumnDefinitions>
             <Rectangle RadiusX="7" RadiusY="7" Height="130" Width="400">
               <Rectangle.Fill>
-                <!--<ImageBrush ImageSource="{Binding CurrentImagePath}"/>-->
+                <ImageBrush Source="{Binding CurrentImagePath}" Stretch="Fill" />
               </Rectangle.Fill>
             </Rectangle>
           </Grid>
@@ -324,8 +324,8 @@
            <Button Grid.Column="3"  Content="{Binding StartStopButtonText}" Command="{Binding StartStopCommand}"/>
                              
 
-            <!--<Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}" AllowsTransparency="True" Placement="Absolute">
-              <Border Style="{StaticResource CoreBorderStyle}" Background="{DynamicResource WindowBackgroundBrush}" >
+            <Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}">
+              <Border   >
                 <Grid Background="White" Margin="2">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="100"></ColumnDefinition>
@@ -356,7 +356,7 @@
                   </StackPanel>
                 </Grid>
               </Border>
-            </Popup>-->
+            </Popup>
           </Grid>
         </Border>
       </StackPanel>
@@ -364,10 +364,10 @@
 
 
     <!-- Popup control -->
-    <!--<Popup x:Name="TrackerSwitchPopup" IsOpen="{Binding PopupForSwitchTracker}" Placement="Center" PlacementTarget="{Binding ElementName=mainWindow}">
+    <Popup x:Name="TrackerSwitchPopup" IsOpen="{Binding PopupForSwitchTracker}" Placement="Center">
       <Border Background="White" BorderThickness="1" BorderBrush="LightGray" CornerRadius="5" Width="400" Height="150" HorizontalAlignment="Center" VerticalAlignment="Center">
         <StackPanel>
-          --><!-- Title Banner --><!--
+           
           <Grid Background="LightGray">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*"/>
@@ -375,7 +375,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Foreground="Black" Text="Confirmation" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"/>
           </Grid>
-          --><!-- Content StackPanel --><!--
+           
           <StackPanel Margin="20">
             <TextBlock Text="User is logged in on another device, Do you want to make it active?" Margin="0,0,0,20"/>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
@@ -385,7 +385,7 @@
           </StackPanel>
         </StackPanel>
       </Border>
-    </Popup>-->
+    </Popup>
 
     <!-- Version number -->
     <StackPanel Grid.Column="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0,0,10">

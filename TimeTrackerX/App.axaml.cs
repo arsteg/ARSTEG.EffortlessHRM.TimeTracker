@@ -14,6 +14,7 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using TimeTrackerX.Models;
 using TimeTrackerX.Services;
+using TimeTrackerX.Services.Implementation;
 using TimeTrackerX.Services.Interfaces;
 
 namespace TimeTrackerX
@@ -71,6 +72,7 @@ namespace TimeTrackerX
                 // Configure services
                 var services = new ServiceCollection();
                 services.AddSingleton(_restService);
+                services.AddSingleton<IScreenshotService, ScreenshotService>();
                 //                services.AddSingleton<IScreenshotService>(
                 //#if MACOS
                 //                    new Platforms.MacOS.ScreenshotService()

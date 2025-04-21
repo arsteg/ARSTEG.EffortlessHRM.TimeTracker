@@ -8,7 +8,7 @@ namespace TimeTrackerX.Services.Interfaces
 {
     public interface IScreenshotService
     {
-        byte[] CaptureScreen();
+        Task<string> CaptureScreenAsync();
     }
 
     public interface IKeyCounterService

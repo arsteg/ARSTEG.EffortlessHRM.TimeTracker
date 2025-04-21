@@ -43,6 +43,7 @@ namespace TimeTracker.ViewModels
 
         private DispatcherTimer shareLiveScreen = new DispatcherTimer();
         private DispatcherTimer checkForLiveScreen = new DispatcherTimer();
+
         private System.Threading.Timer sendImageRegularly;
         private double frequencyOfLiveImage = 1000;
         private bool isLiveImageRunning = false;
@@ -1412,7 +1413,7 @@ namespace TimeTracker.ViewModels
                 {
                     if (
                         result.data.message.Contains(
-                            "User is logged in on another device, Do you want to make it active?"
+                            "The user is logged in on another device. Would you like to make this device active?"
                         )
                     )
                     {
@@ -1929,7 +1930,7 @@ namespace TimeTracker.ViewModels
                         {
                             if (
                                 result.data.message.Contains(
-                                    "User is logged in on another device, Do you want to make it active?"
+                                    "The user is logged in on another device. Would you like to make this device active?"
                                 )
                             )
                             {

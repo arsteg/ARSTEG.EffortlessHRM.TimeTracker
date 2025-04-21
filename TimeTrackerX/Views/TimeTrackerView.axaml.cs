@@ -10,6 +10,8 @@ using Avalonia.Media.Imaging;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.Extensions.DependencyInjection;
 using TimeTrackerX.Services;
+using TimeTrackerX.Services.Implementation;
+using TimeTrackerX.Services.Interfaces;
 using TimeTrackerX.ViewModels;
 
 namespace TimeTrackerX.Views;
@@ -28,7 +30,7 @@ public partial class TimeTrackerView : Window
     private void TimeTrackerView_Loaded(object? sender, RoutedEventArgs e)
     {
         DataContext = new TimeTrackerViewModel(
-        //App.Current._serviceProvider.GetService<IScreenshotService>(),
+            new ScreenshotService()
         //App.Current._serviceProvider.GetService<IMouseEventService>(),
         //App.Current._serviceProvider.GetService<IKeyEventService>(),
         //App.Current._serviceProvider.GetService<REST>()

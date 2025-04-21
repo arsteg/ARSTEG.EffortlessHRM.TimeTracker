@@ -2,22 +2,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TimeTrackerX.Views.TimeTrackerView"
         x:CompileBindings="True"
-        Title="Time Tracker" Height="600" Width="1000"
+        Title="Time Tracker" Height="600" Width="800"
         WindowStartupLocation="CenterScreen"
         Background="Transparent" TransparencyLevelHint="AcrylicBlur"
-        CanResize="True" ExtendClientAreaToDecorationsHint="True"
+        CanResize="False" ExtendClientAreaToDecorationsHint="True"
         xmlns:vm="clr-namespace:TimeTrackerX.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
          xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
         mc:Ignorable="d"      
            xmlns:local="clr-namespace:TimeTrackerX"
-          xmlns:converters="clr-namespace:TimeTracker.Converters"
-        xmlns:presentation="using:DocumentFormat.OpenXml.Presentation">
+          xmlns:converters="clr-namespace:TimeTrackerX.Converters;assembly=TimeTrackerX"
+        xmlns:presentation="using:DocumentFormat.OpenXml.Presentation" >
   <Window.Resources>
     <!--<local:ValueConverter x:Key="ValueConverter" />-->
-    <!--<converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
-    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>-->
+    <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+	  <!--<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>-->
     <!--<Style TargetType="Button" x:Key="RoundButton">
       <Style.Resources>
         <Style TargetType="Border">
@@ -32,25 +32,25 @@
       <ColumnDefinition Width="*"/>
       <ColumnDefinition Width="1.5*"/>
     </Grid.ColumnDefinitions>
-    <Grid Grid.Column="1" Panel.ZIndex="1">
+    <!--<Grid Grid.Column="1" Panel.ZIndex="1">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="25"/>
         <ColumnDefinition Width="25"/>
-      </Grid.ColumnDefinitions>
+      </Grid.ColumnDefinitions>-->
       <!--<Image Source="/icons/minimize.png"  Grid.Column="1"   Style="{StaticResource imgMinimize}" MouseLeftButtonDown="BtnActionMinimize_OnClick"/>
       <Image Source="/icons/close.png"  Grid.Column="2"   Style="{StaticResource imgClose}" MouseLeftButtonDown="btnActionClose_Click"/>-->
-    </Grid>
+    <!--</Grid>-->
     <!--<Thumb Opacity="100" Background="Transparent" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>-->
 
     <Border CornerRadius="10,0 0 10" >
       <Border.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-          <GradientStop Color="White" Offset="0"/>
-          <GradientStop Color="#B8E3DC" Offset="0.3"/>
-          <GradientStop Color="#70C7B8" Offset="0.6"/>
-          <GradientStop Color="#3AADA1" Offset="1"/>
-        </LinearGradientBrush>
+		  <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+			  <GradientStop Color="White" Offset="0" />
+			  <GradientStop Color="#B8E3DC" Offset="0.3" />
+			  <GradientStop Color="#70C7B8" Offset="0.6" />
+			  <GradientStop Color="#3AADA1" Offset="1" />
+		  </LinearGradientBrush>
       </Border.Background>
     </Border>
     <Grid  >
@@ -60,7 +60,7 @@
         <Ellipse Margin="250 450 0 0" Width="40" Height="40" Fill="#4EB1B6" />
         <Ellipse Margin="50 400 0 0" Width="20" Height="20" Fill="#4EB1B6" />
       </Canvas>
-      <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,-10,0,0">
+      <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
         <StackPanel Orientation="Horizontal">
           <Viewbox Stretch="Uniform" Height="25">
             <Canvas Height="200" Width="500">
@@ -84,14 +84,20 @@
             </Canvas>
           </Viewbox>
           <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Time Tracker"  Margin="20,3,0,0" Foreground="#3AB19B"/>
+            <TextBlock Text="Time Tracker" FontSize="32" FontWeight="Bold" TextAlignment="Center" Margin="20,3,0,0" Foreground="#3AB19B"/>
             <!--<fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Height="30" Margin="10,5,0,0" Foreground="White"/>-->
           </StackPanel>
         </StackPanel>
         <TextBlock Text="Experience seamless time-tracking and employee monitoring with our cutting-edge software designed specifically for companies and remote teams.
                            Effortless HRM is a comprehensive solution equipped with all the essential features.Time-Tracking, Screenshots, Apps and Web Usage monitoring, Attendance Monitoring,Task management, and much more."
-                   Opacity="0.8" Margin="20 20"  TextWrapping="Wrap"  ></TextBlock>
+                   Opacity="0.8" FontSize="16" LineHeight="28"  Margin="20 20" TextAlignment="Justify"  TextWrapping="Wrap" Foreground="White"  ></TextBlock>
       </StackPanel>
+		<StackPanel VerticalAlignment="Bottom">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Version" Foreground="#3AB19B" Margin="0,0,5,0"/>
+				<TextBlock x:Name="currentVersion" Foreground="#3AB19B" Text="1.0.0"/>
+			</StackPanel>
+		</StackPanel>
     </Grid>
 
     <Border Background="#ffffff" Grid.Column="1" CornerRadius="0 10 1 0" >
@@ -107,15 +113,15 @@
           <TextBlock Text="{Binding UserFullName,Mode=TwoWay}" Foreground="#3AB19B"></TextBlock>
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1" Margin="0,0,5,0" >
 
-            <!--<Button Command="{Binding CreateNewTaskCommand}" Style="{StaticResource customButtonStyle}" IsEnabled="{Binding ButtonEventInProgress,Converter={StaticResource InverseBooleanConverter}}">
-              <Icons:PackIconMaterial Kind="PlusBox" Style="{StaticResource gridButtonIcon}">
-                <Icons:PackIconMaterial.ToolTip>
-                  <ToolTip Content="Create a new task"/>
-                </Icons:PackIconMaterial.ToolTip>
-              </Icons:PackIconMaterial>
-            </Button>
-
-            <Button Command="{Binding TaskCompleteCommand}" Style="{StaticResource customButtonStyle}" IsEnabled="{Binding ButtonEventInProgress,Converter={StaticResource InverseBooleanConverter}}">
+			  <Button Command="{Binding CreateNewTaskCommand}" Width="40" Height="40">
+				  <Viewbox Stretch="Uniform">
+					  <Canvas Width="40" Height="40">
+						  <Path Data="M 10,4 L 14,4 L 14,10 L 20,10 L 20,14 L 14,14 L 14,20 L 10,20 L 10,14 L 4,14 L 4,10 L 10,10 Z"
+								Fill="Black"/>
+					  </Canvas>
+				  </Viewbox>
+			  </Button>
+			  <!-- <Button Command="{Binding TaskCompleteCommand}" Style="{StaticResource customButtonStyle}" IsEnabled="{Binding ButtonEventInProgress,Converter={StaticResource InverseBooleanConverter}}">
               <Icons:PackIconMaterial Kind="MarkerCheck" Style="{StaticResource gridButtonIcon}">
                 <Icons:PackIconMaterial.ToolTip>
                   <ToolTip Content="Close Selected Task" />
@@ -149,8 +155,8 @@
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="1*"/>
               </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="0" Text="Current Session:"/>
-              <TextBox  Grid.Column="1"  Name="txtUsername" Text="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}" IsReadOnly="True"/>
+              <TextBlock Grid.Column="0" FontSize="16" ZIndex="1" Foreground="Black" Width="150" TextAlignment="Left" Margin="5,0,0,0"  Text="Current Session:"/>
+              <TextBox  Grid.Column="1" FontSize="16" Width="300" Foreground="#878787" BorderBrush="Transparent" BorderThickness="1"  TextAlignment="Left" Name="txtUsername" Text="{Binding CurrentSessionTimeTracked, StringFormat=HH:mm}" IsReadOnly="True"/>
               <!--<StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,5,0,0" HorizontalAlignment="Right">
                 <Menu Name="menu1" Grid.Column="2" Background="Transparent" Margin="0 0 15 0" Width="20">
                   <MenuItem Background="White">
@@ -193,11 +199,11 @@
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="1*"/>
               </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="0" Text="Today:"/>
+              <TextBlock Grid.Column="0" Text="Today:" FontSize="16" ZIndex="1" Foreground="Black" Width="150" TextAlignment="Left" Margin="5,0,0,0"/>
               <TextBox Grid.Column="1" 
                Name="txt1Username"
                Text="{Binding CurrentDayTimeTracked,StringFormat=HH:mm}"
-               IsReadOnly="True" />
+               IsReadOnly="True" FontSize="16" Width="300" Foreground="#878787" BorderBrush="Transparent" BorderThickness="1"  TextAlignment="Left" />
             </Grid>
 
             <Grid Margin="0 10 0 0">
@@ -206,8 +212,8 @@
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="1*"/>
               </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="0" Text="This week:" />
-              <TextBox Grid.Column="1" 
+              <TextBlock Grid.Column="0" Text="This week:" FontSize="16" ZIndex="1" Foreground="Black" Width="150" TextAlignment="Left" Margin="5,0,0,0" />
+              <TextBox Grid.Column="1" FontSize="16" Width="300" Foreground="#878787" BorderBrush="Transparent" BorderThickness="1"  TextAlignment="Left"
                Text="{Binding CurrentWeekTimeTracked,StringFormat=HH:mm}"
                IsReadOnly="True" />
             </Grid>
@@ -218,8 +224,8 @@
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="1*"/>
               </Grid.ColumnDefinitions>
-              <TextBlock Grid.Column="0" Text="This month:" />
-              <TextBox Grid.Column="1" 
+              <TextBlock Grid.Column="0" Text="This month:" FontSize="16" ZIndex="1" Foreground="Black" Width="150" TextAlignment="Left" Margin="5,0,0,0" />
+              <TextBox Grid.Column="1" FontSize="16" Width="300" Foreground="#878787" BorderBrush="Transparent" BorderThickness="1"  TextAlignment="Left"
                Text="{Binding CurrentMonthTimeTracked}"
                IsReadOnly="True" />
             </Grid>
@@ -230,11 +236,13 @@
             <ColumnDefinition Width="4*"/>
             <ColumnDefinition Width="6*"/>
           </Grid.ColumnDefinitions>
-          <TextBlock Grid.Column="0" x:Name="lblProject" Text="Project:"/>
+          <TextBlock Grid.Column="0" FontSize="16" ZIndex="1" Foreground="Black" Width="150" TextAlignment="Left" Margin="5,0,0,0" x:Name="lblProject" Text="Project:"/>
           <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="-50,0,0,0">
             <controls:ComboBox Name="cmb"
+						IsTextSearchEnabled="True" FontSize="16" Foreground="#878787" BorderBrush="Black" BorderThickness="1"
                      ItemsSource="{Binding Path=Projects}"
                      SelectedItem="{Binding Path=SelectedProject}"
+							   
                      MinWidth="330" MaxWidth="330">
               <controls:ComboBox.ItemTemplate>
                 <DataTemplate>
@@ -254,11 +262,11 @@
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="1*"/>
           </Grid.ColumnDefinitions>
-          <TextBlock Grid.Column="0" x:Name="lblTask" Text="Task:" />
+          <TextBlock Grid.Column="0" FontSize="16" ZIndex="1" Foreground="Black" Width="150" TextAlignment="Left" Margin="5,0,0,0" x:Name="lblTask" Text="Task:" />
           <StackPanel Grid.Column="1" Orientation="Horizontal" Grid.ColumnSpan="3" Margin="-50,0,0,0">
             <controls:ComboBox Grid.Column="1"
-          Name="cmbt"         
-        
+          Name="cmbt"
+        IsTextSearchEnabled="True" FontSize="16" Foreground="#878787" BorderBrush="Black" BorderThickness="1"
           HorizontalAlignment="Left"
           
           IsEnabled="{Binding AllowTaskSelection}"
@@ -277,11 +285,11 @@
             </controls:ComboBox>
           </StackPanel>
           <StackPanel  Grid.Row="1" Grid.Column="0" Margin="0,3,0,1">
-            <TextBlock Grid.Column="0" Grid.Row="1" Text="Description:" />
+            <TextBlock Grid.Column="0" Grid.Row="1" FontSize="16" ZIndex="1" Foreground="Black" Width="150" TextAlignment="Left" Margin="5,0,0,0" Text="Description:" />
           </StackPanel>
           <StackPanel  Grid.Row="1" Grid.Column="1" Margin="-50,3,0,1" Grid.ColumnSpan="2">
-            <TextBox  HorizontalAlignment="Left" Text="{Binding TaskDescription,Mode=TwoWay}"
-             MinWidth="330" MaxHeight="40" TextWrapping="Wrap" AcceptsReturn="True" MaxWidth="330"
+            <TextBox FontSize="16" Width="300" Foreground="#878787" TextAlignment="Left"   HorizontalAlignment="Left" Text="{Binding TaskDescription,Mode=TwoWay}"
+             MinWidth="330" MaxHeight="40" TextWrapping="Wrap" AcceptsReturn="True"  MaxWidth="330"
                  >
             </TextBox>
           </StackPanel>
@@ -300,18 +308,7 @@
         </Border>
         <Border BorderThickness="0" BorderBrush="#acb0af" Margin="25 3 25 1" CornerRadius="5">
           <Grid>
-            <Grid.Styles>
-              <Style Selector="Button">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Width" Value="105"/>
-                <Setter Property="Height" Value="48"/>
-                <Setter Property="Margin" Value="0 2 0 12"/>
-                <Setter Property="Background" Value="#3AB19B"/>
-                <Setter Property="Foreground" Value="#FDFEFE"/>             
-   
-     
-              </Style>
-            </Grid.Styles>
+          
             <Grid.ColumnDefinitions>
               <ColumnDefinition/>
               <ColumnDefinition/>
@@ -319,9 +316,9 @@
               <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="1" Content="Logout" Command="{Binding LogoutCommand}"/>                          
-            <Button Grid.Column="2" Content="Close"  Command="{Binding CloseCommand}"/>
-           <Button Grid.Column="3"  Content="{Binding StartStopButtonText}" Command="{Binding StartStopCommand}"/>
+            <Button Grid.Column="1" Content="Logout" FontSize="14" Width="105" Height="48" Background="#3AB19B" CornerRadius="25" BorderBrush="White" BorderThickness="1" Foreground="#FDFEFE" Padding="5" Margin="0 2 0 12"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"  Command="{Binding LogoutCommand}"/>                          
+            <Button Grid.Column="2" Content="Close" FontSize="14" Width="105" Height="48" Background="#3AB19B" CornerRadius="25" BorderBrush="White" BorderThickness="1" Foreground="#FDFEFE" Padding="15" Margin="0 2 0 12"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Command="{Binding CloseCommand}"/>
+            <Button Grid.Column="3"  Content="{Binding StartStopButtonText}" FontSize="14" Width="105" Height="48" Background="#3AB19B" CornerRadius="25" BorderBrush="White" BorderThickness="1" Foreground="White" Padding="15" Margin="0 2 0 12"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Command="{Binding StartStopCommand}"/>
                              
 
             <Popup Name="popupControl" IsOpen="{Binding CanShowScreenshot}">
@@ -363,7 +360,7 @@
     </Border>
 
 
-    <!-- Popup control -->
+    <!-- Popup control --><!--
     <Popup x:Name="TrackerSwitchPopup" IsOpen="{Binding PopupForSwitchTracker}" Placement="Center">
       <Border Background="White" BorderThickness="1" BorderBrush="LightGray" CornerRadius="5" Width="400" Height="150" HorizontalAlignment="Center" VerticalAlignment="Center">
         <StackPanel>
@@ -387,13 +384,14 @@
       </Border>
     </Popup>
 
-    <!-- Version number -->
+    --><!-- Version number --><!--
     <StackPanel Grid.Column="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0,0,10">
       <StackPanel Orientation="Horizontal">
         <TextBlock Text="Version" Margin="0,0,5,0" Foreground="#3AB19B"/>
         <TextBlock x:Name="currentVersion" Text="1.0.0" Foreground="#3AB19B"/>
       </StackPanel>
-    </StackPanel>
+    </StackPanel>-->
+ 
   </Grid>
   
 </Window>

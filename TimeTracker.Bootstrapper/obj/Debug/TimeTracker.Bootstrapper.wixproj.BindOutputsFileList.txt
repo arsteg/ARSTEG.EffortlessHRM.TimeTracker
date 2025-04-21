@@ -1,2 +1,2 @@
-D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker.Bootstrapper.exe
-D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker.Bootstrapper.wixpdb
+D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker_v1.0.0.0.exe
+D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker_v1.0.0.0.wixpdb

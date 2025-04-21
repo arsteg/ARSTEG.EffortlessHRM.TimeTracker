@@ -1,6 +1,6 @@
-D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker.Bootstrapper.exe
-D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker.Bootstrapper.wixpdb
 obj\Debug\Bundle.wixobj
 obj\Debug\TimeTracker.Bootstrapper.wixproj.BindContentsFileList.txt
 obj\Debug\TimeTracker.Bootstrapper.wixproj.BindOutputsFileList.txt
 obj\Debug\TimeTracker.Bootstrapper.wixproj.BindBuiltOutputsFileList.txt
+D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker_v1.0.0.0.exe
+D:\Work\eHRM\ARSTEG.EffortlessHRM.TimeTracker\TimeTracker.Bootstrapper\bin\Debug\TimeTracker_v1.0.0.0.wixpdb

@@ -29,12 +29,12 @@ public partial class TimeTrackerView : Window
 
     private void TimeTrackerView_Loaded(object? sender, RoutedEventArgs e)
     {
-        DataContext = new TimeTrackerViewModel(
-            new ScreenshotService()
-        //App.Current._serviceProvider.GetService<IMouseEventService>(),
-        //App.Current._serviceProvider.GetService<IKeyEventService>(),
-        //App.Current._serviceProvider.GetService<REST>()
-        );
+        //DataContext = new TimeTrackerViewModel(
+        //    new ScreenshotService()
+        ////App.Current._serviceProvider.GetService<IMouseEventService>(),
+        ////App.Current._serviceProvider.GetService<IKeyEventService>(),
+        ////App.Current._serviceProvider.GetService<REST>()
+        //);
 
         //_notificationService = App.Current._serviceProvider.GetService<INotificationService>();
         //_trayIcon = SetupSystemTray();

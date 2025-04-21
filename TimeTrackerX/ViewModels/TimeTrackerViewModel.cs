@@ -65,35 +65,35 @@ namespace TimeTrackerX.ViewModels
         #endregion
 
         #region Constructor
-        public TimeTrackerViewModel(
-            //IConfiguration configuration,
-            IScreenshotService screenshotService
-        //IMouseEventService mouseEventService,
-        //IKeyEventService keyEventService,
-        //REST restService,
-        //INotificationService notificationService
-        )
-        {
-            //_configuration = configuration;
-            _screenshotService = screenshotService;
-            //_mouseEventService = mouseEventService;
-            //_keyEventService = keyEventService;
-            //_restService = restService;
-            //_notificationService = notificationService;
-            dispatcherTimer.Elapsed += DispatcherTimer_Elapsed;
-            var nineMinutes = TimeSpan.FromMinutes(4).TotalMilliseconds;
-            dispatcherTimer.Interval = nineMinutes;
-            UserName = GlobalSetting.Instance.LoginResult.data.user.email;
-            UserId = GlobalSetting.Instance.LoginResult.data.user.id;
-            this._machineId = new Machine().CreateMachineId();
-            _restService = new REST(new HttpProviders());
-            InitializeCommands();
-            InitializeTimers();
-            InitializeInputHooks();
-            InitializeUI();
+        //public TimeTrackerViewModel(
+        //    //IConfiguration configuration,
+        //    IScreenshotService screenshotService
+        ////IMouseEventService mouseEventService,
+        ////IKeyEventService keyEventService,
+        ////REST restService,
+        ////INotificationService notificationService
+        //)
+        //{
+        //    //_configuration = configuration;
+        //    _screenshotService = screenshotService;
+        //    //_mouseEventService = mouseEventService;
+        //    //_keyEventService = keyEventService;
+        //    //_restService = restService;
+        //    //_notificationService = notificationService;
+        //    dispatcherTimer.Elapsed += DispatcherTimer_Elapsed;
+        //    var nineMinutes = TimeSpan.FromMinutes(4).TotalMilliseconds;
+        //    dispatcherTimer.Interval = nineMinutes;
+        //    //UserName = GlobalSetting.Instance.LoginResult.data.user.email;
+        //    UserId = GlobalSetting.Instance.LoginResult.data.user.id;
+        //    this._machineId = new Machine().CreateMachineId();
+        //    _restService = new REST(new HttpProviders());
+        //    InitializeCommands();
+        //    InitializeTimers();
+        //    InitializeInputHooks();
+        //    InitializeUI();
 
-            _tasks = new ObservableCollection<ProjectTask>();
-        }
+        //    _tasks = new ObservableCollection<ProjectTask>();
+        //}
 
         private async void DispatcherTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {

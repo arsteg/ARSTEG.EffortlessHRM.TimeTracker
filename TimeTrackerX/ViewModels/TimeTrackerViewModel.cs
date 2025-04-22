@@ -1314,10 +1314,10 @@ namespace TimeTrackerX.ViewModels
         {
             try
             {
-                string tempPath = Path.GetTempPath();
-                string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now:ddMMyyyy}.log");
-                using var sw = File.AppendText(path);
-                sw.WriteLine($"{DateTime.Now} Info: {message}");
+                //string tempPath = Path.GetTempPath();
+                //string path = Path.Combine(tempPath, $"trackerlog_{DateTime.Now:ddMMyyyy}.log");
+                //using var sw = File.AppendText(path);
+                //sw.WriteLine($"{DateTime.Now} Info: {message}");
             }
             catch (Exception ex)
             {

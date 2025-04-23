@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -34,7 +35,7 @@ namespace TimeTrackerX.ViewModels
 
         private bool _trackerIsOn;
 
-        private Timer dispatcherTimer = new Timer();
+        private DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private Timer idlTimeDetectionTimer = new Timer();
         private Timer saveDispatcherTimer = new Timer();
         private Timer deleteImagePath = new Timer();
@@ -65,43 +66,43 @@ namespace TimeTrackerX.ViewModels
         #endregion
 
         #region Constructor
-        //public TimeTrackerViewModel(
-        //    //IConfiguration configuration,
-        //    IScreenshotService screenshotService
-        ////IMouseEventService mouseEventService,
-        ////IKeyEventService keyEventService,
-        ////REST restService,
-        ////INotificationService notificationService
-        //)
-        //{
-        //    //_configuration = configuration;
-        //    _screenshotService = screenshotService;
-        //    //_mouseEventService = mouseEventService;
-        //    //_keyEventService = keyEventService;
-        //    //_restService = restService;
-        //    //_notificationService = notificationService;
-        //    dispatcherTimer.Elapsed += DispatcherTimer_Elapsed;
-        //    var nineMinutes = TimeSpan.FromMinutes(4).TotalMilliseconds;
-        //    dispatcherTimer.Interval = nineMinutes;
-        //    //UserName = GlobalSetting.Instance.LoginResult.data.user.email;
-        //    UserId = GlobalSetting.Instance.LoginResult.data.user.id;
-        //    this._machineId = new Machine().CreateMachineId();
-        //    _restService = new REST(new HttpProviders());
-        //    InitializeCommands();
-        //    InitializeTimers();
-        //    InitializeInputHooks();
-        //    InitializeUI();
+        public TimeTrackerViewModel(
+            //IConfiguration configuration,
+            IScreenshotService screenshotService
+        //IMouseEventService mouseEventService,
+        //IKeyEventService keyEventService,
+        //REST restService,
+        //INotificationService notificationService
+        )
+        {
+            //_configuration = configuration;
+            _screenshotService = screenshotService;
+            //_mouseEventService = mouseEventService;
+            //_keyEventService = keyEventService;
+            //_restService = restService;
+            //_notificationService = notificationService;
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
+            var nineMinutes = TimeSpan.FromMinutes(4);
+            dispatcherTimer.Interval = nineMinutes;
+            //UserName = GlobalSetting.Instance.LoginResult.data.user.email;
+            UserId = GlobalSetting.Instance.LoginResult.data.user.id;
+            this._machineId = new Machine().CreateMachineId();
+            _restService = new REST(new HttpProviders());
+            InitializeCommands();
+            InitializeTimers();
+            InitializeInputHooks();
+            InitializeUI();
 
-        //    _tasks = new ObservableCollection<ProjectTask>();
-        //}
+            _tasks = new ObservableCollection<ProjectTask>();
+        }
 
-        private async void DispatcherTimer_Elapsed(object? sender, ElapsedEventArgs e)
+        private async void DispatcherTimer_Tick(object? sender, EventArgs e)
         {
             try
             {
                 if (_trackerIsOn)
                 {
-                    var lastInterval = TimeSpan.FromMilliseconds(dispatcherTimer.Interval);
+                    var lastInterval = dispatcherTimer.Interval;
                     var currentMinutes = DateTime.UtcNow.Minute;
                     _minutesTracked += 10;
                     var randomTime = _rand.Next(2, 9);
@@ -109,12 +110,12 @@ namespace TimeTrackerX.ViewModels
                         ((currentMinutes - (currentMinutes % 10)) + 10 + randomTime)
                         - currentMinutes;
                     dispatcherTimer.Interval = TimeSpan
-                        .FromMinutes(forTimerInterval)
-                        .TotalMilliseconds;
+                        .FromMinutes(forTimerInterval);
+                        
                     var filepath = await CaptureScreen();
+                    ScreenshotImage = new Bitmap(filepath);
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        CurrentImagePath = filepath;
                         CanShowScreenshot = true;
                     });
                     saveDispatcherTimer = new Timer();
@@ -265,6 +266,9 @@ namespace TimeTrackerX.ViewModels
 
         [ObservableProperty]
         private bool _canShowScreenshot;
+
+        [ObservableProperty]
+        private Bitmap _screenshotImage;
 
         [ObservableProperty]
         private List<Project> _projects;

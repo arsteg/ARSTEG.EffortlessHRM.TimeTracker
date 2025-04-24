@@ -35,7 +35,7 @@ namespace TimeTrackerX.ViewModels
 
         private bool _trackerIsOn;
 
-        private DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        private Timer dispatcherTimer = new Timer();
         private Timer idlTimeDetectionTimer = new Timer();
         private Timer saveDispatcherTimer = new Timer();
         private Timer deleteImagePath = new Timer();
@@ -84,7 +84,7 @@ namespace TimeTrackerX.ViewModels
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             var nineMinutes = TimeSpan.FromMinutes(4);
             dispatcherTimer.Interval = nineMinutes;
-            //UserName = GlobalSetting.Instance.LoginResult.data.user.email;
+            UserName = GlobalSetting.Instance.LoginResult.data.user.email;
             UserId = GlobalSetting.Instance.LoginResult.data.user.id;
             this._machineId = new Machine().CreateMachineId();
             _restService = new REST(new HttpProviders());

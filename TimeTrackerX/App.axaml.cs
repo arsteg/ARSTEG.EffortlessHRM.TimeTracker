@@ -38,6 +38,9 @@ namespace TimeTrackerX
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                // Prevent the application from shutting down when the last window closes
+                desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
                 // Disable Avalonia's DataAnnotations validation
                 var dataValidationPluginsToRemove = BindingPlugins
                     .DataValidators.OfType<DataAnnotationsValidationPlugin>()

@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using TimeTrackerX.Models;
 using TimeTrackerX.ViewModels;
 
 namespace TimeTrackerX;
@@ -16,6 +17,7 @@ public partial class LoginView : Window
     {
         InitializeComponent();
         this.Loaded += Login_Loaded;
+        GlobalSetting.Instance.LoginView = this;
     }
 
     private async void Login_Loaded(object sender, RoutedEventArgs e)

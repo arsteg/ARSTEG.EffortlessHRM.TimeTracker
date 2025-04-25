@@ -82,7 +82,7 @@ namespace TimeTrackerX.ViewModels
             //_restService = restService;
             //_notificationService = notificationService;
             dispatcherTimer.Tick += DispatcherTimer_Tick;
-            var nineMinutes = TimeSpan.FromMinutes(4);
+            var nineMinutes = TimeSpan.FromMinutes(9);
             dispatcherTimer.Interval = nineMinutes;
             //UserName = GlobalSetting.Instance.LoginResult.data.user.email;
             UserId = GlobalSetting.Instance.LoginResult.data.user.id;
@@ -109,9 +109,8 @@ namespace TimeTrackerX.ViewModels
                     double forTimerInterval =
                         ((currentMinutes - (currentMinutes % 10)) + 10 + randomTime)
                         - currentMinutes;
-                    dispatcherTimer.Interval = TimeSpan
-                        .FromMinutes(forTimerInterval);
-                        
+                    dispatcherTimer.Interval = TimeSpan.FromMinutes(forTimerInterval);
+
                     var filepath = await CaptureScreen();
                     ScreenshotImage = new Bitmap(filepath);
                     await Dispatcher.UIThread.InvokeAsync(() =>
@@ -365,11 +364,16 @@ namespace TimeTrackerX.ViewModels
                 {
                     await StartStopCommandExecute();
                 }
-                var loginWindow = new Login();
-                //App.Current.MainWindow = loginWindow;
-                //loginWindow.Show();
-                await Task.Delay(100); // Ensure window transition
-                // App.Current.MainWindow?.Close();
+                // Create and show a new LoginView
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    var loginWindow = new LoginView();
+                    GlobalSetting.Instance.LoginView = loginWindow;
+                    loginWindow.Show();
+                    // Close the TimeTrackerView
+                    GlobalSetting.Instance.TimeTracker.Close();
+                    GlobalSetting.Instance.TimeTracker = null;
+                });
             }
             catch (Exception ex)
             {

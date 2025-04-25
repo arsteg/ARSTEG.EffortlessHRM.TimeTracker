@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
 using TimeTrackerX.Models;
@@ -143,23 +144,28 @@ namespace TimeTrackerX.ViewModels
                 if (result.status == "success")
                 {
                     LogManager.Logger.Info("SignIn is successful");
-                    if (GlobalSetting.Instance.LoginView != null)
-                    {
-                        GlobalSetting.Instance.LoginView.Close();
-                        GlobalSetting.Instance.LoginView = null;
-                    }
-
                     GlobalSetting.Instance.LoginResult = result;
-                    if (GlobalSetting.Instance.TimeTracker == null)
+
+                    // Ensure UI operations are performed on the UI thread
+                    await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        LogManager.Logger.Info("Creating the instance of TimeTracker");
-                        GlobalSetting.Instance.TimeTracker =
-                            new TimeTrackerX.Views.TimeTrackerView();
-                    }
-                    LogManager.Logger.Info("showing the instance of TimeTracker");
-                    GlobalSetting.Instance.TimeTracker.Show();
-                    //Application.Current.MainWindow?.Close();
-                    LogManager.Logger.Info("TimeTracker is loaded.");
+                        // Close the LoginView
+                        if (GlobalSetting.Instance.LoginView != null)
+                        {
+                            GlobalSetting.Instance.LoginView.Close();
+                            GlobalSetting.Instance.LoginView = null;
+                        }
+
+                        // Create and show TimeTrackerView
+                        if (GlobalSetting.Instance.TimeTracker == null)
+                        {
+                            LogManager.Logger.Info("Creating the instance of TimeTracker");
+                            GlobalSetting.Instance.TimeTracker =
+                                new TimeTrackerX.Views.TimeTrackerView();
+                        }
+                        LogManager.Logger.Info("Showing the instance of TimeTracker");
+                        GlobalSetting.Instance.TimeTracker.Show();
+                    });
 
                     SaveUserCredentials(
                         rememberMe,

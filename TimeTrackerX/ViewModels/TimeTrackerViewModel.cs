@@ -17,6 +17,8 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
+using SharpHook;
+using SharpHook.Native;
 using TimeTrackerX.Models;
 using TimeTrackerX.Services;
 using TimeTrackerX.Services.Interfaces;
@@ -65,6 +67,7 @@ namespace TimeTrackerX.ViewModels
         private int _totalMouseScrolls;
         private string _machineId = string.Empty;
         private TimeLog _timeLogForSwitchingMachine = new TimeLog();
+        SimpleGlobalHook hook = new SimpleGlobalHook();
         #endregion
 
         #region Constructor
@@ -83,12 +86,6 @@ namespace TimeTrackerX.ViewModels
             //_keyEventService = keyEventService;
             //_restService = restService;
             //_notificationService = notificationService;
-            
-            idlTimeDetectionTimer.Tick += IdlTimeDetectionTimer_Tick;
-            idlTimeDetectionTimer.Interval = new TimeSpan(00, 2, 00);
-            dispatcherTimer.Tick += DispatcherTimer_Tick;
-            var nineMinutes = TimeSpan.FromMinutes(9);
-            dispatcherTimer.Interval = nineMinutes;
             //UserName = GlobalSetting.Instance.LoginResult.data.user.email;
             UserId = GlobalSetting.Instance.LoginResult.data.user.id;
             this._machineId = new Machine().CreateMachineId();
@@ -97,10 +94,49 @@ namespace TimeTrackerX.ViewModels
             InitializeTimers();
             InitializeInputHooks();
             InitializeUI();
-
+            
             _tasks = new ObservableCollection<ProjectTask>();
         }
 
+        private void Hook_HookDisabled(object? sender, HookEventArgs e)
+        {
+        }
+
+        private void Hook_HookEnabled(object? sender, HookEventArgs e)
+        {
+        }
+
+        private void Hook_MouseWheel(object? sender, MouseWheelHookEventArgs e)
+        {
+            _totalMouseScrolls++;
+        }
+
+        private void Hook_MouseClicked(object? sender, MouseHookEventArgs e)
+        {
+            _totalMouseClicks++;
+        }
+
+        private void Hook_KeyPressed(object? sender, KeyboardHookEventArgs e)
+        {
+             _totalKeysPressed++;
+            // Check if the key is not a control key (like Shift, Alt, Ctrl)
+            if (e.Data.KeyCode != KeyCode.VcLeftAlt && e.Data.KeyCode != KeyCode.VcRightAlt && e.Data.KeyCode != KeyCode.VcLeftShift && e.Data.KeyCode != KeyCode.VcRightShift)
+            { // Use the KeyCode to get the actual readable key
+                string keyText = e.Data.KeyCode.ToString().Substring(2);
+
+                // Handle special cases (e.g., Space, Enter)
+                if (keyText.Length == 1)
+                {
+                    CurrentInput += keyText;
+                }
+                else if (e.Data.KeyCode == KeyCode.VcSpace)
+                {
+                    CurrentInput += " ";
+                }
+            }
+        }
+
+        
         private async void IdlTimeDetectionTimer_Tick(object? sender, EventArgs e)
         {
             try
@@ -166,7 +202,7 @@ namespace TimeTrackerX.ViewModels
                     saveDispatcherTimer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
                     saveDispatcherTimer.Elapsed += SaveTimeSlot_Tick;
                     saveDispatcherTimer.Start();
-                    await SaveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now);
+                    await saveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now);
                 }
             }
             catch (Exception ex)
@@ -197,6 +233,11 @@ namespace TimeTrackerX.ViewModels
 
         private void InitializeTimers()
         {
+            idlTimeDetectionTimer.Tick += IdlTimeDetectionTimer_Tick;
+            idlTimeDetectionTimer.Interval = new TimeSpan(00, 2, 00);
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
+            var nineMinutes = TimeSpan.FromMinutes(9);
+            dispatcherTimer.Interval = nineMinutes;
             //_dispatcherTimer.Interval = TimeSpan.FromMinutes(9).TotalMilliseconds;
             //_dispatcherTimer.Elapsed += DispatcherTimer_Tick;
 
@@ -235,6 +276,12 @@ namespace TimeTrackerX.ViewModels
             //};
             //_mouseEventService.Start();
             //_keyEventService.Start();
+            hook.HookEnabled += Hook_HookEnabled; ;     // EventHandler<HookEventArgs>
+            hook.HookDisabled += Hook_HookDisabled; ;
+            hook.KeyPressed += Hook_KeyPressed; ;       // EventHandler<KeyboardHookEventArgs>
+            hook.MouseClicked += Hook_MouseClicked; ;   // EventHandler<MouseHookEventArgs>
+            hook.MouseWheel += Hook_MouseWheel; ;       // EventHandler<MouseWheelHookEventArgs>
+            hook.RunAsync();
         }
 
         private void InitializeUI()
@@ -443,9 +490,11 @@ namespace TimeTrackerX.ViewModels
                 {
                     idlTimeDetectionTimer.Stop();
                     CanSendReport = true;
+                    
                 }
                 else
                 {
+                    
                     idlTimeDetectionTimer.Start();
                     CanSendReport = false;
                 }
@@ -1344,12 +1393,7 @@ namespace TimeTrackerX.ViewModels
             }
         }
 
-        private async Task SaveBrowserHistory(DateTime startDate, DateTime endDate)
-        {
-            // Placeholder: Browser history not implemented
-            TempLog($"SaveBrowserHistory called (not implemented) from {startDate} to {endDate}");
-        }
-
+        
         private async Task ShowErrorMessage(string errorMessage)
         {
             MessageColor = Brushes.Red;
@@ -1410,6 +1454,26 @@ namespace TimeTrackerX.ViewModels
             {
                 TaskName = string.Empty;
                 TaskDescription = string.Empty;
+            }
+        }
+
+        private async Task saveBrowserHistory(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var browserHistoryList = BrowserHistory.GetHistoryEntries(startDate, endDate);
+                if (browserHistoryList.Count > 0)
+                {
+                    var rest = new REST(new HttpProviders());
+                    foreach (var browserHistory in browserHistoryList)
+                    {
+                        var result = await rest.AddBrowserHistory(browserHistory);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
 

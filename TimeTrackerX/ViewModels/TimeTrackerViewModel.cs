@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -36,7 +38,7 @@ namespace TimeTrackerX.ViewModels
         private bool _trackerIsOn;
 
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
-        private Timer idlTimeDetectionTimer = new Timer();
+        private DispatcherTimer idlTimeDetectionTimer = new DispatcherTimer();
         private Timer saveDispatcherTimer = new Timer();
         private Timer deleteImagePath = new Timer();
         private Timer usedAppDetector = new Timer();
@@ -81,6 +83,9 @@ namespace TimeTrackerX.ViewModels
             //_keyEventService = keyEventService;
             //_restService = restService;
             //_notificationService = notificationService;
+            
+            idlTimeDetectionTimer.Tick += IdlTimeDetectionTimer_Tick;
+            idlTimeDetectionTimer.Interval = new TimeSpan(00, 2, 00);
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             var nineMinutes = TimeSpan.FromMinutes(9);
             dispatcherTimer.Interval = nineMinutes;
@@ -94,6 +99,46 @@ namespace TimeTrackerX.ViewModels
             InitializeUI();
 
             _tasks = new ObservableCollection<ProjectTask>();
+        }
+
+        private async void IdlTimeDetectionTimer_Tick(object? sender, EventArgs e)
+        {
+            try
+            {
+                
+                if (_trackerIsOn || _userIsInactive)
+                {
+                    var idleTime = IdleTimeDetector.GetIdleTimeInfo();
+                    
+                    if (idleTime.IdleTime.TotalMinutes >= 4)
+                    {
+                        await SetTrackerStatus();
+                        CanSendReport = true;
+                        _userIsInactive = true;
+                        dispatcherTimer.IsEnabled = false;
+                    }
+                    else
+                    {
+                        if (!_trackerIsOn)
+                        {
+                            SetTrackerStatus().Wait();
+                            _userIsInactive = false;
+                            dispatcherTimer.IsEnabled = true;
+                            CanSendReport = false;
+                            await GetCurrentSavedTime();
+                        }
+                        else if (dispatcherTimer.IsEnabled == false)
+                        {
+                            CanSendReport = false;
+                            dispatcherTimer.IsEnabled = true;
+                            await GetCurrentSavedTime();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         private async void DispatcherTimer_Tick(object? sender, EventArgs e)
@@ -168,7 +213,10 @@ namespace TimeTrackerX.ViewModels
             //_checkForLiveScreen.Elapsed += CheckForLiveScreen_Tick;
             //_checkForLiveScreen.Start();
         }
-
+        private void OnPointerPressed(object sender, PointerPressedEventArgs e)
+        {
+            Debug.WriteLine("Pointer Pressed!");
+        }
         private void InitializeInputHooks()
         {
             //_mouseEventService.MouseClick += (s, e) => _totalMouseClicks++;
@@ -393,12 +441,12 @@ namespace TimeTrackerX.ViewModels
             {
                 if (_trackerIsOn)
                 {
-                    //idleTimeDetectionTimer.Stop();
+                    idlTimeDetectionTimer.Stop();
                     CanSendReport = true;
                 }
                 else
                 {
-                    //idleTimeDetectionTimer.Start();
+                    idlTimeDetectionTimer.Start();
                     CanSendReport = false;
                 }
                 await SetTrackerStatus();

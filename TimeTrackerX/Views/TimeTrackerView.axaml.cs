@@ -120,7 +120,7 @@ public partial class TimeTrackerView : Window
 
     private void btnActionClose_Click(object sender, RoutedEventArgs e)
     {
-        //Application.Current.Shutdown();
+        Environment.Exit(0);
     }
 
     //private void btnActionClose_Click(object sender, MouseButtonEventArgs e)

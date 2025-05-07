@@ -36,11 +36,20 @@ public partial class TimeTrackerView : Window
         };
     }
 
-    private void DragBorder_PointerPressed(object? sender, PointerPressedEventArgs e)
+    private void Border_PointerPressed(object sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             BeginMoveDrag(e);
+        }
+    }
+
+    private void topbar_PointerPressed(object sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            BeginMoveDrag(e);
+            e.Handled = true;
         }
     }
 

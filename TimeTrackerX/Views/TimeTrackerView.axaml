@@ -2,19 +2,23 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TimeTrackerX.Views.TimeTrackerView"
         x:CompileBindings="True"
-        Title="Time Tracker" Height="600" Width="800"
+        Title="ARSTEG Solutions Pvt Ltd"
+        Height="600" Width="800"
         WindowStartupLocation="CenterScreen"
         Background="Transparent" TransparencyLevelHint="AcrylicBlur"
         CanResize="False" ExtendClientAreaToDecorationsHint="True"
+        SystemDecorations="BorderOnly"
         xmlns:vm="using:TimeTrackerX.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-         xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
+        xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
         mc:Ignorable="d"
-           xmlns:local="clr-namespace:TimeTrackerX"
-          xmlns:converters="clr-namespace:TimeTrackerX.Converters;assembly=TimeTrackerX"
-        xmlns:presentation="using:DocumentFormat.OpenXml.Presentation" >
-	<Window.Resources>
+        xmlns:local="clr-namespace:TimeTrackerX"
+        xmlns:converters="clr-namespace:TimeTrackerX.Converters;assembly=TimeTrackerX"
+        xmlns:presentation="using:DocumentFormat.OpenXml.Presentation">
+
+
+  <Window.Resources>
 		<!--<local:ValueConverter x:Key="ValueConverter" />-->
 		<converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 		<!--<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>-->
@@ -32,20 +36,26 @@
 			<ColumnDefinition Width="*"/>
 			<ColumnDefinition Width="1.5*"/>
 		</Grid.ColumnDefinitions>
-    <Border Grid.Row="1" Grid.Column="1"  Background="Transparent"
-        PointerPressed="DragBorder_PointerPressed" ZIndex="50">
-    <StackPanel  Panel.ZIndex="100" HorizontalAlignment="Right" 
-                VerticalAlignment="Top" Margin="0,-20,0,0" 
-                Orientation="Horizontal">     
-      <Button  Click="BtnActionMinimize_OnClick" Background="Transparent" BorderBrush="White" BorderThickness="1" CornerRadius="5"  Width="25" Height="25">
-        <controls:Image Source="/Assets/minimize.png" Width="20" Height="20" />
-      </Button>
-      <Button  Click="btnActionClose_Click" Background="Transparent"  BorderBrush="White" BorderThickness="1" CornerRadius="5"  Width="25" Height="25">
-        <controls:Image Source="/Assets/close.png" Width="20" Height="20" />
-      </Button>
-    </StackPanel>
-  </Border>
-		<Border CornerRadius="10,0 0 10" >
+    <!--<Border Grid.Row="1" Grid.Column="1"  Background="Transparent"
+        PointerPressed="DragBorder_PointerPressed" ZIndex="50">-->
+    <DockPanel Grid.Column="1" Margin="0,-20,0,0" VerticalAlignment="Top"
+            Panel.ZIndex="100" HorizontalAlignment="Stretch" LastChildFill="True">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" >
+        <Button Click="BtnActionMinimize_OnClick" Background="Transparent" BorderBrush="White" BorderThickness="1" CornerRadius="5" Width="25" Height="25">
+          <controls:Image Source="/Assets/minimize.png" Width="20" Height="20" />
+        </Button>
+        <Button Click="btnActionClose_Click" Background="Transparent" BorderBrush="White" BorderThickness="1" CornerRadius="5" Width="25" Height="25">
+          <controls:Image Source="/Assets/close.png" Width="20" Height="20" />
+        </Button>
+      </StackPanel>
+      <StackPanel Background="WhiteSmoke"  HorizontalAlignment="Stretch" PointerPressed="topbar_PointerPressed">
+        <TextBlock Text="kshkashkshfkashf"></TextBlock>
+      </StackPanel>
+    </DockPanel>
+    
+    
+  <!--</Border>-->
+		<Border CornerRadius="10,0 0 10" PointerPressed="Border_PointerPressed">
 			<Border.Background>
 				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
 					<GradientStop Color="White" Offset="0" />
@@ -317,7 +327,7 @@
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="auto"/>
 						</Grid.ColumnDefinitions>
-						<Rectangle RadiusX="7" RadiusY="7" Height="130" Width="400">
+						<Rectangle RadiusX="7" RadiusY="7" Height="200" Width="400">
 							<Rectangle.Fill>
 								<ImageBrush Source="{Binding ScreenshotImage}" Stretch="Fill" />
 							</Rectangle.Fill>

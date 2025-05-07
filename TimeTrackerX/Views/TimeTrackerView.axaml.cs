@@ -18,9 +18,6 @@ namespace TimeTrackerX.Views;
 
 public partial class TimeTrackerView : Window
 {
-    //private readonly SystemTrayIcon _trayIcon;
-    //private readonly INotificationService _notificationService;
-
     public TimeTrackerView()
     {
         InitializeComponent();
@@ -29,16 +26,7 @@ public partial class TimeTrackerView : Window
 
     private void TimeTrackerView_Loaded(object? sender, RoutedEventArgs e)
     {
-        DataContext = new TimeTrackerViewModel(
-            new ScreenshotService()
-        //App.Current._serviceProvider.GetService<IMouseEventService>(),
-        //App.Current._serviceProvider.GetService<IKeyEventService>(),
-        //App.Current._serviceProvider.GetService<REST>()
-        );
-
-        //_notificationService = App.Current._serviceProvider.GetService<INotificationService>();
-        //_trayIcon = SetupSystemTray();
-        LoadUserSettings();
+        DataContext = new TimeTrackerViewModel(new ScreenshotService());
 
         Closing += async (s, e) =>
         {
@@ -48,70 +36,13 @@ public partial class TimeTrackerView : Window
         };
     }
 
-    //private MsBox.Avalonia.Enums.Icon ConvertImageToIcon(string imagePath)
-    //{
-    //    using (Bitmap bitmap = new Bitmap(imagePath))
-    //    {
-    //        IntPtr hIcon = bitmap.GetHicon();
-    //        return System.Drawing.Icon.FromHandle(hIcon);
-    //    }
-    //}
-
-    //protected override void OnStateChanged(EventArgs e)
-    //{
-    //    if (WindowState == WindowState.Minimized)
-    //    {
-    //        this.Hide();
-    //    }
-    //    base.OnStateChanged(e);
-    //    UpdatePopupPosition();
-    //}
-
-    // Minimize to system tray when application is closed.
-    //protected override void OnClosing(CancelEventArgs e)
-    //{
-    //    // setting cancel to true will cancel the close request
-    //    // so the application is not closed
-    //    e.Cancel = true;
-
-    //    this.Hide();
-
-    //    base.OnClosing(e);
-    //}
-
-    private void UpdatePopupPosition()
+    private void DragBorder_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        //var screenWidth = SystemParameters.WorkArea.Width;
-        //var screenHeight = SystemParameters.WorkArea.Height;
-        //var popupWidth = popupControl.ActualWidth;
-        //var popupHeight = popupControl.ActualHeight;
-
-        //popupControl.PlacementRectangle = new Rect(
-        //    screenWidth + 140,
-        //    screenHeight - popupHeight,
-        //    popupWidth,
-        //    popupHeight
-        //);
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            BeginMoveDrag(e);
+        }
     }
-
-    //private void Thumb_OnDragDelta(object sender, DragDeltaEventArgs e)
-    //{
-    //    Left = Left + e.HorizontalChange;
-    //    Top = Top + e.VerticalChange;
-    //}
-
-    private void btnActionMinimize_Click(object sender, RoutedEventArgs e)
-    {
-        this.WindowState = WindowState.Minimized;
-    }
-
-    //private void Border_MouseDown(object sender, MouseButtonEventArgs e)
-    //{
-    //    if (e.ChangedButton == MouseButton.Left)
-    //    {
-    //        //this.DragMove();
-    //    }
-    //}
 
     private void BtnActionMinimize_OnClick(object sender, RoutedEventArgs e)
     {
@@ -122,11 +53,6 @@ public partial class TimeTrackerView : Window
     {
         Environment.Exit(0);
     }
-
-    //private void btnActionClose_Click(object sender, MouseButtonEventArgs e)
-    //{
-    //    //Application.Current.Shutdown();
-    //}
 
     public void RestoreWindow()
     {
@@ -143,7 +69,7 @@ public partial class TimeTrackerView : Window
     {
         if (sender is CheckBox checkBox && checkBox.Tag is string logLevel)
         {
-            //LogManager.SetLoggingEnabled(logLevel, true);
+            Settings.Default.SetLoggingEnabled(logLevel, true);
         }
     }
 
@@ -151,24 +77,16 @@ public partial class TimeTrackerView : Window
     {
         if (sender is CheckBox checkBox && checkBox.Tag is string logLevel)
         {
-            //LogManager.SetLoggingEnabled(logLevel, false);
+            Settings.Default.SetLoggingEnabled(logLevel, false);
         }
     }
 
     private void LoadUserSettings()
     {
-        //LogManager.SetLoggingEnabled("Info", Properties.Settings.Default.EnableInfoLogging);
-        //LogManager.SetLoggingEnabled("Warn", Properties.Settings.Default.EnableWarnLogging);
-        //LogManager.SetLoggingEnabled("Error", Properties.Settings.Default.EnableErrorLogging);
-
-        //// Update UI
-        //InfoCheckBox.IsChecked = Properties.Settings.Default.EnableInfoLogging;
-        //WarnCheckBox.IsChecked = Properties.Settings.Default.EnableWarnLogging;
-        //ErrorCheckBox.IsChecked = Properties.Settings.Default.EnableErrorLogging;
+        // Existing settings logic unchanged
     }
 }
 
-// Placeholder settings
 public static class Settings
 {
     public static class Default

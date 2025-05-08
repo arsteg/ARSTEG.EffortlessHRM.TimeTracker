@@ -53,18 +53,18 @@ namespace TimeTrackerX.Services.Implementation
 
         private async Task<byte[]> CaptureScreenMacOSAsync()
         {
-            // Use CGWindow APIs via P/Invoke or shell command (screencapture)
             try
             {
-                // For simplicity, use the `screencapture` command
-                var tempFile = Path.GetTempFileName() + ".png";
+                var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".png");
+
                 var process = new System.Diagnostics.Process
                 {
                     StartInfo = new System.Diagnostics.ProcessStartInfo
                     {
-                        FileName = "/usr/sbin/screencapture",
-                        Arguments = $"-x {tempFile}", // -x for silent capture
-                        RedirectStandardOutput = true,
+                        FileName = "screencapture", // Let system resolve the path
+                        Arguments = $"-x \"{tempFile}\"", // -x for silent capture
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false,
                         UseShellExecute = false,
                         CreateNoWindow = true
                     }
@@ -74,12 +74,10 @@ namespace TimeTrackerX.Services.Implementation
                 await process.WaitForExitAsync();
 
                 if (!File.Exists(tempFile))
-                {
-                    throw new Exception("Failed to capture screenshot on macOS.");
-                }
+                    throw new Exception($"Screenshot failed. File not found: {tempFile}");
 
                 var bytes = await File.ReadAllBytesAsync(tempFile);
-                File.Delete(tempFile); // Clean up
+                File.Delete(tempFile);
                 return bytes;
             }
             catch (Exception ex)

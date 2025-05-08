@@ -23,11 +23,11 @@ namespace TimeTrackerX.Services.Implementation
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return (await CaptureScreenMacOSAsync());
+                return await CaptureScreenMacOSAsync();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return Convert.ToBase64String(await CaptureScreenLinuxAsync());
+                return await CaptureScreenLinuxAsync();
             }
             else
             {
@@ -41,9 +41,9 @@ namespace TimeTrackerX.Services.Implementation
         {
             try
             {
-                var bytes = await ScreenshotUtility.CaptureMyScreen();
+                var filePath = await ScreenshotUtility.CaptureMyScreen();
 
-                return bytes;
+                return filePath;
             }
             catch (Exception ex)
             {
@@ -52,50 +52,86 @@ namespace TimeTrackerX.Services.Implementation
         }
 
         private async Task<string> CaptureScreenMacOSAsync()
-{
-    try
-    {
-        var tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
-
-        var process = new System.Diagnostics.Process
         {
-            StartInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "screencapture",
-                Arguments = $"-x \"{tempFile}\"", // -x for silent capture
-                RedirectStandardOutput = false,
-                RedirectStandardError = false,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
-        };
-
-        process.Start();
-        await process.WaitForExitAsync();
-
-        if (!File.Exists(tempFile))
-            throw new Exception($"Screenshot failed. File not found: {tempFile}");
-
-        return tempFile;
-    }
-    catch (Exception ex)
-    {
-        throw new Exception("Failed to capture screenshot on macOS.", ex);
-    }
-}
-
-        private async Task<byte[]> CaptureScreenLinuxAsync()
-        {
-            // Use `scrot` or `gnome-screenshot` for Linux
             try
             {
-                var tempFile = Path.GetTempFileName() + ".png";
+                // Generate unique temp file name with .png extension
+                var tempFile = Path.Combine(Path.GetTempPath(), $"screenshot_{Guid.NewGuid()}.png");
+
+                // Clean up only our previously generated screenshots
+                var existingScreenshots = Directory.GetFiles(
+                    Path.GetTempPath(),
+                    "screenshot_*.png"
+                );
+                foreach (var file in existingScreenshots)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch
+                    {
+                        // Ignore errors deleting old files
+                    }
+                }
+
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "screencapture",
+                        Arguments = $"-x \"{tempFile}\"", // -x for silent capture
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+
+                process.Start();
+                await process.WaitForExitAsync();
+
+                if (!File.Exists(tempFile))
+                    throw new Exception($"Screenshot failed. File not found: {tempFile}");
+
+                return tempFile;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to capture screenshot on macOS.", ex);
+            }
+        }
+
+        private async Task<string> CaptureScreenLinuxAsync()
+        {
+            try
+            {
+                // Generate unique temp file name with .png extension
+                var tempFile = Path.Combine(Path.GetTempPath(), $"screenshot_{Guid.NewGuid()}.png");
+
+                // Clean up only our previously generated screenshots
+                var existingScreenshots = Directory.GetFiles(
+                    Path.GetTempPath(),
+                    "screenshot_*.png"
+                );
+                foreach (var file in existingScreenshots)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch
+                    {
+                        // Ignore errors deleting old files
+                    }
+                }
+
                 var process = new System.Diagnostics.Process
                 {
                     StartInfo = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = "scrot",
-                        Arguments = $"{tempFile}", // Save to temp file
+                        Arguments = $"\"{tempFile}\"", // Save to temp file
                         RedirectStandardOutput = true,
                         UseShellExecute = false,
                         CreateNoWindow = true
@@ -103,16 +139,14 @@ namespace TimeTrackerX.Services.Implementation
                 };
 
                 process.Start();
-                process.WaitForExit();
+                await process.WaitForExitAsync();
 
                 if (!File.Exists(tempFile))
                 {
                     throw new Exception("Failed to capture screenshot on Linux.");
                 }
 
-                var bytes = File.ReadAllBytes(tempFile);
-                File.Delete(tempFile); // Clean up
-                return bytes;
+                return tempFile; // Return file path instead of deleting
             }
             catch (Exception ex)
             {

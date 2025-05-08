@@ -122,6 +122,20 @@ namespace TimeTrackerX.Utilities
                     Directory.CreateDirectory(folderPath);
                 }
 
+                // Clean up only our previously generated screenshots (*.jpg) in the folder
+                var existingScreenshots = Directory.GetFiles(folderPath, "*.jpg");
+                foreach (var file in existingScreenshots)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch
+                    {
+                        // Ignore errors deleting old files
+                    }
+                }
+
                 // Save the screenshot to the final destination
                 var fileName = $"{DateTime.UtcNow:HH-mm}.jpg";
                 result = Path.Combine(folderPath, fileName);

@@ -23,7 +23,7 @@ namespace TimeTrackerX.Services.Implementation
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return Convert.ToBase64String(await CaptureScreenMacOSAsync());
+                return (await CaptureScreenMacOSAsync());
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -51,40 +51,38 @@ namespace TimeTrackerX.Services.Implementation
             }
         }
 
-        private async Task<byte[]> CaptureScreenMacOSAsync()
+        private async Task<string> CaptureScreenMacOSAsync()
+{
+    try
+    {
+        var tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.png");
+
+        var process = new System.Diagnostics.Process
         {
-            try
+            StartInfo = new System.Diagnostics.ProcessStartInfo
             {
-                var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".png");
-
-                var process = new System.Diagnostics.Process
-                {
-                    StartInfo = new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = "screencapture", // Let system resolve the path
-                        Arguments = $"-x \"{tempFile}\"", // -x for silent capture
-                        RedirectStandardOutput = false,
-                        RedirectStandardError = false,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    }
-                };
-
-                process.Start();
-                await process.WaitForExitAsync();
-
-                if (!File.Exists(tempFile))
-                    throw new Exception($"Screenshot failed. File not found: {tempFile}");
-
-                var bytes = await File.ReadAllBytesAsync(tempFile);
-                File.Delete(tempFile);
-                return bytes;
+                FileName = "screencapture",
+                Arguments = $"-x \"{tempFile}\"", // -x for silent capture
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+                UseShellExecute = false,
+                CreateNoWindow = true
             }
-            catch (Exception ex)
-            {
-                throw new Exception("Failed to capture screenshot on macOS.", ex);
-            }
-        }
+        };
+
+        process.Start();
+        await process.WaitForExitAsync();
+
+        if (!File.Exists(tempFile))
+            throw new Exception($"Screenshot failed. File not found: {tempFile}");
+
+        return tempFile;
+    }
+    catch (Exception ex)
+    {
+        throw new Exception("Failed to capture screenshot on macOS.", ex);
+    }
+}
 
         private async Task<byte[]> CaptureScreenLinuxAsync()
         {

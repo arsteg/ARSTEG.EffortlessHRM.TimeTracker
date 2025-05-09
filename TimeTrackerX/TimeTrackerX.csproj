@@ -49,9 +49,4 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.0-preview.3.25171.5" />
     <PackageReference Include="System.Management" Version="10.0.0-preview.3.25171.5" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\BrowserHistoryGatherer\BrowserHistoryGatherer.csproj" />
-    <ProjectReference Include="..\UrlHistoryLibrary\UrlHistoryLibrary.csproj" />
-  </ItemGroup>
 </Project>

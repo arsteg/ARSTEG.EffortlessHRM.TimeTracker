@@ -46,7 +46,7 @@ find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec c
 
 # Step 3.7: Sign native libraries (.dylib and .dll) inside the app bundle
 echo "[INFO] Signing native libraries inside the app bundle..."
-find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec codesign --force --timestamp --options=runtime --sign "Apple Development: Mohamad Rafi (9FNTZ378RS)" {} \;
+find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec codesign --deep --force --verify --timestamp --options=runtime --sign "Apple Development: Mohamad Rafi (9FNTZ378RS)" {} \;
 
 
 if [ $? -ne 0 ]; then
@@ -63,7 +63,7 @@ ditto -c -k --keepParent "$APP_BUNDLE" "${APP_NAME}.zip"
 
 echo "[INFO] Submitting .app for notarization..."
 
-xcrun notarytool submit TimeTrackerX.zip --apple-id "dotnetexpertdev@gmail.com" --team-id "D3V3FH5QFK" --password "dryl-xuzx-alur-mkxz" --wait --verbose
+xcrun notarytool submit TimeTrackerX.zip --apple-id "dotnetexpertdev@gmail.com" --team-id "D3V3FH5QFK" --password "dryl-xuzx-alur-mkxz" --wait --output-format json
 
 if [ $? -ne 0 ]; then
     echo "[ERROR] Notarization failed."

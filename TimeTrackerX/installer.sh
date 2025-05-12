@@ -39,6 +39,8 @@ echo "[INFO] .app bundle created at: $APP_BUNDLE"
 echo "[INFO] Removing .pdb files..."
 find "$APP_BUNDLE" -name "*.pdb" -delete
 
+echo "[INFO] Removing .dll.config files..."
+find "$APP_BUNDLE" -name "*.dll.config" -delete
 
 # Step 4: Code-sign the .app
 echo "[INFO] Signing .app bundle..."

@@ -7,14 +7,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-//using BrowserHistoryGatherer.Data;
+using BrowserHistoryGatherer.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using TimeTrackerX.Models;
 using TimeTrackerX.Models;
 using TimeTrackerX.Trace;
-using TimeTrackerX.Utilities;
 
 namespace TimeTrackerX.Services
 {

@@ -25,7 +25,7 @@ namespace TimeTrackerX.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("mohdrafionline@gmail.com")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string userName {
             get {
                 return ((string)(this["userName"]));
@@ -37,7 +37,7 @@ namespace TimeTrackerX.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("12345678")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string userPassword {
             get {
                 return ((string)(this["userPassword"]));

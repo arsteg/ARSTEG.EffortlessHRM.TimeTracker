@@ -1,0 +1,119 @@
+#!/bin/bash
+
+
+# Step 1: Publish the application
+echo "[INFO] Publishing the application..."
+dotnet publish "$PROJECT_PATH" -c Release -r osx-x64 -r osx-arm64 --self-contained true -o "$OUTPUT_DIR"
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Publish failed."
+    exit 1
+fi
+
+# Step 2: Create .app bundle
+echo "[INFO] Creating .app bundle..."
+mkdir -p "${APP_BUNDLE}/Contents/MacOS"
+mkdir -p "${APP_BUNDLE}/Contents/Resources"
+cp -r "$OUTPUT_DIR/"* "${APP_BUNDLE}/Contents/MacOS/"
+
+
+# Step 3: Code-sign the .app
+echo "[INFO] Signing .app bundle..."
+codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS_FILE" --sign "$SIGNING_IDENTITY" -v "$APP_BUNDLE"
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Code-signing failed."
+    exit 1
+fi
+
+# Verify signing
+codesign -vvv --deep --strict "$APP_BUNDLE"
+
+# Step 4: Notarize the .app
+echo "[INFO] Zipping .app for notarization..."
+ditto -c -k --keepParent "$APP_BUNDLE" "${APP_NAME}.zip"
+
+echo "[INFO] Submitting .app for notarization..."
+xcrun notarytool submit "${APP_NAME}.zip" --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$APP_SPECIFIC_PASSWORD" --wait
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Notarization failed."
+    exit 1
+fi
+
+echo "[INFO] Stapling notarization ticket to .app..."
+xcrun stapler staple "$APP_BUNDLE"
+
+# Step 5: Create .dmg
+echo "[INFO] Creating .dmg installer..."
+mkdir -p dmg_temp
+cp -r "$APP_BUNDLE" dmg_temp/
+ln -s /Applications dmg_temp/Applications
+
+# Create .dmg
+hdiutil create -srcfolder dmg_temp -volname "$DMG_VOLUME" -fs HFS+ -format UDRW -size 100m "$DMG_TEMP"
+
+# Mount and customize .dmg
+MOUNT_POINT="/Volumes/$DMG_VOLUME"
+hdiutil attach "$DMG_TEMP" -readwrite -noverify -noautoopen
+sleep 2
+
+# Set background and window properties (requires background.png in dmg_temp)
+if [ -f "dmg_temp/background.png" ]; then
+    mkdir -p "$MOUNT_POINT/.background"
+    cp dmg_temp/background.png "$MOUNT_POINT/.background/background.png"
+fi
+
+# Use AppleScript to customize the .dmg appearance
+osascript << EOF
+tell application "Finder"
+    tell disk "$DMG_VOLUME"
+        open
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set the bounds of container window to {400, 100, 900, 500}
+        set theViewOptions to the icon view options of container window
+        set arrangement of theViewOptions to not arranged
+        set icon size of theViewOptions to 72
+        if exists file "background.png" of folder ".background" then
+            set background picture of theViewOptions to file ".background:background.png"
+        end if
+        set position of item "$APP_NAME.app" of container window to {100, 100}
+        set position of item "Applications" of container window to {400, 100}
+        update without registering applications
+        delay 1
+        close
+    end tell
+end tell
+EOF
+
+# Unmount .dmg
+hdiutil detach "$MOUNT_POINT"
+
+# Convert to read-only .dmg
+hdiutil convert "$DMG_TEMP" -format UDZO -o "$DMG_FINAL"
+
+# Step 6: Sign the .dmg
+echo "[INFO] Signing .dmg..."
+codesign --force --timestamp --sign "$SIGNING_IDENTITY" "$DMG_FINAL"
+if [ $? -ne 0 ]; then
+    echo "[ERROR] .dmg signing failed."
+    exit 1
+fi
+
+# Step 7: Notarize the .dmg
+echo "[INFO] Zipping .dmg for notarization..."
+ditto -c -k --keepParent "$DMG_FINAL" "${DMG_NAME}-dmg.zip"
+
+echo "[INFO] Submitting .dmg for notarization..."
+xcrun notarytool submit "${DMG_NAME}-dmg.zip" --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$APP_SPECIFIC_PASSWORD" --wait
+if [ $? -ne 0 ]; then
+    echo "[ERROR] .dmg notarization failed."
+    exit 1
+fi
+
+echo "[INFO] Stapling notarization ticket to .dmg..."
+xcrun stapler staple "$DMG_FINAL"
+
+# Clean up
+rm -rf dmg_temp "$DMG_TEMP" "${APP_NAME}.zip" "${DMG_NAME}-dmg.zip"
+
+echo "[SUCCESS] Installer created: $DMG_FINAL"

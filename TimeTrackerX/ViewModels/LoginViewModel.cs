@@ -235,7 +235,7 @@ namespace TimeTrackerX.ViewModels
             {
                 Properties.Settings.Default.userName = userName;
                 Properties.Settings.Default.userPassword = password;
-                //Properties.Settings.Default.Save();
+                Properties.Settings.Default.Save();
             }
         }
 

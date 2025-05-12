@@ -35,7 +35,7 @@ public partial class LoginView : Window
         }
         if (this.automaticLogin)
         {
-            ((LoginViewModel)this.DataContext).LoginCommandExecute();
+            await ((LoginViewModel)this.DataContext).LoginCommandExecute();
         }
 
         try

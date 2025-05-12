@@ -63,7 +63,7 @@ ditto -c -k --keepParent "$APP_BUNDLE" "${APP_NAME}.zip"
 
 echo "[INFO] Submitting .app for notarization..."
 
-xcrun notarytool submit TimeTrackerX.zip --appleid "dotnetexpertdev@gmail.com" --team-id "D3V3FH5QFK" --password "dryl-xuzx-alur-mkxz" --wait
+xcrun notarytool submit TimeTrackerX.zip --apple-id "dotnetexpertdev@gmail.com" --team-id "D3V3FH5QFK" --password "dryl-xuzx-alur-mkxz" --wait
 
 if [ $? -ne 0 ]; then
     echo "[ERROR] Notarization failed."

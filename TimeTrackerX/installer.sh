@@ -35,6 +35,9 @@ cp -r "$OUTPUT_DIR/"* "${APP_BUNDLE}/Contents/MacOS/"
 
 echo "[INFO] .app bundle created at: $APP_BUNDLE"
 
+# Step 3.5: Remove .pdb files (not valid on macOS)
+echo "[INFO] Removing .pdb files..."
+find "$APP_BUNDLE" -name "*.pdb" -delete
 
 
 # Step 4: Code-sign the .app

@@ -42,6 +42,11 @@ find "$APP_BUNDLE" -name "*.pdb" -delete
 echo "[INFO] Removing .dll.config files..."
 find "$APP_BUNDLE" -name "*.dll.config" -delete
 
+# Step 3.8: Sign native libraries
+echo "[INFO] Signing native libraries inside the app bundle..."
+find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec codesign --force --timestamp --options=runtime --sign "$SIGNING_IDENTITY" {} \;
+
+
 # Step 4: Code-sign the .app
 echo "[INFO] Signing .app bundle..."
 

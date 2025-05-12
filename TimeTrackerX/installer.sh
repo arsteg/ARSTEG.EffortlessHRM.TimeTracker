@@ -1,22 +1,42 @@
 #!/bin/bash
 
+# Step 1: Build the application
+echo "[INFO] Building the application..."
+dotnet build TimeTrackerX.csproj -c Release
 
-# Step 1: Publish the application
+
+# Step 2: Publish the application
 echo "[INFO] Publishing the application..."
-dotnet publish "$PROJECT_PATH" -c Release -r osx-x64  --self-contained true -o "$OUTPUT_DIR"
-if [ $? -ne 0 ]; then
-    echo "[ERROR] Publish failed."
-    exit 1
+dotnet publish TimeTrackerX.csproj -c Release -r osx-x64 -r --self-contained true -o ./publish/universal
+
+
+# Step 3: Create .app bundle
+#!/bin/bash
+
+# Define the app bundle name and output directory
+APP_BUNDLE="TimeTrackerX.app"
+OUTPUT_DIR="./publish/universal"
+
+# Step 3: Create .app bundle
+echo "[INFO] Creating .app bundle..."
+
+# Delete existing bundle if it exists
+if [ -d "$APP_BUNDLE" ]; then
+    echo "[INFO] Removing existing $APP_BUNDLE..."
+    rm -rf "$APP_BUNDLE"
 fi
 
-# Step 2: Create .app bundle
-echo "[INFO] Creating .app bundle..."
+# Recreate bundle structure
 mkdir -p "${APP_BUNDLE}/Contents/MacOS"
 mkdir -p "${APP_BUNDLE}/Contents/Resources"
+
+# Copy built files into the bundle
 cp -r "$OUTPUT_DIR/"* "${APP_BUNDLE}/Contents/MacOS/"
 
+echo "[INFO] .app bundle created at: $APP_BUNDLE"
 
-# Step 3: Code-sign the .app
+
+# Step 4: Code-sign the .app
 echo "[INFO] Signing .app bundle..."
 codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS_FILE" --sign "$SIGNING_IDENTITY" -v "$APP_BUNDLE"
 if [ $? -ne 0 ]; then

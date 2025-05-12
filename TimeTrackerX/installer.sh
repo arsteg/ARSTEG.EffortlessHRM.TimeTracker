@@ -36,9 +36,18 @@ cp -r "$OUTPUT_DIR/"* "${APP_BUNDLE}/Contents/MacOS/"
 echo "[INFO] .app bundle created at: $APP_BUNDLE"
 
 
+
 # Step 4: Code-sign the .app
 echo "[INFO] Signing .app bundle..."
-codesign --force --timestamp --options=runtime --entitlements "$ENTITLEMENTS_FILE" --sign "$SIGNING_IDENTITY" -v "$APP_BUNDLE"
+
+# Define entitlement file and signing identity
+ENTITLEMENTS_FILE="./TimeTrackerX.entitlements"
+SIGNING_IDENTITY="Apple Development: Mohamad Rafi (9FNTZ378RS)"
+
+codesign --force --timestamp --options=runtime \
+  --entitlements "$ENTITLEMENTS_FILE" \
+  --sign "$SIGNING_IDENTITY" -v "$APP_BUNDLE"
+
 if [ $? -ne 0 ]; then
     echo "[ERROR] Code-signing failed."
     exit 1

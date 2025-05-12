@@ -44,10 +44,14 @@ find "$APP_BUNDLE" -name "*.dll.config" -delete
 echo "[INFO] Ensuring writable permissions on native libraries..."
 find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec chmod +w {} \;
 
-# Step 3.7: Sign native libraries (.dylib and .dll) inside the app bundle
 echo "[INFO] Signing native libraries inside the app bundle..."
-find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec codesign --deep --force --verify --timestamp --options=runtime --sign "Apple Development: Mohamad Rafi (9FNTZ378RS)" {} \;
-
+find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec \
+  codesign --force --verify --timestamp --options=runtime \
+  --sign "Developer ID Application: Mohamad Rafi (D3V3FH5QFK)" {} \;
+  
+echo "[INFO] Re-signing the full app bundle..."
+codesign --deep --force --verify --timestamp --options=runtime \
+  --sign "Developer ID Application: Mohamad Rafi (D3V3FH5QFK)" "$APP_BUNDLE"
 
 if [ $? -ne 0 ]; then
     echo "[ERROR] Code-signing failed."

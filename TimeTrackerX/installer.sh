@@ -35,28 +35,19 @@ cp -r "$OUTPUT_DIR/"* "${APP_BUNDLE}/Contents/MacOS/"
 
 echo "[INFO] .app bundle created at: $APP_BUNDLE"
 
-# Step 3.5: Remove .pdb files (not valid on macOS)
-echo "[INFO] Removing .pdb files..."
+# Step 3.5: Remove Windows-only files not valid on macOS
+echo "[INFO] Removing .pdb files and .dll.config files..."
 find "$APP_BUNDLE" -name "*.pdb" -delete
-
-echo "[INFO] Removing .dll.config files..."
 find "$APP_BUNDLE" -name "*.dll.config" -delete
 
-# Step 3.8: Sign native libraries
+# Step 3.6: Ensure writable permissions for native libraries (in case some are read-only)
+echo "[INFO] Ensuring writable permissions on native libraries..."
+find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec chmod +w {} \;
+
+# Step 3.7: Sign native libraries (.dylib and .dll) inside the app bundle
 echo "[INFO] Signing native libraries inside the app bundle..."
 find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec codesign --force --timestamp --options=runtime --sign "$SIGNING_IDENTITY" {} \;
 
-
-# Step 4: Code-sign the .app
-echo "[INFO] Signing .app bundle..."
-
-# Define entitlement file and signing identity
-ENTITLEMENTS_FILE="./TimeTrackerX.entitlements"
-SIGNING_IDENTITY="Apple Development: Mohamad Rafi (9FNTZ378RS)"
-
-codesign --force --timestamp --options=runtime \
-  --entitlements "$ENTITLEMENTS_FILE" \
-  --sign "$SIGNING_IDENTITY" -v "$APP_BUNDLE"
 
 if [ $? -ne 0 ]; then
     echo "[ERROR] Code-signing failed."

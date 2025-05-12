@@ -3,7 +3,7 @@
 
 # Step 1: Publish the application
 echo "[INFO] Publishing the application..."
-dotnet publish "$PROJECT_PATH" -c Release -r osx-x64 -r osx-arm64 --self-contained true -o "$OUTPUT_DIR"
+dotnet publish "$PROJECT_PATH" -c Release -r osx-x64  --self-contained true -o "$OUTPUT_DIR"
 if [ $? -ne 0 ]; then
     echo "[ERROR] Publish failed."
     exit 1

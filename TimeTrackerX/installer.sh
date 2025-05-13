@@ -47,11 +47,11 @@ find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec c
 echo "[INFO] Signing native libraries inside the app bundle..."
 find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec \
   codesign --force --verify --timestamp --options=runtime \
-  --sign "Apple Development: Mohamad Rafi (9FNTZ378RS)" {} \;
+  --sign "3rd Party Mac Developer Installer: Center for Nutritional Research Charitable Trust (D3V3FH5QFK)" {} \;
   
 echo "[INFO] Re-signing the full app bundle..."
 codesign --deep --force --verify --timestamp --options=runtime \
-  --sign "Apple Development: Mohamad Rafi (9FNTZ378RS)" "$APP_BUNDLE"
+  --sign "3rd Party Mac Developer Installer: Center for Nutritional Research Charitable Trust (D3V3FH5QFK)" "$APP_BUNDLE"
 
 if [ $? -ne 0 ]; then
     echo "[ERROR] Code-signing failed."

@@ -65,6 +65,7 @@ namespace TimeTrackerX.ViewModels
         private int _totalMouseClicks;
         private int _totalKeysPressed;
         private int _totalMouseScrolls;
+        private DateTime _lastInputTime;
         private string _machineId = string.Empty;
         private TimeLog _timeLogForSwitchingMachine = new TimeLog();
         SimpleGlobalHook hook = new SimpleGlobalHook();
@@ -109,16 +110,19 @@ namespace TimeTrackerX.ViewModels
         private void Hook_MouseWheel(object? sender, MouseWheelHookEventArgs e)
         {
             _totalMouseScrolls++;
+            UpdateLastInputTime();
         }
 
         private void Hook_MouseClicked(object? sender, MouseHookEventArgs e)
         {
             _totalMouseClicks++;
+            UpdateLastInputTime();
         }
 
         private void Hook_KeyPressed(object? sender, KeyboardHookEventArgs e)
         {
              _totalKeysPressed++;
+            UpdateLastInputTime();
             // Check if the key is not a control key (like Shift, Alt, Ctrl)
             if (e.Data.KeyCode != KeyCode.VcLeftAlt && e.Data.KeyCode != KeyCode.VcRightAlt && e.Data.KeyCode != KeyCode.VcLeftShift && e.Data.KeyCode != KeyCode.VcRightShift)
             { // Use the KeyCode to get the actual readable key
@@ -144,9 +148,10 @@ namespace TimeTrackerX.ViewModels
                 
                 if (_trackerIsOn || _userIsInactive)
                 {
-                    var idleTime = IdleTimeDetector.GetIdleTimeInfo();
-                    
-                    if (idleTime.IdleTime.TotalMinutes >= 4)
+                    var idleTime = GetIdleTime();
+
+
+                    if (idleTime.TotalMinutes >= 4)
                     {
                         await SetTrackerStatus();
                         CanSendReport = true;
@@ -830,6 +835,16 @@ namespace TimeTrackerX.ViewModels
             {
                 TempLog($"SaveTimeSlot error: {ex.Message}");
             }
+        }
+
+        private void UpdateLastInputTime()
+        {
+            _lastInputTime = DateTime.UtcNow;
+        }
+
+        private TimeSpan GetIdleTime()
+        {
+            return DateTime.UtcNow - _lastInputTime;
         }
 
         private async Task<string> CaptureScreen()

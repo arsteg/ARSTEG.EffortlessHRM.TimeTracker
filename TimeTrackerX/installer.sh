@@ -51,7 +51,7 @@ find "$APP_BUNDLE/Contents/MacOS" \( -name "*.dylib" -o -name "*.dll" \) -exec \
   
 echo "[INFO] Re-signing the full app bundle..."
 codesign --deep --force --verify --timestamp --options=runtime \
-  --sign "Apple Development: Mohamad Rafi (9FNTZ378RS)" "$APP_BUNDLE"
+  --sign "Mac Installer Submission: Center for Nutritional Research Charitable Trust" "$APP_BUNDLE"
 
 if [ $? -ne 0 ]; then
     echo "[ERROR] Code-signing failed."

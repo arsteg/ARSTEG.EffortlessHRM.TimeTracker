@@ -53,6 +53,7 @@ echo "[INFO] Re-signing the full app bundle..."
 codesign --deep --force --verify --timestamp --options=runtime \
   --sign "3rd Party Mac Developer Installer: Center for Nutritional Research Charitable Trust (D3V3FH5QFK)" "$APP_BUNDLE"
 
+
 if [ $? -ne 0 ]; then
     echo "[ERROR] Code-signing failed."
     exit 1

@@ -85,7 +85,7 @@ namespace TimeTrackerX.ViewModels
             }
         }
 
-        private bool enableLoginButton = false;
+        private bool enableLoginButton = true;
         public bool EnableLoginButton
         {
             get { return enableLoginButton; }
@@ -123,6 +123,7 @@ namespace TimeTrackerX.ViewModels
         #region public methods
         public async Task LoginCommandExecute()
         {
+            EnableLoginButton = false;
             try
             {
                 ErrorMessage = "";

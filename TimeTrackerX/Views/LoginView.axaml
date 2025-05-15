@@ -8,7 +8,7 @@
 xmlns:presentation="using:DocumentFormat.OpenXml.Presentation"
         x:Class="TimeTrackerX.LoginView"
         Title="LoginView"
-        Width="800" Height="500"
+        Width="800" Height="550"
         x:CompileBindings="True">
   
   <Grid x:DataType="vm:LoginViewModel">
@@ -151,7 +151,8 @@ xmlns:presentation="using:DocumentFormat.OpenXml.Presentation"
         <controls:TextBlock Text="{Binding ErrorMessage}"    Margin="0 15 0 15" 
                             FontSize="16" LineHeight="28" TextWrapping="Wrap" TextAlignment="Center"  Foreground="#ffffff"/>
         <controls:Button x:Name="btnLogOn" Content="Sign In"  Command="{Binding LoginCommand}"
-                         IsEnabled="{Binding EnableLoginButton}" FontSize="14" Width="200" Background="#3AB19B" HorizontalAlignment="Center" HorizontalContentAlignment="Center" CornerRadius="25" BorderBrush="#FDFEFE" BorderThickness="1"  Foreground="#FDFEFE" Margin="0 20 0 0"   />
+                         IsEnabled="{Binding EnableLoginButton}" FontSize="14" Width="200" Background="#3AB19B" HorizontalAlignment="Center" 
+                         HorizontalContentAlignment="Center" CornerRadius="25" BorderBrush="#FDFEFE" BorderThickness="1"  Foreground="#FDFEFE" Margin="0 0 0 0" VerticalAlignment="Top"  />
         
       </StackPanel>
     </Border>

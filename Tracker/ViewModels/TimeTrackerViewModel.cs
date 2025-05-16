@@ -85,8 +85,11 @@ namespace TimeTracker.ViewModels
                 ProductivityApplicationCommandExecute
             );
             TaskCompleteCommand = new RelayCommand(TaskCompleteCommandExecute);
-            CreateNewTaskCommand = new RelayCommand(CreateNewTaskCommandExecute);
-            TaskOpenCommand = new RelayCommand(TaskOpenCommandExecute);
+            CreateNewTaskCommand = new RelayCommand(
+                async () => await CreateNewTaskCommandExecute()
+            );
+            TaskOpenCommand = new RelayCommand(async () => await TaskOpenCommandExecute());
+
             SwitchTrackerNoCommand = new RelayCommand(SwitchTrackerNoCommandExecute);
             SwitchTrackerYesCommand = new RelayCommand(SwitchTrackerYesCommandExecute);
 
@@ -680,11 +683,6 @@ namespace TimeTracker.ViewModels
 
         public async void StartStopCommandExecute()
         {
-            if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
-            {
-                ShowErrorMessage("No task selected");
-                return;
-            }
             ProgressWidthStart = 30;
             try
             {
@@ -878,17 +876,18 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        public async void CreateNewTaskCommandExecute()
+        public async Task CreateNewTaskCommandExecute()
         {
+            ProgressWidthStart = 30;
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
                 await ShowErrorMessage("Please specify task details");
                 return;
             }
-            ProgressWidthStart = 30;
+
             try
             {
-                CreateNewTask();
+                await CreateNewTask();
             }
             catch (Exception ex)
             {
@@ -900,12 +899,12 @@ namespace TimeTracker.ViewModels
             }
         }
 
-        public async void TaskOpenCommandExecute()
+        public async Task TaskOpenCommandExecute()
         {
             ButtonEventInProgress = true;
             if (string.IsNullOrEmpty(taskName) || taskName.Length == 0)
             {
-                ShowErrorMessage("No task is selected");
+                await ShowErrorMessage("No task is selected");
                 ButtonEventInProgress = false;
                 return;
             }
@@ -994,8 +993,8 @@ namespace TimeTracker.ViewModels
                         UserId,
                         machineId,
                         !trackerIsOn,
-                        _selectedproject._id,
-                        _selectedtask._id
+                        _selectedproject?._id,
+                        _selectedtask?._id
                     )
             ).Result;
 
@@ -1017,14 +1016,9 @@ namespace TimeTracker.ViewModels
                 StartTracker();
 
                 // Check if taskName is not empty and not present in Tasks
-                if (
-                    !string.IsNullOrEmpty(taskName)
-                    && !_tasks.Any(t =>
-                        t.taskName.Equals(taskName, StringComparison.OrdinalIgnoreCase)
-                    )
-                )
+                if (string.IsNullOrEmpty(SelectedTask._id))
                 {
-                    CreateNewTask();
+                    await CreateNewTask();
                 }
                 ResetActiveApplicationData();
                 trackerIsOn = true;
@@ -1626,7 +1620,7 @@ namespace TimeTracker.ViewModels
                 $"Welcome, {GlobalSetting.Instance.LoginResult.data.user.firstName} {GlobalSetting.Instance.LoginResult.data.user.lastName}.";
         }
 
-        private async void CreateNewTask()
+        private async Task CreateNewTask()
         {
             ButtonEventInProgress = true;
             try
@@ -1653,7 +1647,7 @@ namespace TimeTracker.ViewModels
                 );
                 if (newTaskResult?.status.ToUpper() == "SUCCESS")
                 {
-                    ShowInformationMessage("Task has been created");
+                    await ShowInformationMessage("Task has been created");
                     SelectedTask = newTaskResult.data.newTask;
                 }
                 else if (newTaskResult?.status.ToUpper() == "FAILURE")
@@ -2257,7 +2251,7 @@ namespace TimeTracker.ViewModels
             ErrorMessage = string.Empty;
         }
 
-        private async void ShowInformationMessage(string errorMessage)
+        private async Task ShowInformationMessage(string errorMessage)
         {
             MessageColor = "green";
             await Task.Delay(TimeSpan.FromSeconds(10));

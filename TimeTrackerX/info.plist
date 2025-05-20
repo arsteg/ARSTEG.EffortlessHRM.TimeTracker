@@ -19,8 +19,8 @@
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>NSHighResolutionCapable</key>
+	<true/>
     <key>CFBundleIconFile</key>
     <string>TimeTrackerX.icns</string>
-    <true/>
 </dict>
 </plist>

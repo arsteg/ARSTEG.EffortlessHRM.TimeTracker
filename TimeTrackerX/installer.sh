@@ -7,7 +7,7 @@ dotnet build TimeTrackerX.csproj -c Release
 
 # Step 2: Publish the application
 echo "[INFO] Publishing the application..."
-dotnet publish TimeTrackerX.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true -o ./publish/universal
+dotnet publish TimeTrackerX.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=false -o ./publish/universal
 
 
 # Step 3: Create .app bundle

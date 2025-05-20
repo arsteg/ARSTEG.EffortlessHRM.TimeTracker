@@ -28,7 +28,7 @@ echo "Removing quarantine attribute..."
 xattr -d com.apple.quarantine /Applications/TimeTrackerX.app || echo "Quarantine attribute not found or already removed."
 
 # Ask user to grant Accessibility access
-echo "Checking Accessibility access for abc.app..."
+echo "Checking Accessibility access for TimeTrackerX.app..."
 
 # Get the bundle identifier of the app
 APP_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "./TimeTrackerX.app/Contents/Info.plist")

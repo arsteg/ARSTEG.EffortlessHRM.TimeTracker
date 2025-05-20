@@ -30,6 +30,14 @@ fi
 mkdir -p "${APP_BUNDLE}/Contents/MacOS"
 mkdir -p "${APP_BUNDLE}/Contents/Resources"
 
+# Copy Info.plist to the Contents directory
+if [ -f "./info.plist" ]; then
+    echo "[INFO] Adding Info.plist to bundle..."
+    cp ./info.plist "${APP_BUNDLE}/Contents/Info.plist"
+else
+    echo "[WARNING] info.plist not found!"
+fi
+
 # Copy built files into the bundle
 cp -r "$OUTPUT_DIR/"* "${APP_BUNDLE}/Contents/MacOS/"
 

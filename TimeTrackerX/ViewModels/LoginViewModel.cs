@@ -123,82 +123,6 @@ namespace TimeTrackerX.ViewModels
         #endregion
 
         #region public methods
-        //public async Task LoginCommandExecute()
-        //{
-        //    EnableLoginButton = false;
-        //    try
-        //    {
-        //        ErrorMessage = "";
-        //        LogManager.Logger.Info($"login command execution starts");
-        //        if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
-        //        {
-        //            ErrorMessage = "Invalid credentials, Please try again";
-        //            return;
-        //        }
-        //        ProgressWidth = 30;
-        //        ErrorMessage = "";
-
-        //        var rest = new REST(new HttpProviders());
-
-        //        var result = await rest.SignIn(
-        //            new Models.Login() { email = UserName, password = Password }
-        //        );
-
-        //        if (result.status == "success")
-        //        {
-        //            LogManager.Logger.Info("SignIn is successful");
-        //            GlobalSetting.Instance.LoginResult = result;
-
-        //            // Ensure UI operations are performed on the UI thread
-        //            await Dispatcher.UIThread.InvokeAsync(() =>
-        //            {
-        //                // Close the LoginView
-        //                if (GlobalSetting.Instance.LoginView != null)
-        //                {
-        //                    GlobalSetting.Instance.LoginView.Close();
-        //                    GlobalSetting.Instance.LoginView = null;
-        //                }
-
-        //                // Create and show TimeTrackerView
-        //                if (GlobalSetting.Instance.TimeTracker == null)
-        //                {
-        //                    LogManager.Logger.Info("Creating the instance of TimeTracker");
-        //                    GlobalSetting.Instance.TimeTracker =
-        //                        new TimeTrackerX.Views.TimeTrackerView();
-        //                }
-        //                LogManager.Logger.Info("Showing the instance of TimeTracker");
-        //                GlobalSetting.Instance.TimeTracker.Show();
-        //            });
-
-        //            SaveUserCredentials(
-        //                rememberMe,
-        //                rememberMe ? UserName : "",
-        //                rememberMe ? Password : ""
-        //            );
-        //        }
-        //        else
-        //        {
-        //            ErrorMessage = "Invalid credentials, Please try again";
-        //        }
-        //        LogManager.Logger.Info($"login command execution ends");
-        //    }
-        //    catch (ServiceAuthenticationException ex)
-        //    {
-        //        ErrorMessage = "Invalid credentials, Please try again";
-        //        LogManager.Logger.Error(ex);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ErrorMessage =
-        //            $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";
-        //        LogManager.Logger.Error(ex);
-        //    }
-        //    finally
-        //    {
-        //        ProgressWidth = 0;
-        //        EnableLoginButton = true;
-        //    }
-        //}
         public async Task LoginCommandExecute()
         {
             EnableLoginButton = false;
@@ -210,10 +134,8 @@ namespace TimeTrackerX.ViewModels
                 if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
                 {
                     ErrorMessage = "Invalid credentials, Please try again";
-                    await ShowMessageBox("Login Failed", ErrorMessage);
                     return;
                 }
-
                 ProgressWidth = 30;
                 ErrorMessage = "";
 
@@ -256,7 +178,6 @@ namespace TimeTrackerX.ViewModels
                 else
                 {
                     ErrorMessage = "Invalid credentials, Please try again";
-                    await ShowMessageBox("Login Failed", ErrorMessage);
                 }
 
                 LogManager.Logger.Info("login command execution ends");
@@ -265,13 +186,12 @@ namespace TimeTrackerX.ViewModels
             {
                 ErrorMessage = "Invalid credentials, Please try again";
                 LogManager.Logger.Error(ex);
-                await ShowMessageBox("Authentication Error", ErrorMessage);
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Something went wrong, Please try again.\n{ex.Message}";
+                ErrorMessage =
+                    $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";
                 LogManager.Logger.Error(ex);
-                await ShowMessageBox("Error", ErrorMessage);
             }
             finally
             {
@@ -279,6 +199,7 @@ namespace TimeTrackerX.ViewModels
                 EnableLoginButton = true;
             }
         }
+
 
         public void CloseCommandExecute()
         {

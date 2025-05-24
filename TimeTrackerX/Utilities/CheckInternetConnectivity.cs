@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,10 +18,22 @@ namespace TimeTrackerX.Utilities
         );
 
         //Creating a function that uses the API function...
-        public static bool IsConnectedToInternet()
+        public static async Task<bool> IsConnectedToInternetAsync()
         {
-            int Desc;
-            return InternetGetConnectedState(out Desc, 0);
+            try
+            {
+                using var httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(3)
+                };
+
+                using var response = await httpClient.GetAsync("https://www.google.com", HttpCompletionOption.ResponseHeadersRead);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

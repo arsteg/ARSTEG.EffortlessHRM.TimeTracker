@@ -1055,7 +1055,7 @@ namespace TimeTrackerX.ViewModels
                     makeThisDeviceActive = false
                 };
 
-                if (!CheckInternetConnectivity.IsConnectedToInternet())
+                if (!await CheckInternetConnectivity.IsConnectedToInternetAsync())
                 {
                     TempLog($"No internet at {DateTime.UtcNow}");
                     _unsavedTimeLogs.Add(timeLog);
@@ -1283,7 +1283,7 @@ namespace TimeTrackerX.ViewModels
                     1 == 1 /*result== MessageBox.Avalonia.Enums.ButtonResult.Yes*/
                 )
                 {
-                    if (!CheckInternetConnectivity.IsConnectedToInternet())
+                    if (!await CheckInternetConnectivity.IsConnectedToInternetAsync())
                     {
                         await ShowErrorMessage("This needs an active internet connection");
                         return;

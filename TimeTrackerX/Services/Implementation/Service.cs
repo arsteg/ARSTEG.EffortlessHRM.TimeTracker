@@ -55,28 +55,15 @@ namespace TimeTrackerX.Services.Implementation
         {
             try
             {
-                // Define target folder same as Windows logic
-                var folderPath = Path.Combine(
-                    Environment.CurrentDirectory,
-                    "Screenshots",
-                    DateTime.Now.ToString("yyyy-MM-dd")
-                );
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
+                // Generate unique temp file name with .png extension
+                var fileName = $"{DateTime.UtcNow:HH-mm}.png";
+                var tempFile = Path.Combine(Path.GetTempPath(), fileName);
+                
 
-                // Define filename in same format as Windows
-                var fileName = $"{DateTime.UtcNow:HH-mm}.jpg";
-                var finalPath = Path.Combine(folderPath, fileName);
-
-                // Temporary file for capturing (macOS supports PNG by default)
-                var tempFile = Path.Combine(Path.GetTempPath(), $"screenshot_{Guid.NewGuid()}.png");
-
-                // Cleanup previously generated screenshots
+                // Clean up only our previously generated screenshots
                 var existingScreenshots = Directory.GetFiles(
                     Path.GetTempPath(),
-                    "screenshot_*.png"
+                    "*.png"
                 );
                 foreach (var file in existingScreenshots)
                 {
@@ -86,17 +73,16 @@ namespace TimeTrackerX.Services.Implementation
                     }
                     catch
                     {
-                        // Ignore errors
+                        // Ignore errors deleting old files
                     }
                 }
 
-                // Run screencapture command
                 var process = new System.Diagnostics.Process
                 {
                     StartInfo = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = "screencapture",
-                        Arguments = $"-x \"{tempFile}\"",
+                        Arguments = $"-x \"{tempFile}\"", // -x for silent capture
                         RedirectStandardOutput = false,
                         RedirectStandardError = false,
                         UseShellExecute = false,
@@ -110,14 +96,13 @@ namespace TimeTrackerX.Services.Implementation
                 if (!File.Exists(tempFile))
                     throw new Exception($"Screenshot failed. File not found: {tempFile}");
 
-                return finalPath;
+                return tempFile;
             }
             catch (Exception ex)
             {
                 throw new Exception("Failed to capture screenshot on macOS.", ex);
             }
         }
-
 
         private async Task<string> CaptureScreenLinuxAsync()
         {

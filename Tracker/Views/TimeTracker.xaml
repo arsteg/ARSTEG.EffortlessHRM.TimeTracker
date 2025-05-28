@@ -241,7 +241,7 @@
                         <ComboBox Name="cmb" IsTextSearchEnabled="True" IsEditable="False"                      
                        Text="{Binding Path=SelectedProjectName}"
                       ItemsSource="{Binding Path=Projects}"
-                    SelectedItem="{Binding Path=SelectedProject}"
+                    SelectedItem="{Binding Path=SelectedProject, Mode=TwoWay}"
                     DisplayMemberPath="projectName" Style="{StaticResource comboBox}" MinWidth="330" MaxWidth="330"/>                        
                     </StackPanel>
                 </Grid>

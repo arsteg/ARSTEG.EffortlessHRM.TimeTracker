@@ -30,6 +30,8 @@ namespace TimeTracker.Models
 
         public const string ApiKey = "ec86b9ecfee30654";
 
+        public UserPreferencesKey userPreferenceKey { get; } = new UserPreferencesKey();
+
         public GlobalSetting() { }
 
         public static GlobalSetting Instance { get; } = new GlobalSetting();

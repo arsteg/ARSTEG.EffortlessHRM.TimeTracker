@@ -29,4 +29,14 @@ namespace TimeTracker.Models
         public string EventName { get; set; }
         public string UserId { get; set; }
     }
+
+    public class UserPreferencesKey
+    {
+        public string TrackerSelectedProject { get; } = "Tracker.SelectedProject";
+        public string ScreenshotSoundDisabled { get; } = "Tracker.ScreenshotSoundDisabled_explicit";
+        public string ScreenshotNotificationDisabled { get; } = "Tracker.ScreenshotNotificationDisabled_explicit";
+        public string ScreenshotBlur { get; } = "Tracker.ScreenshotBlur_explicit";
+        public string WeeklyHoursLimit { get; } = "Tracker.WeeklyHoursLimit_explicit";
+        public string MonthlyHoursLimit { get; } = "Tracker.MonthlyHoursLimit_explicit";
+    }
 }

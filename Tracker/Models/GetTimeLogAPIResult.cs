@@ -179,4 +179,41 @@ namespace TimeTracker.Models
     {
         public GetOnlineUsersData data { get; set; }
     }
+
+    public class PreferenceOptionId
+    {
+        public string preferenceKey { get; set; }
+        public string preferenceValue { get; set; }
+    }
+
+    public class Preference
+    {
+        public PreferenceOptionId preferenceOptionId { get; set; }
+    }
+
+    public class PreferencesData
+    {
+        public List<Preference> preferences { get; set; }
+    }
+
+    public class UserPreferencesResponse : BaseResponse
+    {
+        public PreferencesData data { get; set; }
+    }
+
+    public class UserPreferenceResult: BaseResponse
+    {
+        public bool isBeepSoundEnabled { get; set; }
+        public bool isScreenshotNotificationEnabled { get; set; }
+        public bool isBlurScreenshot { get; set; }
+        public Int32 weeklyHoursLimit { get; set; }
+        public Int32 monthlyHoursLimit { get; set; }
+    }
+
+    public class CreateUserPreferenceRequest
+    {
+        public string userId { get; set; }
+        public string preferenceKey { get; set; }
+        public string preferenceValue { get; set; }
+    }
 }

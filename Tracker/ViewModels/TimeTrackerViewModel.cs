@@ -145,6 +145,9 @@ namespace TimeTracker.ViewModels
                 DeleteTempFolder();
                 populateUserName();
                 RefreshCommandExecute();
+
+                CheckWeeklyMonthlyTimeLimit();
+
             }
             catch (Exception ex)
             {
@@ -445,6 +448,15 @@ namespace TimeTracker.ViewModels
                 if (SelectedProject != null)
                 {
                     getTaskList();
+
+                    var userSettings = Task.Run(
+                    async () => await APIService.SetUserPreferences(new CreateUserPreferenceRequest
+                    {
+                        userId = GlobalSetting.Instance.LoginResult.data.user.id,
+                        preferenceKey = GlobalSetting.Instance.userPreferenceKey.TrackerSelectedProject,
+                        preferenceValue = $"{_selectedproject._id}#{_selectedproject.projectName}"
+                    })
+                    ).Result;
                 }
             }
         }
@@ -496,6 +508,7 @@ namespace TimeTracker.ViewModels
         }
 
         private ICollectionView _tasksView;
+        private bool _isLoadingTasks = false;
 
         public bool AllowTaskSelection
         {
@@ -591,6 +604,72 @@ namespace TimeTracker.ViewModels
             }
         }
 
+        private bool _isWeeklyHoursCompleted;
+        public bool IsWeeklyHoursCompleted
+        {
+            get { return _isWeeklyHoursCompleted; }
+            set
+            {
+                _isWeeklyHoursCompleted = value;
+                OnPropertyChanged(nameof(IsWeeklyHoursCompleted));
+            }
+        }
+
+        private bool _isMonthlyHoursCompleted;
+        public bool IsMonthlyHoursCompleted
+        {
+            get { return _isMonthlyHoursCompleted; }
+            set
+            {
+                _isMonthlyHoursCompleted = value;
+                OnPropertyChanged(nameof(IsMonthlyHoursCompleted));
+            }
+        }
+
+        private Int32 _WeeklyHoursLimit;
+        public Int32 WeeklyHoursLimit
+        {
+            get { return _WeeklyHoursLimit; }
+            set
+            {
+                _WeeklyHoursLimit = value;
+                OnPropertyChanged(nameof(WeeklyHoursLimit));
+            }
+        }
+
+        private Int32 _MonthlyHoursLimit;
+        public Int32 MonthlyHoursLimit
+        {
+            get { return _MonthlyHoursLimit; }
+            set
+            {
+                _MonthlyHoursLimit = value;
+                OnPropertyChanged(nameof(MonthlyHoursLimit));
+            }
+        }
+
+        private Int32 _CurrentWeekCompletedHours;
+        public Int32 CurrentWeekCompletedHours
+        {
+            get { return _CurrentWeekCompletedHours; }
+            set
+            {
+                _CurrentWeekCompletedHours = value;
+                OnPropertyChanged(nameof(CurrentWeekCompletedHours));
+            }
+        }
+
+        private Int32 _CurrentMonthCompletedHours;
+        public Int32 CurrentMonthCompletedHours
+        {
+            get { return _CurrentMonthCompletedHours; }
+            set
+            {
+                _CurrentMonthCompletedHours = value;
+                OnPropertyChanged(nameof(CurrentMonthCompletedHours));
+            }
+        }
+
         #endregion
 
         #region commands
@@ -683,6 +762,17 @@ namespace TimeTracker.ViewModels
 
         public async void StartStopCommandExecute()
         {
+            if (!trackerIsOn)
+            {
+                if (IsWeeklyHoursCompleted || IsMonthlyHoursCompleted)
+                {
+                    var msg = IsWeeklyHoursCompleted
+                        ? "Your weekly hours have been completed."
+                        : "Your monthly hours have been completed.";
+                    await ShowErrorMessage(msg);
+                    return;
+                }
+            }
             ProgressWidthStart = 30;
             try
             {
@@ -690,6 +780,13 @@ namespace TimeTracker.ViewModels
                 {
                     idlTimeDetectionTimer.Stop();
                     CanSendReport = true;
+                    if (IsWeeklyHoursCompleted || IsMonthlyHoursCompleted)
+                    {
+                        var msg = IsWeeklyHoursCompleted
+                            ? "Your weekly hours have been completed."
+                            : "Your monthly hours have been completed.";
+                        await ShowErrorMessage(msg);
+                    }
                 }
                 else
                 {
@@ -1072,7 +1169,7 @@ namespace TimeTracker.ViewModels
                     saveDispatcherTimer = new DispatcherTimer();
                     LogManager.Logger.Info(
                         @$"lastInterval = {dispatcherTimer.Interval};\r\n                    
-                                              currentMinutes = {DateTime .UtcNow .Minute};\r\n                    
+                                              currentMinutes = {DateTime.UtcNow.Minute};\r\n                    
                                               CurrentImagePath = {filepath}"
                     );
                     saveDispatcherTimer.Tick += new EventHandler(saveTimeSlot_Tick);
@@ -1086,6 +1183,35 @@ namespace TimeTracker.ViewModels
                             )
                     );
                     task.Wait();
+
+                    #region "Check weekly/monthly time limit"
+                    if (WeeklyHoursLimit > 0)
+                    {
+                        if (CurrentWeekCompletedHours >= WeeklyHoursLimit)
+                        {
+                            IsWeeklyHoursCompleted = true;
+                            StartStopCommandExecute();
+                        }
+                        else
+                        {
+                            IsWeeklyHoursCompleted = false;
+                        }
+                    }
+
+                    else if (MonthlyHoursLimit > 0)
+                    {
+
+                        if (CurrentMonthCompletedHours >= MonthlyHoursLimit)
+                        {
+                            IsMonthlyHoursCompleted = true;
+                            StartStopCommandExecute();
+                        }
+                        else
+                        {
+                            IsMonthlyHoursCompleted = false;
+                        }
+                    }
+                    #endregion
                 }
                 LogManager.Logger.Info("dispatcherTimer_Tick completed");
             }
@@ -1133,16 +1259,23 @@ namespace TimeTracker.ViewModels
             try
             {
                 AddErrorLog("Info", $"screen captured at: {DateTime.UtcNow}");
-                currentImagePath = Utilities.TimeManager.CaptureMyScreen();
-                var playScreenCaptureSound = Task.Run(
-                    async () => await APIService.GetEnableBeepSoundSetting()
+                var userSettings = Task.Run(
+                    async () => await APIService.GetUserPreferencesSetting()
                 ).Result;
 
-                if (playScreenCaptureSound)
+                currentImagePath = Utilities.TimeManager.CaptureMyScreen(userSettings.isBlurScreenshot);
+
+                if (!userSettings.isBeepSoundEnabled)
                 {
                     PlayMedia.PlayScreenCaptureSound();
                 }
-                CanShowScreenshot = true;
+                if (!userSettings.isScreenshotNotificationEnabled)
+                {
+                    CanShowScreenshot = true;
+                }
+                WeeklyHoursLimit = userSettings.weeklyHoursLimit * 60;
+                MonthlyHoursLimit = userSettings.monthlyHoursLimit * 60;
+
                 Countdown(
                     10,
                     TimeSpan.FromSeconds(1),
@@ -1342,6 +1475,7 @@ namespace TimeTracker.ViewModels
             var currentWeekTimeTracked = await GetCurrrentWeekTimeTracked();
             if (currentWeekTimeTracked != null)
             {
+                CurrentWeekCompletedHours = (int)currentWeekTimeTracked.Value.TotalMinutes;
                 CurrentWeekTimeTracked =
                     $" {(currentWeekTimeTracked?.Days * 24) + currentWeekTimeTracked?.Hours} hrs {currentWeekTimeTracked?.Minutes.ToString("00")} m";
             }
@@ -1349,6 +1483,7 @@ namespace TimeTracker.ViewModels
             var currentMonthTimeTracked = await GetCurrrentMonthTimeTracked();
             if (currentMonthTimeTracked != null)
             {
+                CurrentMonthCompletedHours = (int)currentMonthTimeTracked.Value.TotalMinutes;
                 CurrentMonthTimeTracked =
                     $"{(currentMonthTimeTracked?.Days * 24) + currentMonthTimeTracked?.Hours} hrs {currentMonthTimeTracked?.Minutes.ToString("00")} m";
             }
@@ -1478,6 +1613,8 @@ namespace TimeTracker.ViewModels
 
         private async Task getTaskList()
         {
+            if (_isLoadingTasks) return;  // prevent multiple concurrent calls
+            _isLoadingTasks = true;
             ProgressWidthStart = 30;
             try
             {
@@ -1541,6 +1678,7 @@ namespace TimeTracker.ViewModels
             }
             finally
             {
+                _isLoadingTasks = false;
                 ProgressWidthStart = 0;
             }
         }
@@ -1611,6 +1749,15 @@ namespace TimeTracker.ViewModels
             if (projectList != null && projectList.status == "success" && projectList.data != null)
             {
                 Projects = projectList.data.projectList;
+                var projectData = await APIService.GetUserPreferencesByKey();
+                if (SelectedProject == null)
+                {
+                    if (projectData != null)
+                    {
+                        SelectedProject = projectData;
+                        SelectedProjectName = SelectedProject.projectName;
+                    }
+                }
             }
         }
 
@@ -2151,6 +2298,53 @@ namespace TimeTracker.ViewModels
                 LogManager.Logger.Error($"Error while saveBrowserHistory(): {ex}");
             }
         }
+
+        private async Task CheckWeeklyMonthlyTimeLimit()
+        {
+            var userSettings = await APIService.GetUserPreferencesSetting();
+            WeeklyHoursLimit = userSettings.weeklyHoursLimit * 60;
+            MonthlyHoursLimit = userSettings.monthlyHoursLimit * 60;
+
+            // Weekly check
+            if (WeeklyHoursLimit > 0)
+            {
+                var weeklyTracked = await GetCurrrentWeekTimeTracked();
+                if (weeklyTracked != null)
+                {
+                    var weeklyMinutes = (int)weeklyTracked.Value.TotalMinutes;
+                    CurrentWeekTimeTracked =
+                        $"{(weeklyTracked.Value.Days * 24) + weeklyTracked.Value.Hours} hrs {weeklyTracked.Value.Minutes:00} m";
+
+                    if (weeklyMinutes >= WeeklyHoursLimit)
+                    {
+                        IsWeeklyHoursCompleted = true;
+                        await ShowErrorMessage("Your weekly hours have been completed.");
+                        return;
+                    }
+                }
+                IsWeeklyHoursCompleted = false;
+            }
+
+            // Monthly check
+            if (MonthlyHoursLimit > 0)
+            {
+                var monthlyTracked = await GetCurrrentMonthTimeTracked();
+                if (monthlyTracked != null)
+                {
+                    var monthlyMinutes = (int)monthlyTracked.Value.TotalMinutes;
+                    CurrentMonthTimeTracked =
+                        $"{(monthlyTracked.Value.Days * 24) + monthlyTracked.Value.Hours} hrs {monthlyTracked.Value.Minutes:00} m";
+
+                    if (monthlyMinutes >= MonthlyHoursLimit)
+                    {
+                        IsMonthlyHoursCompleted = true;
+                        await ShowErrorMessage("Your monthly hours have been completed.");
+                        return;
+                    }
+                }
+                IsMonthlyHoursCompleted = false;
+            }
+        }
         #endregion
 
         #region "Web socket"
@@ -2205,7 +2399,8 @@ namespace TimeTracker.ViewModels
                             Encoding.UTF8.GetString(buffer, 0, result.Count)
                         );
 
-                        Thread thread = new Thread(() => {
+                        Thread thread = new Thread(() =>
+                        {
                             //DispatcherTimerThread(shareLiveScreen);
                         });
 

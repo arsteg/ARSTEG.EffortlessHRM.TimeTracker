@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -344,6 +345,101 @@ namespace TimeTracker.Services
                 Debug.WriteLine(@"\tERROR {0}", ex.Message);
             }
             return res;
+        }
+
+        public async Task<UserPreferenceResult> GetUserPreferencesSetting(string url)
+        {
+            var result = new UserPreferenceResult
+            {
+                isBlurScreenshot = false,
+                isBeepSoundEnabled = false,
+                isScreenshotNotificationEnabled = false
+            };
+
+            try
+            {
+                var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
+                var root = await _httpProvider.GetWithTokenAsync<UserPreferencesResponse>(
+                    uri,
+                    GlobalSetting.Instance.LoginResult.token
+                );
+
+                if (root == null || root.data?.preferences == null)
+                {
+                    return result;
+                }
+
+                result.status = root.status;
+                result.message = root.message;
+                result.statusCode = root.statusCode;
+                var preferences = root.data.preferences;
+
+                string GetValue(string key) =>
+                    preferences.FirstOrDefault(p => p.preferenceOptionId?.preferenceKey == key)
+                       ?.preferenceOptionId?.preferenceValue;
+
+                result.isBeepSoundEnabled = GetValue(GlobalSetting.Instance.userPreferenceKey.ScreenshotSoundDisabled)?.ToLower() == "true";
+                result.isScreenshotNotificationEnabled = GetValue(GlobalSetting.Instance.userPreferenceKey.ScreenshotNotificationDisabled)?.ToLower() == "true";
+                result.isBlurScreenshot = GetValue(GlobalSetting.Instance.userPreferenceKey.ScreenshotBlur)?.ToLower() == "true";
+                result.weeklyHoursLimit = int.TryParse(GetValue(GlobalSetting.Instance.userPreferenceKey.WeeklyHoursLimit), out var weeklyLimit)
+                    ? weeklyLimit : 0;
+                result.monthlyHoursLimit = int.TryParse(GetValue(GlobalSetting.Instance.userPreferenceKey.MonthlyHoursLimit), out var monthlyLimit)
+                    ? monthlyLimit : 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"\tERROR {ex.Message}");
+                result.status = "error";
+                result.message = ex.Message;
+                result.statusCode = HttpStatusCode.InternalServerError;
+            }
+
+            return result;
+        }
+
+        public async Task<BaseResponse> SetUserPreferences(string url, CreateUserPreferenceRequest createUserPreferenceRequest)
+        {
+            var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
+            var res = await _httpProvider.PostWithTokenAsync<BaseResponse, CreateUserPreferenceRequest>(
+                uri,
+                createUserPreferenceRequest,
+                GlobalSetting.Instance.LoginResult.token
+            );
+            return res;
+        }
+
+        public async Task<Project> GetUserPreferencesSettingByKey(string url)
+        {
+            try
+            {
+                var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
+                var root = await _httpProvider.GetWithTokenAsync<UserPreferencesResponse>(
+                    uri,
+                    GlobalSetting.Instance.LoginResult.token
+                );
+
+                var preferenceValue = root?.data?.preferences?.FirstOrDefault()?.preferenceOptionId?.preferenceValue;
+
+                if (!string.IsNullOrWhiteSpace(preferenceValue))
+                {
+                    var parts = preferenceValue.Split('#');
+                    if (parts.Length >= 2)
+                    {
+                        if (parts[0].Length > 0 && parts[1].Length > 0)
+                            return new Project
+                            {
+                                _id = parts[0],
+                                projectName = parts[1]
+                            };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ERROR: {ex.Message}");
+            }
+
+            return null;
         }
         #endregion
 

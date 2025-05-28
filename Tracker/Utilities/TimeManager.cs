@@ -64,7 +64,7 @@ namespace TimeTracker.Utilities
             return result;
         }
 
-        public static string CaptureMyScreen()
+        public static string CaptureMyScreen(bool isBlured = false)
         {
             Bitmap bitmap;
             string result = null;
@@ -90,6 +90,11 @@ namespace TimeTracker.Utilities
                 g.CopyFromScreen(screenLeft, screenTop, 0, 0, bitmap.Size);
             }
 
+            if (isBlured)
+            {
+                bitmap = ApplyBlur(bitmap); // Replace original with blurred version
+            }
+
             IntPtr handle = IntPtr.Zero;
             try
             {
@@ -113,6 +118,79 @@ namespace TimeTracker.Utilities
                 DeleteObject(handle);
             }
             return result;
+        }
+
+        public static Bitmap ApplyBlur(Bitmap image, int blurRadius = 5)
+        {
+            Bitmap blurred = new Bitmap(image.Width, image.Height);
+            int bytesPerPixel = 3;
+
+            BitmapData srcData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
+                ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData dstData = blurred.LockBits(new Rectangle(0, 0, blurred.Width, blurred.Height),
+                ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+
+            int stride = srcData.Stride;
+            byte[] srcPixels = new byte[srcData.Stride * srcData.Height];
+            byte[] tempPixels = new byte[srcData.Stride * srcData.Height];
+            byte[] dstPixels = new byte[dstData.Stride * dstData.Height];
+
+            System.Runtime.InteropServices.Marshal.Copy(srcData.Scan0, srcPixels, 0, srcPixels.Length);
+
+            // Horizontal pass
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    int red = 0, green = 0, blue = 0, count = 0;
+                    for (int kx = -blurRadius; kx <= blurRadius; kx++)
+                    {
+                        int nx = x + kx;
+                        if (nx >= 0 && nx < image.Width)
+                        {
+                            int pixelOffset = y * stride + nx * bytesPerPixel;
+                            blue += srcPixels[pixelOffset];
+                            green += srcPixels[pixelOffset + 1];
+                            red += srcPixels[pixelOffset + 2];
+                            count++;
+                        }
+                    }
+                    int dstOffset = y * stride + x * bytesPerPixel;
+                    tempPixels[dstOffset] = (byte)(blue / count);
+                    tempPixels[dstOffset + 1] = (byte)(green / count);
+                    tempPixels[dstOffset + 2] = (byte)(red / count);
+                }
+            }
+
+            // Vertical pass
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    int red = 0, green = 0, blue = 0, count = 0;
+                    for (int ky = -blurRadius; ky <= blurRadius; ky++)
+                    {
+                        int ny = y + ky;
+                        if (ny >= 0 && ny < image.Height)
+                        {
+                            int pixelOffset = ny * stride + x * bytesPerPixel;
+                            blue += tempPixels[pixelOffset];
+                            green += tempPixels[pixelOffset + 1];
+                            red += tempPixels[pixelOffset + 2];
+                            count++;
+                        }
+                    }
+                    int dstOffset = y * stride + x * bytesPerPixel;
+                    dstPixels[dstOffset] = (byte)(blue / count);
+                    dstPixels[dstOffset + 1] = (byte)(green / count);
+                    dstPixels[dstOffset + 2] = (byte)(red / count);
+                }
+            }
+
+            System.Runtime.InteropServices.Marshal.Copy(dstPixels, 0, dstData.Scan0, dstPixels.Length);
+            image.UnlockBits(srcData);
+            blurred.UnlockBits(dstData);
+            return blurred;
         }
 
         private static ImageCodecInfo GetEncoder(ImageFormat format)

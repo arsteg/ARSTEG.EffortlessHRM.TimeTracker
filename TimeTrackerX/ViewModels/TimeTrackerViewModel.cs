@@ -153,10 +153,10 @@ namespace TimeTrackerX.ViewModels
                     var idleTime = GetIdleTime();
 
 
-                    if (idleTime.TotalMinutes >= 4)
+                    if (idleTime >= 4)
                     {
                         var box = MessageBoxManager
-            .GetMessageBoxStandard("IdleTime", "Idle time > 4",
+            .GetMessageBoxStandard("IdleTime", idleTime.ToString(),
                 ButtonEnum.Ok);
 
                         var result = await box.ShowAsync();
@@ -529,15 +529,16 @@ namespace TimeTrackerX.ViewModels
             ProgressWidthStart = 30;
             try
             {
+                _lastInputTime = DateTime.UtcNow;
                 if (_trackerIsOn)
                 {
                     idlTimeDetectionTimer.Stop();
                     CanSendReport = true;
-                    
+
                 }
                 else
                 {
-                    
+
                     idlTimeDetectionTimer.Start();
                     CanSendReport = false;
                 }
@@ -880,9 +881,9 @@ namespace TimeTrackerX.ViewModels
             _lastInputTime = DateTime.UtcNow;
         }
 
-        private TimeSpan GetIdleTime()
+        private int GetIdleTime()
         {
-            return DateTime.UtcNow - _lastInputTime;
+            return DateTime.UtcNow.Subtract(_lastInputTime).Minutes;
         }
 
         private async Task<string> CaptureScreen()

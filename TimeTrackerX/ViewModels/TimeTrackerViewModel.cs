@@ -111,20 +111,20 @@ namespace TimeTrackerX.ViewModels
 
         private void Hook_MouseWheel(object? sender, MouseWheelHookEventArgs e)
         {
+            IdleTimeDetector.UpdateLastInputTime();
             _totalMouseScrolls++;
-            UpdateLastInputTime();
         }
 
         private void Hook_MouseClicked(object? sender, MouseHookEventArgs e)
         {
+            IdleTimeDetector.UpdateLastInputTime();
             _totalMouseClicks++;
-            UpdateLastInputTime();
         }
 
         private void Hook_KeyPressed(object? sender, KeyboardHookEventArgs e)
         {
-             _totalKeysPressed++;
-            UpdateLastInputTime();
+            IdleTimeDetector.UpdateLastInputTime();
+            _totalKeysPressed++;
             // Check if the key is not a control key (like Shift, Alt, Ctrl)
             if (e.Data.KeyCode != KeyCode.VcLeftAlt && e.Data.KeyCode != KeyCode.VcRightAlt && e.Data.KeyCode != KeyCode.VcLeftShift && e.Data.KeyCode != KeyCode.VcRightShift)
             { // Use the KeyCode to get the actual readable key
@@ -150,10 +150,8 @@ namespace TimeTrackerX.ViewModels
                 
                 if (_trackerIsOn || _userIsInactive)
                 {
-                    var idleTime = GetIdleTime();
-
-
-                    if (idleTime >= 4)
+                    TimeSpan idleTime = IdleTimeDetector.GetIdleTime();
+                    if (idleTime.TotalMinutes >= 4)
                     {
                         var box = MessageBoxManager
             .GetMessageBoxStandard("IdleTime", idleTime.ToString(),
@@ -529,7 +527,6 @@ namespace TimeTrackerX.ViewModels
             ProgressWidthStart = 30;
             try
             {
-                _lastInputTime = DateTime.UtcNow;
                 if (_trackerIsOn)
                 {
                     idlTimeDetectionTimer.Stop();
@@ -538,7 +535,7 @@ namespace TimeTrackerX.ViewModels
                 }
                 else
                 {
-
+                    IdleTimeDetector.Initialize();
                     idlTimeDetectionTimer.Start();
                     CanSendReport = false;
                 }

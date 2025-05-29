@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Avalonia.Controls;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -7,47 +8,21 @@ namespace TimeTrackerX.Utilities
 {
     public static class IdleTimeDetector
     {
-        [DllImport("user32.dll")]
-        static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+        private static DateTime _lastInputTime;
 
-        public static IdleTimeInfo GetIdleTimeInfo()
+        public static void Initialize()
         {
-            int systemUptime = Environment.TickCount,
-                lastInputTicks = 0,
-                idleTicks = 0;
-
-            LASTINPUTINFO lastInputInfo = new LASTINPUTINFO();
-            lastInputInfo.cbSize = (uint)Marshal.SizeOf(lastInputInfo);
-            lastInputInfo.dwTime = 0;
-
-            if (GetLastInputInfo(ref lastInputInfo))
-            {
-                lastInputTicks = (int)lastInputInfo.dwTime;
-
-                idleTicks = systemUptime - lastInputTicks;
-            }
-
-            return new IdleTimeInfo
-            {
-                LastInputTime = DateTime.UtcNow.AddMilliseconds(-1 * idleTicks),
-                IdleTime = new TimeSpan(0, 0, 0, 0, idleTicks),
-                SystemUptimeMilliseconds = systemUptime,
-            };
+            _lastInputTime = DateTime.UtcNow;
         }
 
-        public class IdleTimeInfo
+        public static void UpdateLastInputTime()
         {
-            public DateTime LastInputTime { get; internal set; }
-
-            public TimeSpan IdleTime { get; internal set; }
-
-            public int SystemUptimeMilliseconds { get; internal set; }
+            _lastInputTime = DateTime.UtcNow;
         }
 
-        internal struct LASTINPUTINFO
+        public static TimeSpan GetIdleTime()
         {
-            public uint cbSize;
-            public uint dwTime;
+            return DateTime.UtcNow.Subtract(_lastInputTime);
         }
     }
 }

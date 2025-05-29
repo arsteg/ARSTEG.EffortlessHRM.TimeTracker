@@ -116,14 +116,10 @@ namespace TimeTrackerX.ViewModels
             _totalMouseScrolls++;
         }
 
-        private async void Hook_MouseClicked(object? sender, MouseHookEventArgs e)
+        private void Hook_MouseClicked(object? sender, MouseHookEventArgs e)
         {
             IdleTimeDetector.UpdateLastInputTime();
-            var box = MessageBoxManager
-            .GetMessageBoxStandard("Mouse Clicked","",
-                ButtonEnum.Ok);
-
-            var result = await box.ShowAsync();
+            
             _totalMouseClicks++;
         }
 
@@ -328,7 +324,7 @@ namespace TimeTrackerX.ViewModels
             hook.KeyPressed += Hook_KeyPressed; ;       // EventHandler<KeyboardHookEventArgs>
             hook.MouseClicked += Hook_MouseClicked; ;   // EventHandler<MouseHookEventArgs>
             hook.MouseWheel += Hook_MouseWheel; ;       // EventHandler<MouseWheelHookEventArgs>
-            hook.RunAsync();
+            hook.Run();
         }
 
         private void InitializeUI()

@@ -41,12 +41,12 @@ namespace TimeTrackerX.ViewModels
 
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private DispatcherTimer idlTimeDetectionTimer = new DispatcherTimer();
-        private Timer saveDispatcherTimer = new Timer();
-        private Timer deleteImagePath = new Timer();
-        private Timer usedAppDetector = new Timer();
+        private DispatcherTimer saveDispatcherTimer = new DispatcherTimer();
+        private DispatcherTimer deleteImagePath = new DispatcherTimer();
+        private DispatcherTimer usedAppDetector = new DispatcherTimer();
 
-        private Timer shareLiveScreen = new Timer();
-        private Timer checkForLiveScreen = new Timer();
+        private DispatcherTimer shareLiveScreen = new DispatcherTimer();
+        private DispatcherTimer checkForLiveScreen = new DispatcherTimer();
 
         private System.Threading.Timer _sendImageRegularly;
         private double _frequencyOfLiveImage = 1000;
@@ -203,9 +203,9 @@ namespace TimeTrackerX.ViewModels
                     {
                         CanShowScreenshot = true;
                     });
-                    saveDispatcherTimer = new Timer();
-                    saveDispatcherTimer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
-                    saveDispatcherTimer.Elapsed += SaveTimeSlot_Tick;
+                    saveDispatcherTimer = new DispatcherTimer();
+                    saveDispatcherTimer.Interval = TimeSpan.FromSeconds(10);
+                    saveDispatcherTimer.Tick += SaveDispatcherTimer_Tick;             
                     saveDispatcherTimer.Start();
                     await saveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now);
                 }
@@ -213,6 +213,32 @@ namespace TimeTrackerX.ViewModels
             catch (Exception ex)
             {
                 TempLog($"DispatcherTimer error: {ex.Message}");
+            }
+        }
+
+        private async void SaveDispatcherTimer_Tick(object? sender, EventArgs e)
+        {
+            try
+            {
+                CanShowScreenshot = false;
+                var (timeLog, statusCode) = await SaveTimeSlot(CurrentImagePath);
+                if (statusCode == HttpStatusCode.Unauthorized)
+                {
+                    await StartStopCommandExecute();
+                    await ShowErrorMessage("Unauthorized access detected. You will be logged out.");
+                    await LogoutCommandExecute();
+                }
+                _totalKeysPressed = 0;
+                _totalMouseClicks = 0;
+                _totalMouseScrolls = 0;
+                ShowTimeTracked(false);
+                ShowCurrentTimeTracked();
+                saveDispatcherTimer.Stop();
+                CurrentInput = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                TempLog($"SaveTimeSlot error: {ex.Message}");
             }
         }
 

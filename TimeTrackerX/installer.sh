@@ -7,7 +7,7 @@ dotnet build TimeTrackerX.csproj -c Release
 
 # Step 2: Publish the application
 echo "[INFO] Publishing the application..."
-dotnet publish TimeTrackerX.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=false -o ./publish/universal
+dotnet publish TimeTrackerX.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=false -p:PublishTrimmed=false -o ./publish/universal
 
 
 # Step 3: Create .app bundle
@@ -43,8 +43,5 @@ cp -r "$OUTPUT_DIR/"* "${APP_BUNDLE}/Contents/MacOS/"
 
 echo "[INFO] .app bundle created at: $APP_BUNDLE"
 
-# Step 3.5: Remove Windows-only files not valid on macOS
-echo "[INFO] Removing .pdb files and .dll.config files..."
-find "$APP_BUNDLE" -name "*.pdb" -delete
-find "$APP_BUNDLE" -name "*.dll.config" -delete
+
 

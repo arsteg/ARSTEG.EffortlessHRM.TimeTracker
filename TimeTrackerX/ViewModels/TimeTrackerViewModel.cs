@@ -115,9 +115,14 @@ namespace TimeTrackerX.ViewModels
             _totalMouseScrolls++;
         }
 
-        private void Hook_MouseClicked(object? sender, MouseHookEventArgs e)
+        private async void Hook_MouseClicked(object? sender, MouseHookEventArgs e)
         {
             IdleTimeDetector.UpdateLastInputTime();
+            var box = MessageBoxManager
+            .GetMessageBoxStandard("Mouse Clicked","",
+                ButtonEnum.Ok);
+
+            var result = await box.ShowAsync();
             _totalMouseClicks++;
         }
 
@@ -154,7 +159,7 @@ namespace TimeTrackerX.ViewModels
                     if (idleTime.TotalMinutes >= 4)
                     {
                         var box = MessageBoxManager
-            .GetMessageBoxStandard("IdleTime", idleTime.ToString(),
+            .GetMessageBoxStandard("IdleTime", idleTime.TotalMinutes.ToString(),
                 ButtonEnum.Ok);
 
                         var result = await box.ShowAsync();

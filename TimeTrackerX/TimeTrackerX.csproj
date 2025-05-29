@@ -40,8 +40,8 @@
     <PackageReference Include="SendGrid" Version="9.29.3" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
-    <PackageReference Include="SharpHook" Version="5.3.9" />
-    <PackageReference Include="SharpHook.Reactive" Version="5.3.9" />
+    <PackageReference Include="SharpHook" Version="6.1.0" />
+    <PackageReference Include="SharpHook.Reactive" Version="6.1.0" />
     <PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.0-preview.1.2" />
     <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.0-preview.1.2" />

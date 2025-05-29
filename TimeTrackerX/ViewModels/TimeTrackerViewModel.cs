@@ -26,6 +26,7 @@ using TimeTrackerX.Services;
 using TimeTrackerX.Services.Interfaces;
 using TimeTrackerX.Utilities;
 using Timer = System.Timers.Timer;
+using SharpHook.Data;
 
 namespace TimeTrackerX.ViewModels
 {

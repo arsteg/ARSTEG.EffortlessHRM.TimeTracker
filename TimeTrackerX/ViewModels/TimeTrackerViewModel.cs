@@ -17,6 +17,8 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia;
 using SharpHook;
 using SharpHook.Native;
 using TimeTrackerX.Models;
@@ -153,6 +155,11 @@ namespace TimeTrackerX.ViewModels
 
                     if (idleTime.TotalMinutes >= 4)
                     {
+                        var box = MessageBoxManager
+            .GetMessageBoxStandard("IdleTime", "Idle time > 4",
+                ButtonEnum.Ok);
+
+                        var result = await box.ShowAsync();
                         await SetTrackerStatus();
                         CanSendReport = true;
                         _userIsInactive = true;
@@ -160,6 +167,11 @@ namespace TimeTrackerX.ViewModels
                     }
                     else
                     {
+                        var box = MessageBoxManager
+            .GetMessageBoxStandard("IdleTime", "Idle time less than 4",
+                ButtonEnum.Ok);
+
+                        var result = await box.ShowAsync();
                         if (!_trackerIsOn)
                         {
                             SetTrackerStatus().Wait();

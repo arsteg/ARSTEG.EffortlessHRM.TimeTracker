@@ -155,11 +155,7 @@ namespace TimeTrackerX.ViewModels
                     TimeSpan idleTime = IdleTimeDetector.GetIdleTime();
                     if (idleTime.TotalMinutes >= 4)
                     {
-                        var box = MessageBoxManager
-            .GetMessageBoxStandard("IdleTime", idleTime.TotalMinutes.ToString(),
-                ButtonEnum.Ok);
-
-                        var result = await box.ShowAsync();
+                        
                         await SetTrackerStatus();
                         CanSendReport = true;
                         _userIsInactive = true;
@@ -167,11 +163,7 @@ namespace TimeTrackerX.ViewModels
                     }
                     else
                     {
-                        var box = MessageBoxManager
-            .GetMessageBoxStandard("IdleTime", "Idle time less than 4",
-                ButtonEnum.Ok);
-
-                        var result = await box.ShowAsync();
+                        
                         if (!_trackerIsOn)
                         {
                             SetTrackerStatus().Wait();
@@ -324,7 +316,7 @@ namespace TimeTrackerX.ViewModels
             hook.KeyPressed += Hook_KeyPressed; ;       // EventHandler<KeyboardHookEventArgs>
             hook.MouseClicked += Hook_MouseClicked; ;   // EventHandler<MouseHookEventArgs>
             hook.MouseWheel += Hook_MouseWheel; ;       // EventHandler<MouseWheelHookEventArgs>
-            hook.Run();
+            hook.RunAsync();
         }
 
         private void InitializeUI()

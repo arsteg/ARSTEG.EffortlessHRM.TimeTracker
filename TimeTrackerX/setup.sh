@@ -25,7 +25,7 @@ cp -R ./TimeTrackerX.app /Applications/
 
 # Remove the quarantine attribute
 echo "Removing quarantine attribute..."
-xattr -d com.apple.quarantine /Applications/TimeTrackerX.app || echo "Quarantine attribute not found or already removed."
+xattr -rd com.apple.quarantine /Applications/TimeTrackerX.app
 
 # Ask user to grant Accessibility access
 echo "Checking Accessibility access for TimeTrackerX.app..."

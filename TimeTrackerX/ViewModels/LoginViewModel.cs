@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Windows;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
@@ -25,8 +24,9 @@ namespace TimeTrackerX.ViewModels
         public LoginViewModel()
         {
             logger = LogManager.GetCurrentClassLogger();
+            logger.Info("LoginViewModel constructor starts");
+
             this.configuration = configuration;
-            logger.Info($"constructor starts");
             LoginCommand = new RelayCommand(async () => await LoginCommandExecuteAsync());
             CloseCommand = new RelayCommand(CloseCommandExecute);
             OpenForgotPasswordCommand = new RelayCommand(OpenForgotPasswordCommandExecute);
@@ -34,8 +34,8 @@ namespace TimeTrackerX.ViewModels
             OpenSocialMediaPageCommand = new RelayCommand<string>(
                 OpenSocialMediaPageCommandCommandExecute
             );
-            //configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            logger.Info($"constructor ends");
+
+            logger.Info("LoginViewModel constructor ends");
         }
         #endregion
 
@@ -45,7 +45,6 @@ namespace TimeTrackerX.ViewModels
         public RelayCommand OpenForgotPasswordCommand { get; set; }
         public RelayCommand OpenSignUpPageCommand { get; set; }
         public RelayCommand<string> OpenSocialMediaPageCommand { get; set; }
-
         #endregion
 
         #region public properties
@@ -55,6 +54,7 @@ namespace TimeTrackerX.ViewModels
             get { return username; }
             set
             {
+                logger.Debug($"UserName set to: {value}");
                 username = value;
                 OnPropertyChanged(nameof(UserName));
             }
@@ -66,6 +66,7 @@ namespace TimeTrackerX.ViewModels
             get { return password; }
             set
             {
+                logger.Debug("Password set");
                 password = value;
                 OnPropertyChanged(nameof(Password));
             }
@@ -77,7 +78,8 @@ namespace TimeTrackerX.ViewModels
             get { return rememberMe; }
             set
             {
-                logger.Info($"remember me setter starts");
+                logger.Info("RememberMe setter starts");
+                logger.Debug($"RememberMe set to: {value}");
                 rememberMe = value;
                 OnPropertyChanged(nameof(RememberMe));
                 SaveUserCredentials(
@@ -85,7 +87,7 @@ namespace TimeTrackerX.ViewModels
                     rememberMe ? UserName : "",
                     rememberMe ? Password : ""
                 );
-                logger.Info($"remember me setter ends");
+                logger.Info("RememberMe setter ends");
             }
         }
 
@@ -95,6 +97,7 @@ namespace TimeTrackerX.ViewModels
             get { return enableLoginButton; }
             set
             {
+                logger.Debug($"EnableLoginButton set to: {value}");
                 enableLoginButton = value;
                 OnPropertyChanged(nameof(EnableLoginButton));
             }
@@ -106,6 +109,7 @@ namespace TimeTrackerX.ViewModels
             get { return progressWidth; }
             set
             {
+                logger.Debug($"ProgressWidth set to: {value}");
                 progressWidth = value;
                 OnPropertyChanged(nameof(ProgressWidth));
             }
@@ -117,30 +121,34 @@ namespace TimeTrackerX.ViewModels
             get { return errorMessage; }
             set
             {
+                logger.Debug($"ErrorMessage set to: {value}");
                 errorMessage = value;
                 OnPropertyChanged(nameof(ErrorMessage));
             }
         }
-
         #endregion
 
         #region public methods
         public async Task LoginCommandExecute()
         {
+            logger.Info("LoginCommandExecute starts");
+
             EnableLoginButton = false;
             try
             {
                 ErrorMessage = "";
-                logger.Info("login command execution starts");
+                logger.Debug("Validating credentials");
 
                 if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
                 {
                     ErrorMessage = "Invalid credentials, Please try again";
+                    logger.Warn("Empty username or password");
                     return;
                 }
-                ProgressWidth = 30;
-                ErrorMessage = "";
 
+                ProgressWidth = 30;
+
+                logger.Info("Calling REST.SignIn");
                 var rest = new REST(new HttpProviders());
 
                 var result = await rest.SignIn(
@@ -149,11 +157,12 @@ namespace TimeTrackerX.ViewModels
 
                 if (result.status == "success")
                 {
-                    logger.Info("SignIn is successful");
+                    logger.Info("SignIn succeeded");
                     GlobalSetting.Instance.LoginResult = result;
 
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
+                        logger.Info("Closing LoginView if exists");
                         if (GlobalSetting.Instance.LoginView != null)
                         {
                             GlobalSetting.Instance.LoginView.Close();
@@ -162,12 +171,12 @@ namespace TimeTrackerX.ViewModels
 
                         if (GlobalSetting.Instance.TimeTracker == null)
                         {
-                            logger.Info("Creating the instance of TimeTracker");
+                            logger.Info("Creating TimeTracker instance");
                             GlobalSetting.Instance.TimeTracker =
                                 new TimeTrackerX.Views.TimeTrackerView();
                         }
 
-                        logger.Info("Showing the instance of TimeTracker");
+                        logger.Info("Showing TimeTracker");
                         GlobalSetting.Instance.TimeTracker.Show();
                     });
 
@@ -180,20 +189,20 @@ namespace TimeTrackerX.ViewModels
                 else
                 {
                     ErrorMessage = "Invalid credentials, Please try again";
+                    logger.Warn("SignIn returned non-success status");
                 }
 
-                logger.Info("login command execution ends");
+                logger.Info("LoginCommandExecute ends");
             }
             catch (ServiceAuthenticationException ex)
             {
                 ErrorMessage = "Invalid credentials, Please try again";
-                logger.Error(ex);
+                logger.Error(ex, "ServiceAuthenticationException occurred");
             }
             catch (Exception ex)
             {
-                ErrorMessage =
-                    $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";
-                logger.Error(ex);
+                ErrorMessage = $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";
+                logger.Error(ex, "Unexpected exception occurred during login");
             }
             finally
             {
@@ -202,52 +211,83 @@ namespace TimeTrackerX.ViewModels
             }
         }
 
-
         public void CloseCommandExecute()
         {
-            //Application.Current.Shutdown();
+            logger.Info("CloseCommandExecute called");
+            // Application.Current.Shutdown(); // Not used currently
         }
 
         public void OpenForgotPasswordCommandExecute()
         {
-            string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/forgotPassword";
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            logger.Info("OpenForgotPasswordCommandExecute called");
+            try
+            {
+                string url = configuration.GetSection("ApplicationBaseUrl").Value + "#/forgotPassword";
+                logger.Debug($"Opening Forgot Password URL: {url}");
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to open Forgot Password page");
+            }
         }
 
         public void OpenSignUpPageCommandExecute()
         {
-            string url = configuration.GetSection("SignUpUrl").Value;
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            logger.Info("OpenSignUpPageCommandExecute called");
+            try
+            {
+                string url = configuration.GetSection("SignUpUrl").Value;
+                logger.Debug($"Opening SignUp URL: {url}");
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to open Sign Up page");
+            }
         }
 
-        private async Task ShowMessageBox(string title, string message)
-        {
-            var messageBox = MessageBoxManager
-                .GetMessageBoxStandard(title, message, ButtonEnum.Ok);
-            await messageBox.ShowAsync();
-        }
         public void OpenSocialMediaPageCommandCommandExecute(string pageName)
         {
-            string url = configuration.GetSection(pageName).Value;
-
-            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            logger.Info($"OpenSocialMediaPageCommandCommandExecute called with page: {pageName}");
+            try
+            {
+                string url = configuration.GetSection(pageName).Value;
+                logger.Debug($"Opening social media URL: {url}");
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Failed to open social media page: {pageName}");
+            }
         }
-
         #endregion
 
         #region Private Methods
         private async Task LoginCommandExecuteAsync()
         {
+            logger.Info("LoginCommandExecuteAsync called");
             await LoginCommandExecute();
         }
 
         private void SaveUserCredentials(bool rememberMe, string userName, string password)
         {
-            if (rememberMe)
+            logger.Info("SaveUserCredentials called");
+            logger.Debug($"rememberMe: {rememberMe}, userName: {userName}, password: {(string.IsNullOrEmpty(password) ? "[EMPTY]" : "[SET]")}");
+
+            try
             {
-                Properties.Settings.Default.userName = userName;
-                Properties.Settings.Default.userPassword = password;
-                Properties.Settings.Default.Save();
+                if (rememberMe)
+                {
+                    Properties.Settings.Default.userName = userName;
+                    Properties.Settings.Default.userPassword = password;
+                    Properties.Settings.Default.Save();
+                    logger.Info("User credentials saved");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to save user credentials");
             }
         }
 

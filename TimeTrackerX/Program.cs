@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using NLog;
 using System;
 
 namespace TimeTrackerX
@@ -12,6 +13,8 @@ namespace TimeTrackerX
         public static void Main(string[] args) => BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
 
+        // create a static logger field
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()

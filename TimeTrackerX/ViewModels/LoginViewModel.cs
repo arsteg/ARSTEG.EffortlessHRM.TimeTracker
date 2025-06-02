@@ -9,8 +9,8 @@ using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using TimeTrackerX.Models;
 using TimeTrackerX.Services;
-using TimeTrackerX.Trace;
 using TimeTrackerX.ViewModels;
+using NLog;
 
 namespace TimeTrackerX.ViewModels
 {
@@ -18,13 +18,15 @@ namespace TimeTrackerX.ViewModels
     {
         #region private members
         private IConfiguration configuration;
+        private static Logger logger;
         #endregion
 
         #region constructor
         public LoginViewModel()
         {
+            logger = LogManager.GetCurrentClassLogger();
             this.configuration = configuration;
-            LogManager.Logger.Info($"constructor starts");
+            logger.Info($"constructor starts");
             LoginCommand = new RelayCommand(async () => await LoginCommandExecuteAsync());
             CloseCommand = new RelayCommand(CloseCommandExecute);
             OpenForgotPasswordCommand = new RelayCommand(OpenForgotPasswordCommandExecute);
@@ -33,7 +35,7 @@ namespace TimeTrackerX.ViewModels
                 OpenSocialMediaPageCommandCommandExecute
             );
             //configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            LogManager.Logger.Info($"constructor ends");
+            logger.Info($"constructor ends");
         }
         #endregion
 
@@ -75,7 +77,7 @@ namespace TimeTrackerX.ViewModels
             get { return rememberMe; }
             set
             {
-                LogManager.Logger.Info($"remember me setter starts");
+                logger.Info($"remember me setter starts");
                 rememberMe = value;
                 OnPropertyChanged(nameof(RememberMe));
                 SaveUserCredentials(
@@ -83,7 +85,7 @@ namespace TimeTrackerX.ViewModels
                     rememberMe ? UserName : "",
                     rememberMe ? Password : ""
                 );
-                LogManager.Logger.Info($"remember me setter ends");
+                logger.Info($"remember me setter ends");
             }
         }
 
@@ -129,7 +131,7 @@ namespace TimeTrackerX.ViewModels
             try
             {
                 ErrorMessage = "";
-                LogManager.Logger.Info("login command execution starts");
+                logger.Info("login command execution starts");
 
                 if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
                 {
@@ -147,7 +149,7 @@ namespace TimeTrackerX.ViewModels
 
                 if (result.status == "success")
                 {
-                    LogManager.Logger.Info("SignIn is successful");
+                    logger.Info("SignIn is successful");
                     GlobalSetting.Instance.LoginResult = result;
 
                     await Dispatcher.UIThread.InvokeAsync(() =>
@@ -160,12 +162,12 @@ namespace TimeTrackerX.ViewModels
 
                         if (GlobalSetting.Instance.TimeTracker == null)
                         {
-                            LogManager.Logger.Info("Creating the instance of TimeTracker");
+                            logger.Info("Creating the instance of TimeTracker");
                             GlobalSetting.Instance.TimeTracker =
                                 new TimeTrackerX.Views.TimeTrackerView();
                         }
 
-                        LogManager.Logger.Info("Showing the instance of TimeTracker");
+                        logger.Info("Showing the instance of TimeTracker");
                         GlobalSetting.Instance.TimeTracker.Show();
                     });
 
@@ -180,18 +182,18 @@ namespace TimeTrackerX.ViewModels
                     ErrorMessage = "Invalid credentials, Please try again";
                 }
 
-                LogManager.Logger.Info("login command execution ends");
+                logger.Info("login command execution ends");
             }
             catch (ServiceAuthenticationException ex)
             {
                 ErrorMessage = "Invalid credentials, Please try again";
-                LogManager.Logger.Error(ex);
+                logger.Error(ex);
             }
             catch (Exception ex)
             {
                 ErrorMessage =
                     $"Something went wrong, Please try again.\n {ex.InnerException?.Message}";
-                LogManager.Logger.Error(ex);
+                logger.Error(ex);
             }
             finally
             {

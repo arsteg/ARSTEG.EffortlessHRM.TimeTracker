@@ -47,3 +47,7 @@ TimeTracker.Bootstrapper/obj/Debug/TimeTracker.Bootstrapper.wixproj.BindBuiltOut
 TimeTracker.Bootstrapper/obj/Debug/Bundle.wixobj
 /TimeTrackerX/obj
 /TimeTrackerX/bin
+/TimeTracker.Bootstrapper/obj
+/TimeTracker.Bootstrapper/obj
+/TimeTracker.Bootstrapper/obj/Debug
+/TimeTracker.Bootstrapper/obj

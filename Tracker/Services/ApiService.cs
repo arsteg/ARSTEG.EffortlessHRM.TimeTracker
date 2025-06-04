@@ -13,28 +13,39 @@ namespace TimeTracker.Services
         public static async Task<bool> GetEnableBeepSoundSetting()
         {
             var rest = new REST(new HttpProviders());
-            var result = await rest.GetEnableBeepSoundSetting($"api/v1/userPreferences/getUserPreferenceByKey/TimeTracker.BlurScreenshots");
-            return result.data;             
+            var result = await rest.GetEnableBeepSoundSetting(
+                $"api/v1/userPreferences/getUserPreferenceByKey/TimeTracker.BlurScreenshots"
+            );
+            return result?.data ?? false;
         }
 
         public static async Task<UserPreferenceResult> GetUserPreferencesSetting()
         {
             var rest = new REST(new HttpProviders());
-            var result = await rest.GetUserPreferencesSetting($"api/v1/userPreferences/user/{GlobalSetting.Instance.LoginResult.data.user.id}");
+            var result = await rest.GetUserPreferencesSetting(
+                $"api/v1/userPreferences/user/{GlobalSetting.Instance.LoginResult.data.user.id}"
+            );
             return result;
         }
 
-        public static async Task<BaseResponse> SetUserPreferences(CreateUserPreferenceRequest createUserPreferenceRequest)
+        public static async Task<BaseResponse> SetUserPreferences(
+            CreateUserPreferenceRequest createUserPreferenceRequest
+        )
         {
             var rest = new REST(new HttpProviders());
-            var result = await rest.SetUserPreferences($"api/v1/userPreferences/create", createUserPreferenceRequest);
+            var result = await rest.SetUserPreferences(
+                $"api/v1/userPreferences/create",
+                createUserPreferenceRequest
+            );
             return result;
         }
 
         public static async Task<Project> GetUserPreferencesByKey()
         {
             var rest = new REST(new HttpProviders());
-            var result = await rest.GetUserPreferencesSettingByKey($"api/v1/userPreferences/preference-key/{GlobalSetting.Instance.userPreferenceKey.TrackerSelectedProject}?userId={GlobalSetting.Instance.LoginResult.data.user.id}");
+            var result = await rest.GetUserPreferencesSettingByKey(
+                $"api/v1/userPreferences/preference-key/{GlobalSetting.Instance.userPreferenceKey.TrackerSelectedProject}?userId={GlobalSetting.Instance.LoginResult.data.user.id}"
+            );
             return result;
         }
     }

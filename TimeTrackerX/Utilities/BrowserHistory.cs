@@ -13,7 +13,7 @@ namespace TimeTrackerX.Utilities
         public static List<HistoryEntry> GetHistoryEntries()
         {
             List<HistoryEntry> historyEntries = new List<HistoryEntry>();
-
+            
             var chromeEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(
                 BrowserHistoryGatherer.Browser.Chrome,
                 DateTime.Today
@@ -38,26 +38,11 @@ namespace TimeTrackerX.Utilities
         {
             List<HistoryEntry> historyEntries = new List<HistoryEntry>();
 
-            var chromeEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(
-                BrowserHistoryGatherer.Browser.Chrome,
-                startDate,
-                endDate
-            );
-            var fireFoxEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(
-                BrowserHistoryGatherer.Browser.Firefox,
-                startDate,
-                endDate
-            );
-            var ieEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(
-                BrowserHistoryGatherer.Browser.InternetExplorer,
-                startDate,
-                endDate
-            );
-            var safariEntries = BrowserHistoryGatherer.BrowserHistory.GetHistory(
-                BrowserHistoryGatherer.Browser.Safari,
-                startDate,
-                endDate
-            );
+            var safariEntries = GetSafariHistory(startDate,endDate);
+            var chromeEntries = GetChromeHistory(startDate,endDate);
+            var fireFoxEntries = GetFirefoxHistory(startDate,endDate);
+            var ieEntries = GetIEHistory(startDate,endDate);
+            
 
             historyEntries.AddRange(chromeEntries);
             historyEntries.AddRange(fireFoxEntries);
@@ -65,6 +50,58 @@ namespace TimeTrackerX.Utilities
             historyEntries.AddRange(safariEntries);
 
             return historyEntries;
+        }
+
+        public static IList<HistoryEntry> GetChromeHistory(DateTime startDate,DateTime endDate){
+            try{
+                return BrowserHistoryGatherer.BrowserHistory.GetHistory(
+                BrowserHistoryGatherer.Browser.Chrome,
+                startDate,
+                endDate
+            );
+            }
+            catch(Exception){
+                return new List<HistoryEntry>();
+            }
+        }
+
+        public static IList<HistoryEntry> GetFirefoxHistory(DateTime startDate,DateTime endDate){
+            try{
+                return BrowserHistoryGatherer.BrowserHistory.GetHistory(
+                BrowserHistoryGatherer.Browser.Firefox,
+                startDate,
+                endDate
+            );
+            }
+            catch(Exception){
+                return new List<HistoryEntry>();
+            }
+        }
+
+        public static IList<HistoryEntry> GetSafariHistory(DateTime startDate,DateTime endDate){
+            try{
+                return BrowserHistoryGatherer.BrowserHistory.GetHistory(
+                BrowserHistoryGatherer.Browser.Safari,
+                startDate,
+                endDate
+            );
+            }
+            catch(Exception){
+                return new List<HistoryEntry>();
+            }
+        }
+
+        public static IList<HistoryEntry> GetIEHistory(DateTime startDate,DateTime endDate){
+            try{
+                return BrowserHistoryGatherer.BrowserHistory.GetHistory(
+                BrowserHistoryGatherer.Browser.InternetExplorer,
+                startDate,
+                endDate
+            );
+            }
+            catch(Exception){
+                return new List<HistoryEntry>();
+            }
         }
     }
 }

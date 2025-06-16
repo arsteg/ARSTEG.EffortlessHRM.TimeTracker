@@ -6,6 +6,7 @@ namespace TimeTrackerX.Models
 {
     public class LoginResult
     {
+        public LoginResult(){}
         public string status { get; set; }
         public string token { get; set; }
         public LoginresultData data { get; set; }
@@ -13,6 +14,7 @@ namespace TimeTrackerX.Models
 
     public class LoginresultData
     {
+        public LoginresultData(){}
         public Login user { get; set; }
     }
 

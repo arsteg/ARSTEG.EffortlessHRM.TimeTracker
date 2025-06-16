@@ -35,7 +35,7 @@ public partial class LoginView : Window
         }
         if (this.automaticLogin)
         {
-            await ((LoginViewModel)this.DataContext).LoginCommandExecute();
+            //await ((LoginViewModel)this.DataContext).LoginCommandExecute();
         }
 
         try
@@ -80,7 +80,7 @@ public partial class LoginView : Window
 
         if (this.DataContext != null)
         {
-            // ((LoginViewModel)this.DataContext).Password = ((PasswordBox)sender).Password;
+             ((LoginViewModel)this.DataContext).Password = ((TextBox)sender).Text??"";
         }
     }
 
@@ -122,6 +122,10 @@ public partial class LoginView : Window
         else
         {
             textEmail.IsVisible = true;
+        }
+        if (this.DataContext != null)
+        {
+             ((LoginViewModel)this.DataContext).UserName = ((TextBox)sender).Text??"";
         }
     }
 

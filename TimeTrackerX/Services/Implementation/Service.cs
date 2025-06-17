@@ -15,7 +15,7 @@ namespace TimeTrackerX.Services.Implementation
 {
     public class ScreenshotService : IScreenshotService
     {
-        public async Task<string> CaptureScreenAsync()
+        public async Task<string> CaptureScreenAsync(bool isBlur=false)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -23,7 +23,7 @@ namespace TimeTrackerX.Services.Implementation
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return await CaptureScreenMacOSAsync();
+                return await CaptureScreenMacOSAsync(isBlur);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -51,35 +51,23 @@ namespace TimeTrackerX.Services.Implementation
             }
         }
 
-        private async Task<string> CaptureScreenMacOSAsync()
+        private async Task<string> CaptureScreenMacOSAsync(bool isBlur)
         {
             try
             {
-                // Generate unique temp file name with .png extension
                 var fileName = $"{DateTime.UtcNow:HH-mm}.png";
                 var tempFile = Path.Combine(Path.GetTempPath(), fileName);
-                
 
                 // Clean up only our previously generated screenshots
-                var existingScreenshots = Directory.GetFiles(
-                    Path.GetTempPath(),
-                    "*.png"
-                );
+                var existingScreenshots = Directory.GetFiles(Path.GetTempPath(), "*.png");
                 foreach (var file in existingScreenshots)
                 {
-                    try
-                    {
-                        File.Delete(file);
-                    }
-                    catch
-                    {
-                        // Ignore errors deleting old files
-                    }
+                    try { File.Delete(file); } catch { }
                 }
 
-                var process = new System.Diagnostics.Process
+                var process = new Process
                 {
-                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    StartInfo = new ProcessStartInfo
                     {
                         FileName = "screencapture",
                         Arguments = $"-x \"{tempFile}\"", // -x for silent capture
@@ -95,6 +83,28 @@ namespace TimeTrackerX.Services.Implementation
 
                 if (!File.Exists(tempFile))
                     throw new Exception($"Screenshot failed. File not found: {tempFile}");
+
+                if (isBlur)
+                {
+                    using var inputStream = File.OpenRead(tempFile);
+                    using var original = SKBitmap.Decode(inputStream);
+                    using var surface = SKSurface.Create(new SKImageInfo(original.Width, original.Height));
+                    var canvas = surface.Canvas;
+
+                    var paint = new SKPaint
+                    {
+                        ImageFilter = SKImageFilter.CreateBlur(10, 10), // Adjust blur radius here
+                        IsAntialias = true
+                    };
+
+                    canvas.Clear(SKColors.Transparent);
+                    canvas.DrawBitmap(original, 0, 0, paint);
+
+                    using var image = surface.Snapshot();
+                    using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                    using var outputStream = File.OpenWrite(tempFile);
+                    data.SaveTo(outputStream);
+                }
 
                 return tempFile;
             }

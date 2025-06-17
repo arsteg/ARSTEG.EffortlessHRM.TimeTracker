@@ -234,6 +234,35 @@ namespace TimeTrackerX.ViewModels
                     logger.Debug("Save dispatcher timer started");
 
                     await saveBrowserHistory(DateTime.Now.Subtract(lastInterval), DateTime.Now);
+
+                    #region "Check weekly/monthly time limit"
+                    if (WeeklyHoursLimit > 0)
+                    {
+                        if (CurrentWeekCompletedHours >= WeeklyHoursLimit)
+                        {
+                            IsWeeklyHoursCompleted = true;
+                            StartStopCommandExecute();
+                        }
+                        else
+                        {
+                            IsWeeklyHoursCompleted = false;
+                        }
+                    }
+
+                    else if (MonthlyHoursLimit > 0)
+                    {
+
+                        if (CurrentMonthCompletedHours >= MonthlyHoursLimit)
+                        {
+                            IsMonthlyHoursCompleted = true;
+                            StartStopCommandExecute();
+                        }
+                        else
+                        {
+                            IsMonthlyHoursCompleted = false;
+                        }
+                    }
+                    #endregion
                 }
             }
             catch (Exception ex)
@@ -332,6 +361,7 @@ namespace TimeTrackerX.ViewModels
                 DeleteTempFolder();
                 PopulateUserName();
                 RefreshCommandExecute();
+                CheckWeeklyMonthlyTimeLimit();
                 logger.Debug("UI initialization completed");
             }
             catch (Exception ex)
@@ -453,6 +483,72 @@ namespace TimeTrackerX.ViewModels
 
         [ObservableProperty]
         private bool _buttonEventInProgress;
+
+        private Int32 _WeeklyHoursLimit;
+        public Int32 WeeklyHoursLimit
+        {
+            get { return _WeeklyHoursLimit; }
+            set
+            {
+                _WeeklyHoursLimit = value;
+                OnPropertyChanged(nameof(WeeklyHoursLimit));
+            }
+        }
+
+        private Int32 _MonthlyHoursLimit;
+        public Int32 MonthlyHoursLimit
+        {
+            get { return _MonthlyHoursLimit; }
+            set
+            {
+                _MonthlyHoursLimit = value;
+                OnPropertyChanged(nameof(MonthlyHoursLimit));
+            }
+        }
+
+        private Int32 _CurrentWeekCompletedHours;
+        public Int32 CurrentWeekCompletedHours
+        {
+            get { return _CurrentWeekCompletedHours; }
+            set
+            {
+                _CurrentWeekCompletedHours = value;
+                OnPropertyChanged(nameof(CurrentWeekCompletedHours));
+            }
+        }
+
+        private bool _isWeeklyHoursCompleted;
+        public bool IsWeeklyHoursCompleted
+        {
+            get { return _isWeeklyHoursCompleted; }
+            set
+            {
+                _isWeeklyHoursCompleted = value;
+                OnPropertyChanged(nameof(IsWeeklyHoursCompleted));
+            }
+        }
+
+        private Int32 _CurrentMonthCompletedHours;
+        public Int32 CurrentMonthCompletedHours
+        {
+            get { return _CurrentMonthCompletedHours; }
+            set
+            {
+                _CurrentMonthCompletedHours = value;
+                OnPropertyChanged(nameof(CurrentMonthCompletedHours));
+            }
+        }
+
+        private bool _isMonthlyHoursCompleted;
+        public bool IsMonthlyHoursCompleted
+        {
+            get { return _isMonthlyHoursCompleted; }
+            set
+            {
+                _isMonthlyHoursCompleted = value;
+                OnPropertyChanged(nameof(IsMonthlyHoursCompleted));
+            }
+        }
         #endregion
 
         #region Commands
@@ -529,6 +625,17 @@ namespace TimeTrackerX.ViewModels
         private async Task StartStopCommandExecute()
         {
             logger.Info("Start/Stop command executed");
+            if (!_trackerIsOn)
+            {
+                if (IsWeeklyHoursCompleted || IsMonthlyHoursCompleted)
+                {
+                    var msg = IsWeeklyHoursCompleted
+                        ? "Your weekly hours have been completed."
+                        : "Your monthly hours have been completed.";
+                    await ShowErrorMessage(msg);
+                    return;
+                }
+            }
             if (string.IsNullOrEmpty(TaskName))
             {
                 logger.Warn("No task selected when trying to start/stop tracker");
@@ -544,6 +651,13 @@ namespace TimeTrackerX.ViewModels
                     logger.Info("Stopping tracker");
                     idlTimeDetectionTimer.Stop();
                     CanSendReport = true;
+                    if (IsWeeklyHoursCompleted || IsMonthlyHoursCompleted)
+                    {
+                        var msg = IsWeeklyHoursCompleted
+                            ? "Your weekly hours have been completed."
+                            : "Your monthly hours have been completed.";
+                        await ShowErrorMessage(msg);
+                    }
                 }
                 else
                 {
@@ -966,9 +1080,23 @@ namespace TimeTrackerX.ViewModels
             try
             {
                 logger.Info("Capturing screen");
-                var screenshot = await _screenshotService.CaptureScreenAsync();
+                var userSettings = Task.Run(
+                    async () => await APIService.GetUserPreferencesSetting()
+                ).Result;
+
+                var screenshot = await _screenshotService.CaptureScreenAsync(userSettings.isBlurScreenshot);
                 CurrentImagePath = screenshot;
-                CanShowScreenshot = true;
+                if (!userSettings.isBeepSoundEnabled)
+                {
+                    PlayMedia.PlayScreenCaptureSound();
+                }
+                if (!userSettings.isScreenshotNotificationEnabled)
+                {
+                    CanShowScreenshot = true;
+                }
+                WeeklyHoursLimit = userSettings.weeklyHoursLimit * 60;
+                MonthlyHoursLimit = userSettings.monthlyHoursLimit * 60;
+
                 Countdown(10, TimeSpan.FromSeconds(1), cur => CountdownTimer = $"({cur})");
                 logger.Info($"Screen captured and saved to: {CurrentImagePath}");
                 return CurrentImagePath;
@@ -1042,13 +1170,21 @@ namespace TimeTrackerX.ViewModels
 
                 logger.Info($"Requesting week time for period: {startDateOfWeek} to {DateTime.UtcNow}");
                 var result = await _restService.GetCurrentWeekTotalTime(
-                    new CurrentWeekTotalTime
-                    {
-                        user = UserId,
-                        startDate = startDateOfWeek,
-                        endDate = DateTime.UtcNow
-                    }
-                );
+                   new CurrentWeekTotalTime()
+                   {
+                       user = UserId,
+                       startDate = new DateTime(
+                           startDateOfWeek.Date.Year,
+                           startDateOfWeek.Date.Month,
+                           startDateOfWeek.Date.Day
+                       ),
+                       endDate = new DateTime(
+                           DateTime.UtcNow.Year,
+                           DateTime.UtcNow.Date.Month,
+                           DateTime.UtcNow.Date.Day
+                       ),
+                   }
+               );
 
                 totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
                 logger.Info($"Current week time tracked: {totalTime}");
@@ -1071,13 +1207,21 @@ namespace TimeTrackerX.ViewModels
 
                 logger.Info($"Requesting month time for current month");
                 var result = await _restService.GetCurrentWeekTotalTime(
-                    new CurrentWeekTotalTime
-                    {
-                        user = UserId,
-                        startDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1),
-                        endDate = DateTime.UtcNow
-                    }
-                );
+                   new CurrentWeekTotalTime()
+                   {
+                       user = UserId,
+                       startDate = new DateTime(
+                           DateTime.UtcNow.Year,
+                           DateTime.UtcNow.Date.Month,
+                           1
+                       ),
+                       endDate = new DateTime(
+                           DateTime.UtcNow.Year,
+                           DateTime.UtcNow.Date.Month,
+                           DateTime.UtcNow.Date.Day
+                       ),
+                   }
+               );
 
                 totalTime = TimeSpan.FromMinutes(result.data.Count * 10);
                 logger.Info($"Current month time tracked: {totalTime}");
@@ -1096,11 +1240,19 @@ namespace TimeTrackerX.ViewModels
             logger.Trace("Showing time tracked");
             var sessionTimeTracked = TimeSpan.FromMinutes(_minutesTracked);
             CurrentSessionTimeTracked =
-                $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes:D2} m";
-            TimeSpan totalTimeTracked = currentSessionSaved
-                ? _timeTrackedSaved
-                : _timeTrackedSaved + sessionTimeTracked;
-            CurrentDayTimeTracked = $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes:D2} m";
+                $"{sessionTimeTracked.Hours} hrs {sessionTimeTracked.Minutes.ToString("00")} m";
+            if (currentSessionSaved)
+            {
+                TimeSpan totalTimeTracked = _timeTrackedSaved;
+                CurrentDayTimeTracked =
+                    $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+            }
+            else
+            {
+                TimeSpan totalTimeTracked = _timeTrackedSaved + TimeSpan.FromMinutes(_minutesTracked); // (timeTrackedSaved + sessionTimeTracked);
+                CurrentDayTimeTracked =
+                    $"{totalTimeTracked.Hours} hrs {totalTimeTracked.Minutes.ToString("00")} m";
+            }
             logger.Debug($"Displayed time: Session={CurrentSessionTimeTracked}, Day={CurrentDayTimeTracked}");
         }
 
@@ -1110,6 +1262,7 @@ namespace TimeTrackerX.ViewModels
             var currentWeekTimeTracked = await GetCurrentWeekTimeTracked();
             if (currentWeekTimeTracked.HasValue)
             {
+                CurrentWeekCompletedHours = (int)currentWeekTimeTracked.Value.TotalMinutes;
                 CurrentWeekTimeTracked =
                     $"{(currentWeekTimeTracked.Value.Days * 24) + currentWeekTimeTracked.Value.Hours} hrs {currentWeekTimeTracked.Value.Minutes:D2} m";
                 logger.Debug($"Week time displayed: {CurrentWeekTimeTracked}");
@@ -1118,6 +1271,7 @@ namespace TimeTrackerX.ViewModels
             var currentMonthTimeTracked = await GetCurrentMonthTimeTracked();
             if (currentMonthTimeTracked.HasValue)
             {
+                CurrentMonthCompletedHours = (int)currentMonthTimeTracked.Value.TotalMinutes;
                 CurrentMonthTimeTracked =
                     $"{(currentMonthTimeTracked.Value.Days * 24) + currentMonthTimeTracked.Value.Hours} hrs {currentMonthTimeTracked.Value.Minutes:D2} m";
                 logger.Debug($"Month time displayed: {CurrentMonthTimeTracked}");
@@ -1317,6 +1471,15 @@ namespace TimeTrackerX.ViewModels
                 )
                 {
                     Projects = projectList.data.projectList;
+                    var projectData = await APIService.GetUserPreferencesByKey();
+                    if (SelectedProject == null)
+                    {
+                        if (projectData != null)
+                        {
+                            SelectedProject = projectData;
+                            SelectedProjectName = SelectedProject.projectName;
+                        }
+                    }
                     logger.Info($"Loaded {Projects.Count} projects");
                 }
                 else
@@ -1528,6 +1691,14 @@ namespace TimeTrackerX.ViewModels
             if (newValue != null)
             {
                 logger.Info($"Loading tasks for new project: {newValue._id}");
+                var userSettings = Task.Run(
+                    async () => await APIService.SetUserPreferences(new CreateUserPreferenceRequest
+                    {
+                        userId = GlobalSetting.Instance.LoginResult.data.user.id,
+                        preferenceKey = GlobalSetting.Instance.userPreferenceKey.TrackerSelectedProject,
+                        preferenceValue = $"{newValue._id}#{newValue.projectName}"
+                    })
+                    ).Result;
                 _ = GetTaskList(); // Run asynchronously
             }
 
@@ -1573,6 +1744,53 @@ namespace TimeTrackerX.ViewModels
             {
                 logger.Error(ex, "Error saving browser history");
                 throw;
+            }
+        }
+
+        private async Task CheckWeeklyMonthlyTimeLimit()
+        {
+            var userSettings = await APIService.GetUserPreferencesSetting();
+            WeeklyHoursLimit = userSettings.weeklyHoursLimit * 60;
+            MonthlyHoursLimit = userSettings.monthlyHoursLimit * 60;
+
+            // Weekly check
+            if (WeeklyHoursLimit > 0)
+            {
+                var weeklyTracked = await GetCurrentWeekTimeTracked();
+                if (weeklyTracked != null)
+                {
+                    var weeklyMinutes = (int)weeklyTracked.Value.TotalMinutes;
+                    CurrentWeekTimeTracked =
+                        $"{(weeklyTracked.Value.Days * 24) + weeklyTracked.Value.Hours} hrs {weeklyTracked.Value.Minutes:00} m";
+
+                    if (weeklyMinutes >= WeeklyHoursLimit)
+                    {
+                        IsWeeklyHoursCompleted = true;
+                        await ShowErrorMessage("Your weekly hours have been completed.");
+                        return;
+                    }
+                }
+                IsWeeklyHoursCompleted = false;
+            }
+
+            // Monthly check
+            if (MonthlyHoursLimit > 0)
+            {
+                var monthlyTracked = await GetCurrentMonthTimeTracked();
+                if (monthlyTracked != null)
+                {
+                    var monthlyMinutes = (int)monthlyTracked.Value.TotalMinutes;
+                    CurrentMonthTimeTracked =
+                        $"{(monthlyTracked.Value.Days * 24) + monthlyTracked.Value.Hours} hrs {monthlyTracked.Value.Minutes:00} m";
+
+                    if (monthlyMinutes >= MonthlyHoursLimit)
+                    {
+                        IsMonthlyHoursCompleted = true;
+                        await ShowErrorMessage("Your monthly hours have been completed.");
+                        return;
+                    }
+                }
+                IsMonthlyHoursCompleted = false;
             }
         }
 

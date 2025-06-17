@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace TimeTrackerX.Utilities
@@ -8,10 +10,9 @@ namespace TimeTrackerX.Utilities
     {
         public static void PlayScreenCaptureSound()
         {
-            //    System.Media.SoundPlayer player = new System.Media.SoundPlayer(
-            //        @$"{Environment.CurrentDirectory}\media\audio\screencaptureSound.wav"
-            //    );
-            //    player.Play();
+            string audioPath = Path.Combine(Environment.CurrentDirectory, "media", "audio", "screencaptureSound.wav");
+
+            Process.Start("afplay", $"\"{audioPath}\"");
         }
     }
 }

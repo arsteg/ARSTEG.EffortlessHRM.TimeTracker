@@ -1198,7 +1198,7 @@ namespace TimeTracker.ViewModels
                         }
                     }
 
-                    else if (MonthlyHoursLimit > 0)
+                    if (!IsWeeklyHoursCompleted && MonthlyHoursLimit > 0)
                     {
 
                         if (CurrentMonthCompletedHours >= MonthlyHoursLimit)
@@ -1533,6 +1533,11 @@ namespace TimeTracker.ViewModels
                 if (result.statusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     return (null, HttpStatusCode.Unauthorized);
+                }
+                else if (result.statusCode == System.Net.HttpStatusCode.NotAcceptable)
+                {
+                    //await ShowErrorMessage(result?.message);
+                    return (null, HttpStatusCode.NotAcceptable);
                 }
                 AddErrorLog("Info", $"machineId {machineId} Message {result?.data?.message ?? ""}");
                 LogManager.Logger.Info(

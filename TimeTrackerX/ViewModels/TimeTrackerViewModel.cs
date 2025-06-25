@@ -249,7 +249,7 @@ namespace TimeTrackerX.ViewModels
                         }
                     }
 
-                    else if (MonthlyHoursLimit > 0)
+                    if (!IsWeeklyHoursCompleted && MonthlyHoursLimit > 0)
                     {
 
                         if (CurrentMonthCompletedHours >= MonthlyHoursLimit)
@@ -1324,6 +1324,11 @@ namespace TimeTrackerX.ViewModels
                 {
                     logger.Warn("Unauthorized response from server");
                     return (null, HttpStatusCode.Unauthorized);
+                }
+                else if (result.statusCode == System.Net.HttpStatusCode.NotAcceptable)
+                {
+                    //await ShowErrorMessage(result?.message);
+                    return (null, HttpStatusCode.NotAcceptable);
                 }
 
                 logger.Info($"Server response: {result?.data?.message ?? "No message"}");

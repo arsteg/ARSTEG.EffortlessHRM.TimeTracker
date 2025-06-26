@@ -11,7 +11,6 @@ namespace BrowserHistoryGatherer.Gathering
     /// A gatherer to get firefox history entries
     /// </summary>
     internal sealed class FirefoxGatherer : BaseGatherer
-
     {
         #region Private Members
 
@@ -46,16 +45,21 @@ namespace BrowserHistoryGatherer.Gathering
             this._firefoxDatabasePaths = GetFirefoxDatabasePaths();
         }
 
-
-
-        public sealed override ICollection<HistoryEntry> GetBrowserHistory(DateTime? startTime, DateTime? endTime)
+        public sealed override ICollection<HistoryEntry> GetBrowserHistory(
+            DateTime? startTime,
+            DateTime? endTime
+        )
         {
             List<HistoryEntry> entryList = new List<HistoryEntry>();
 
-            string query = string.Format("SELECT url, title, visit_count, datetime(visit_date/1000000,'unixepoch') AS last_visit " +
-                                         "FROM {0}, {1} " +
-                                         "WHERE {0}.id = {1}.place_id", TABLE_NAME, VISITS_TABLE_NAME);
-            
+            string query = string.Format(
+                "SELECT url, title, visit_count, datetime(visit_date/1000000,'unixepoch') AS last_visit "
+                    + "FROM {0}, {1} "
+                    + "WHERE {0}.id = {1}.place_id",
+                TABLE_NAME,
+                VISITS_TABLE_NAME
+            );
+
             foreach (string dbPath in _firefoxDatabasePaths)
             {
                 DataTable historyDt = SqlUtils.QueryDataTable(dbPath, query);
@@ -65,7 +69,7 @@ namespace BrowserHistoryGatherer.Gathering
                     Uri uri;
                     DateTime lastVisit;
                     string title;
-                    int? visitCount;
+                    int visitCount;
 
                     lastVisit = DateTime.Parse(row["last_visit"].ToString()).ToLocalTime();
                     if (!base.IsEntryInTimelimit(lastVisit, startTime, endTime))
@@ -75,21 +79,25 @@ namespace BrowserHistoryGatherer.Gathering
                     {
                         uri = new Uri(row["url"].ToString(), UriKind.Absolute);
                     }
-                    catch(UriFormatException)
+                    catch (UriFormatException)
                     {
                         continue;
                     }
-                    
+
                     title = row["title"].ToString();
-                    title = string.IsNullOrEmpty(title)
-                        ? null
-                        : title;
+                    title = string.IsNullOrEmpty(title) ? null : title;
 
                     visitCount = int.TryParse(row["visit_count"].ToString(), out int outVal)
-                        ? (int?)outVal
-                        : null;
+                        ? (int)outVal
+                        : 0;
 
-                    HistoryEntry entry = new HistoryEntry(uri, title, lastVisit.ToUniversalTime(), visitCount, Browser.Firefox);
+                    HistoryEntry entry = new HistoryEntry(
+                        uri,
+                        title,
+                        lastVisit.ToUniversalTime(),
+                        visitCount,
+                        Browser.Firefox
+                    );
                     entryList.Add(entry);
                 }
             }
@@ -97,15 +105,14 @@ namespace BrowserHistoryGatherer.Gathering
             return entryList;
         }
 
-
-
         private IEnumerable<string> GetFirefoxDatabasePaths()
         {
             ICollection<string> databasePaths = new List<string>();
 
             string dataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                FIREFOX_DATA_PATH);
+                FIREFOX_DATA_PATH
+            );
 
             if (Directory.Exists(dataFolder))
             {

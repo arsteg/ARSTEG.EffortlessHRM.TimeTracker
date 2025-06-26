@@ -1,9 +1,9 @@
-﻿using BrowserHistoryGatherer.Data;
-using BrowserHistoryGatherer.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using BrowserHistoryGatherer.Data;
+using BrowserHistoryGatherer.Utils;
 
 namespace BrowserHistoryGatherer.Gathering
 {
@@ -22,7 +22,8 @@ namespace BrowserHistoryGatherer.Gathering
 
         private string _fullDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            CHROME_DATA_PATH);
+            CHROME_DATA_PATH
+        );
 
         private IEnumerable<string> _chromeDatabasePaths;
 
@@ -47,14 +48,18 @@ namespace BrowserHistoryGatherer.Gathering
             this._chromeDatabasePaths = GetChromeDatabasePaths();
         }
 
-
-
-        public sealed override ICollection<HistoryEntry> GetBrowserHistory(DateTime? startTime, DateTime? endTime)
+        public sealed override ICollection<HistoryEntry> GetBrowserHistory(
+            DateTime? startTime,
+            DateTime? endTime
+        )
         {
             List<HistoryEntry> entryList = new List<HistoryEntry>();
 
-            string query = string.Format("SELECT url, title, visit_count, datetime(last_visit_time/1000000-11644473600, 'unixepoch') AS last_visit " +
-                                         "FROM {0}", TABLE_NAME);
+            string query = string.Format(
+                "SELECT url, title, visit_count, datetime(last_visit_time/1000000-11644473600, 'unixepoch') AS last_visit "
+                    + "FROM {0}",
+                TABLE_NAME
+            );
 
             string tempPath = Path.GetTempPath();
             foreach (string dbPath in _chromeDatabasePaths)
@@ -73,7 +78,7 @@ namespace BrowserHistoryGatherer.Gathering
                     Uri uri;
                     DateTime lastVisit;
                     string title;
-                    int? visitCount;
+                    int visitCount;
 
                     lastVisit = DateTime.Parse(row["last_visit"].ToString()).ToLocalTime();
                     if (!base.IsEntryInTimelimit(lastVisit, startTime, endTime))
@@ -89,22 +94,25 @@ namespace BrowserHistoryGatherer.Gathering
                     }
 
                     title = row["title"].ToString();
-                    title = string.IsNullOrEmpty(title)
-                        ? null
-                        : title;
+                    title = string.IsNullOrEmpty(title) ? null : title;
 
                     visitCount = int.TryParse(row["visit_count"].ToString(), out int outVal)
-                        ? (int?)outVal
-                        : null;
+                        ? (int)outVal
+                        : 0;
 
-                    HistoryEntry entry = new HistoryEntry(uri, title, lastVisit.ToUniversalTime(), visitCount, Browser.Chrome);
+                    HistoryEntry entry = new HistoryEntry(
+                        uri,
+                        title,
+                        lastVisit.ToUniversalTime(),
+                        visitCount,
+                        Browser.Chrome
+                    );
                     entryList.Add(entry);
                 }
             }
 
             return entryList;
         }
-
 
         private IEnumerable<string> GetChromeDatabasePaths()
         {
@@ -114,7 +122,12 @@ namespace BrowserHistoryGatherer.Gathering
             if (TryGetFullPathByProfile(DEFAULT_PROFILE_NAME, out path))
                 databasePaths.Add(path);
 
-            foreach (string userPath in Directory.EnumerateDirectories(_fullDataPath, CUSTOM_PROFILE_PATTERN))
+            foreach (
+                string userPath in Directory.EnumerateDirectories(
+                    _fullDataPath,
+                    CUSTOM_PROFILE_PATTERN
+                )
+            )
             {
                 if (TryGetFullPathByProfile(new DirectoryInfo(userPath).Name, out path))
                     databasePaths.Add(path);
@@ -123,21 +136,13 @@ namespace BrowserHistoryGatherer.Gathering
             return databasePaths;
         }
 
-
         private bool TryGetFullPathByProfile(string profileName, out string fullPath)
         {
-            string dbPath = Path.Combine(
-                _fullDataPath,
-                profileName,
-                DATABASE_NAME);
+            string dbPath = Path.Combine(_fullDataPath, profileName, DATABASE_NAME);
 
-            fullPath = File.Exists(dbPath)
-                ? dbPath
-                : null;
+            fullPath = File.Exists(dbPath) ? dbPath : null;
 
-            return fullPath == null
-                ? false 
-                : true;
+            return fullPath == null ? false : true;
         }
     }
 }

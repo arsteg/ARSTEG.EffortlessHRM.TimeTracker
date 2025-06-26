@@ -91,7 +91,7 @@
                     </Viewbox>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Time Tracker" Style="{StaticResource titleText}" Margin="20,3,0,0" Foreground="#3AB19B"/>
-                        <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Height="30" Margin="10,5,0,0" Foreground="White"/>
+                        <fa:ImageAwesome Icon="Refresh" Spin="True" Width="{Binding ProgressWidthStart}" Height="30" Margin="10,5,0,0" Foreground="#FFFFFF"/>
                     </StackPanel>
                 </StackPanel>                
                 <TextBlock Text="Experience seamless time-tracking and employee monitoring with our cutting-edge software designed specifically for companies and remote teams.

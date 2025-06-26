@@ -1946,7 +1946,7 @@ namespace TimeTracker.ViewModels
                             {
                                 appWebsite = key,
                                 type = "App",
-                                ApplicationTitle = focusedApplication[key].AppTitle,
+                                ApplicationTitle = focusedApplication[key].AppTitle ?? key,
                                 projectReference = SelectedProject._id,
                                 userReference = GlobalSetting.Instance.LoginResult.data.user.id,
                                 date = DateTime.UtcNow,

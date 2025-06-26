@@ -34,14 +34,12 @@ namespace BrowserHistoryGatherer.Gathering
         /// <summary>
         /// Initializes a new instance of <see cref="IEGatherer"/>
         /// </summary>
-        IEGatherer()
-        {
+        IEGatherer() { }
 
-        }
-
-
-
-        public sealed override ICollection<HistoryEntry> GetBrowserHistory(DateTime? startTime, DateTime? endTime)
+        public sealed override ICollection<HistoryEntry> GetBrowserHistory(
+            DateTime? startTime,
+            DateTime? endTime
+        )
         {
             List<HistoryEntry> entryList = new List<HistoryEntry>();
 
@@ -69,7 +67,13 @@ namespace BrowserHistoryGatherer.Gathering
                     ? null
                     : historyEnumertator.Current.Title;
 
-                var historyEntry = new HistoryEntry(uri, title, lastUpdate.ToUniversalTime(), null, Browser.InternetExplorer);
+                var historyEntry = new HistoryEntry(
+                    uri,
+                    title,
+                    lastUpdate.ToUniversalTime(),
+                    0,
+                    Browser.InternetExplorer
+                );
                 entryList.Add(historyEntry);
             }
 
@@ -81,23 +85,43 @@ namespace BrowserHistoryGatherer.Gathering
                 {
                     foreach (string edgeBrowserHistoryPath in edgeBrowserHistoryPaths)
                     {
-                        using (var connection = new SQLiteConnection($"Data Source={edgeBrowserHistoryPath};Version=3;"))
+                        using (
+                            var connection = new SQLiteConnection(
+                                $"Data Source={edgeBrowserHistoryPath};Version=3;"
+                            )
+                        )
                         {
                             connection.Open();
-                            string query = "SELECT url, title, visit_count, datetime(last_visit_time/1000000-11644473600, 'unixepoch') As last_visit_time FROM urls";
+                            string query =
+                                "SELECT url, title, visit_count, datetime(last_visit_time/1000000-11644473600, 'unixepoch') As last_visit_time FROM urls";
                             using (var command = new SQLiteCommand(query, connection))
                             {
                                 using (var reader = command.ExecuteReader())
                                 {
                                     while (reader.Read())
                                     {
-                                        Uri uri = new Uri(reader["url"].ToString(), UriKind.Absolute);
+                                        int visitCount = 0;
+                                        Uri uri = new Uri(
+                                            reader["url"].ToString(),
+                                            UriKind.Absolute
+                                        );
                                         string title = Convert.ToString(reader["title"]) ?? "";
-                                        int? visitCount = Convert.ToInt32(reader["visit_count"]);
-                                        DateTime lastVisit = DateTime.Parse(reader["last_visit_time"].ToString()).ToLocalTime();
+                                        int.TryParse(
+                                            reader["visit_count"]?.ToString(),
+                                            out visitCount
+                                        );
+                                        DateTime lastVisit = DateTime
+                                            .Parse(reader["last_visit_time"].ToString())
+                                            .ToLocalTime();
                                         if (!base.IsEntryInTimelimit(lastVisit, startTime, endTime))
                                             continue;
-                                        var historyEntry = new HistoryEntry(uri, title, lastVisit.ToUniversalTime(), visitCount, Browser.InternetExplorer);
+                                        var historyEntry = new HistoryEntry(
+                                            uri,
+                                            title,
+                                            lastVisit.ToUniversalTime(),
+                                            visitCount,
+                                            Browser.InternetExplorer
+                                        );
                                         entryList.Add(historyEntry);
                                     }
                                 }
@@ -105,15 +129,11 @@ namespace BrowserHistoryGatherer.Gathering
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-
-                }
+                catch (Exception ex) { }
             }
 
             return entryList;
         }
-
 
         private UrlHistoryWrapperClass.STATURLEnumerator GetHistoryEnumerator()
         {
@@ -123,14 +143,20 @@ namespace BrowserHistoryGatherer.Gathering
 
         private List<string> GetEdgeBrowserDatabasePath()
         {
-            var tempEdgeHistories=new List<string>();
+            var tempEdgeHistories = new List<string>();
 
             try
             {
                 string dataFolder = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Edge", "User Data");
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Microsoft",
+                    "Edge",
+                    "User Data"
+                );
 
-                List<string> edgeHistories = Directory.GetDirectories(dataFolder, "Profile *").ToList();
+                List<string> edgeHistories = Directory
+                    .GetDirectories(dataFolder, "Profile *")
+                    .ToList();
                 int i = 0;
 
                 edgeHistories.Add(Path.Combine(dataFolder, "Default"));
@@ -143,7 +169,10 @@ namespace BrowserHistoryGatherer.Gathering
                         string dbPath = Path.Combine(edgeHistory, DATABASE_NAME);
                         if (File.Exists(dbPath))
                         {
-                            string historyCopyPath = Path.Combine(Path.GetTempPath(), $"EdgeHistoryCopy_{i}");
+                            string historyCopyPath = Path.Combine(
+                                Path.GetTempPath(),
+                                $"EdgeHistoryCopy_{i}"
+                            );
                             // Copy the Edge history database to a temporary location because while using Edge browser sql file is locked
                             File.Copy(dbPath, historyCopyPath, true);
                             tempEdgeHistories.Add(historyCopyPath);
@@ -152,10 +181,7 @@ namespace BrowserHistoryGatherer.Gathering
                     }
                 }
             }
-            catch (Exception ex)
-            {
-
-            }
+            catch (Exception ex) { }
 
             return tempEdgeHistories;
         }

@@ -43,9 +43,10 @@ namespace BrowserHistoryGatherer.Gathering
             _safariFullPlistFilePath = GetSafariPlistFilePath();
         }
 
-
-
-        public sealed override ICollection<HistoryEntry> GetBrowserHistory(DateTime? startTime, DateTime? endTime)
+        public sealed override ICollection<HistoryEntry> GetBrowserHistory(
+            DateTime? startTime,
+            DateTime? endTime
+        )
         {
             List<HistoryEntry> entryList = new List<HistoryEntry>();
 
@@ -59,11 +60,16 @@ namespace BrowserHistoryGatherer.Gathering
                 Uri uri;
                 DateTime lastVisit;
                 string title;
-                int? visitCount;
+                int visitCount;
 
                 var entryAsDict = (NSDictionary)nsEntry;
 
-                if (!DateUtils.TryParsePlistToLocal(entryAsDict.ObjectForKey("lastVisitedDate").ToString(), out lastVisit))
+                if (
+                    !DateUtils.TryParsePlistToLocal(
+                        entryAsDict.ObjectForKey("lastVisitedDate").ToString(),
+                        out lastVisit
+                    )
+                )
                     continue;
                 if (!base.IsEntryInTimelimit(lastVisit, startTime, endTime))
                     continue;
@@ -81,27 +87,34 @@ namespace BrowserHistoryGatherer.Gathering
                     ? nsTitle.ToString()
                     : null;
 
-                visitCount = int.TryParse(entryAsDict.ObjectForKey("visitCount").ToString(), out int outVal)
-                    ? (int?)outVal
-                    : null;
+                visitCount = int.TryParse(
+                    entryAsDict.ObjectForKey("visitCount").ToString(),
+                    out int outVal
+                )
+                    ? (int)outVal
+                    : 0;
 
-                HistoryEntry entry = new HistoryEntry(uri, title, lastVisit.ToUniversalTime(), visitCount, Browser.Safari);
+                HistoryEntry entry = new HistoryEntry(
+                    uri,
+                    title,
+                    lastVisit.ToUniversalTime(),
+                    visitCount,
+                    Browser.Safari
+                );
                 entryList.Add(entry);
             }
-            
+
             return entryList;
         }
-
 
         private string GetSafariPlistFilePath()
         {
             string path = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                SAFARI_PLIST_FILE_PATH);
+                SAFARI_PLIST_FILE_PATH
+            );
 
-            return File.Exists(path)
-                ? path
-                : null;
+            return File.Exists(path) ? path : null;
         }
     }
 }

@@ -1661,11 +1661,15 @@ namespace TimeTrackerX.ViewModels
 
         private async Task ShowErrorMessage(string errorMessage)
         {
-            logger.Error($"Showing error message: {errorMessage}");
-            MessageColor = Brushes.Red;
-            ErrorMessage = errorMessage;
-            await Task.Delay(TimeSpan.FromSeconds(10));
-            ErrorMessage = string.Empty;
+           var box = MessageBoxManager
+            .GetMessageBoxStandard("Error",errorMessage,
+            ButtonEnum.Ok);
+
+            var result = await box.ShowAsync();
+            //MessageColor = Brushes.Red;
+            //ErrorMessage = errorMessage;
+            //await Task.Delay(TimeSpan.FromSeconds(10));
+            //ErrorMessage = string.Empty;
         }
 
         private async Task ShowInformationMessage(string message)

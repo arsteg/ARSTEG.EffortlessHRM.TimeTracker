@@ -1113,7 +1113,7 @@ namespace TimeTracker.ViewModels
                 StartTracker();
 
                 // Check if taskName is not empty and not present in Tasks
-                if (string.IsNullOrEmpty(SelectedTask._id))
+                if (string.IsNullOrEmpty(SelectedTask?._id))
                 {
                     await CreateNewTask();
                 }

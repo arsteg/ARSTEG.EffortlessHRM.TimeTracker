@@ -33,7 +33,7 @@ namespace TimeTracker.ActivityTracker
         public static extern int CallNextHookEx(int idHook, int nCode, IntPtr wParam, IntPtr lParam);
     }
 
-    public class MouseHook
+    public class MouseHook : IDisposable
     {
         private Point point;
         private Point Point
@@ -52,7 +52,7 @@ namespace TimeTracker.ActivityTracker
                 }
             }
         }
-        private int hHook;
+        private int hHook = 0;
         private const int WM_MOUSEMOVE = 0x200;
         private const int WM_LBUTTONDOWN = 0x201;
         private const int WM_RBUTTONDOWN = 0x204;
@@ -66,19 +66,27 @@ namespace TimeTracker.ActivityTracker
         public const int WH_MOUSE_LL = 14;
         public const int WM_MOUSEWHEEL = 0x020A;
         public Win32Api.HookProc hProc;
+        private bool disposedValue;
+
         public MouseHook()
         {
             this.Point = new Point();
         }
         public int SetHook()
         {
+            if (hHook != 0) return hHook; // Prevent multiple hooks
+
             hProc = new Win32Api.HookProc(MouseHookProc);
             hHook = Win32Api.SetWindowsHookEx(WH_MOUSE_LL, hProc, IntPtr.Zero, 0);
             return hHook;
         }
         public void UnHook()
         {
-            Win32Api.UnhookWindowsHookEx(hHook);
+            if (hHook != 0)
+            {
+                Win32Api.UnhookWindowsHookEx(hHook);
+                hHook = 0;
+            }
         }
         private int MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -98,37 +106,37 @@ namespace TimeTracker.ActivityTracker
                         case WM_LBUTTONDOWN:
                             button = MouseButtons.Left;
                             clickCount = 1;
-                            MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            MouseDownEvent?.Invoke(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                         case WM_RBUTTONDOWN:
                             button = MouseButtons.Right;
                             clickCount = 1;
-                            MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            MouseDownEvent?.Invoke(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                         case WM_MBUTTONDOWN:
                             button = MouseButtons.Middle;
                             clickCount = 1;
-                            MouseDownEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            MouseDownEvent?.Invoke(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                         case WM_LBUTTONUP:
                             button = MouseButtons.Left;
                             clickCount = 1;
-                            MouseUpEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            MouseUpEvent?.Invoke(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                         case WM_RBUTTONUP:
                             button = MouseButtons.Right;
                             clickCount = 1;
-                            MouseUpEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            MouseUpEvent?.Invoke(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                         case WM_MBUTTONUP:
                             button = MouseButtons.Middle;
                             clickCount = 1;
-                            MouseUpEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            MouseUpEvent?.Invoke(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                         case WM_MOUSEWHEEL:
                             button = MouseButtons.Middle;
                             clickCount = 1;
-                            MouseWheelEvent(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
+                            MouseWheelEvent?.Invoke(this, new MouseEventArgs(button, clickCount, point.X, point.Y, 0));
                             break;
                     }
 
@@ -154,5 +162,32 @@ namespace TimeTracker.ActivityTracker
 
         public delegate void MouseWheelHandler(object sender, MouseEventArgs e);
         public event MouseWheelHandler MouseWheelEvent;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                UnHook();
+                disposedValue = true;
+            }
+        }
+
+        ~MouseHook()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

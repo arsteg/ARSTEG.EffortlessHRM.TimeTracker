@@ -17,6 +17,7 @@ namespace TimeTracker.Models
 
 #if DEBUG
         public const string apiBaseUrl = "http://localhost:8080";
+        //public const string apiBaseUrl = "https://effortlesshrm-e029cd6a5095.herokuapp.com";
 #else
         public const string apiBaseUrl = "https://effortlesshrm-e029cd6a5095.herokuapp.com";
 #endif

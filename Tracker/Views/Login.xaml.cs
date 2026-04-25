@@ -16,6 +16,7 @@ using System.Windows.Controls.Primitives;
 //using Squirrel;
 using TimeTracker.Trace;
 using DocumentFormat.OpenXml.ExtendedProperties;
+using FontAwesome.WPF;
 
 
 
@@ -163,6 +164,49 @@ namespace TimeTracker.Views
         private void btnActionClose_Click( object sender, MouseButtonEventArgs e )
         {
 			System.Windows.Application.Current.Shutdown();
+        }
+
+        private bool _isPasswordVisible = false;
+
+        private void btnTogglePassword_Click(object sender, RoutedEventArgs e)
+        {
+            _isPasswordVisible = !_isPasswordVisible;
+
+            if (_isPasswordVisible)
+            {
+                // Show password
+                txtPasswordVisible.Text = txtPassword.Password;
+                txtPassword.Visibility = Visibility.Collapsed;
+                txtPasswordVisible.Visibility = Visibility.Visible;
+                iconTogglePassword.Icon = FontAwesomeIcon.EyeSlash;
+                txtPasswordVisible.Focus();
+            }
+            else
+            {
+                // Hide password
+                txtPassword.Password = txtPasswordVisible.Text;
+                txtPasswordVisible.Visibility = Visibility.Collapsed;
+                txtPassword.Visibility = Visibility.Visible;
+                iconTogglePassword.Icon = FontAwesomeIcon.Eye;
+                txtPassword.Focus();
+            }
+        }
+
+        private void txtPasswordVisible_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(txtPasswordVisible.Text) && txtPasswordVisible.Text.Length > 0)
+            {
+                passwordHint.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                passwordHint.Visibility = Visibility.Visible;
+            }
+
+            if (this.DataContext != null)
+            {
+                ((LoginViewModel)this.DataContext).Password = txtPasswordVisible.Text;
+            }
         }
     }
 }

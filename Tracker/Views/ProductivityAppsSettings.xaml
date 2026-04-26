@@ -21,7 +21,7 @@
         <converters:StatusApprovedToVisibilityConverter x:Key="statusApprovedToVisibilityConverter" />
         <converters:StatusRejectedToVisibilityConverter x:Key="statusRejectedToVisibilityConverter" />
     </Window.Resources>
-    <Border Background="#eff2f7" CornerRadius="15" MouseDown="Border_MouseDown" MouseLeftButtonDown="Border_MouseLeftButtonDown">
+    <Border Background="#eff2f7" CornerRadius="20" MouseDown="Border_MouseDown" MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
             <Grid.ColumnDefinitions>               
                 <ColumnDefinition/>
@@ -63,7 +63,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <TextBlock Style="{StaticResource textBlockGridTitle}" HorizontalAlignment="Left" Text="Running Applications" Margin="10,0,0,5" FontSize="14" Foreground="#3AB19B"/>
-                    <Border Grid.Row="1" BorderThickness="1"  BorderBrush="LightGray" CornerRadius="15" Margin="5 0,0 0">
+                    <Border Grid.Row="1" BorderThickness="2"  BorderBrush="#3AB19B" CornerRadius="16" Margin="5 0,0 0">
                         <DataGrid  RowStyle="{DynamicResource DataGridRowStyle1}"                           
                           x:Name="runningProcessesDatagrid" 
                           CellStyle="{StaticResource DataGridCellStyle1}"
@@ -103,7 +103,7 @@
                         </DataGrid>
                     </Border>
                     <TextBlock Grid.Column="1" Style="{StaticResource textBlockGridTitle}" HorizontalAlignment="Left" Text="Selected Productivity Applications" Margin="10,0,0,5" FontSize="14" Foreground="#3AB19B"/>
-                    <Border Grid.Row="1" Grid.Column="1" BorderThickness="1"  BorderBrush="LightGray" CornerRadius="15" Margin="0 0,5 0">
+                    <Border Grid.Row="1" Grid.Column="1" BorderThickness="2"  BorderBrush="#3AB19B" CornerRadius="16" Margin="0 0,5 0">
                         <DataGrid Grid.Column="1" RowStyle="{DynamicResource DataGridRowStyle1}"                           
                           x:Name="membersDatagrid" 
                           CellStyle="{StaticResource DataGridCellStyle1}"

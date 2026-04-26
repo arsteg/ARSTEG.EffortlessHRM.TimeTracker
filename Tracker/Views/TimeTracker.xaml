@@ -49,7 +49,7 @@
         </Grid>
         <Thumb Opacity="100" Background="Transparent" Foreground="{x:Null}" DragDelta="Thumb_OnDragDelta"/>
 
-        <Border CornerRadius="10,0 0 10" MouseDown="Border_MouseDown">
+        <Border CornerRadius="20,0,0,20" MouseDown="Border_MouseDown">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="White" Offset="0"/>
@@ -100,7 +100,7 @@
             </StackPanel>
         </Grid>
 
-        <Border Background="#ffffff" Grid.Column="1" CornerRadius="0 10 1 0" MouseDown="Border_MouseDown">
+        <Border Background="#ffffff" Grid.Column="1" CornerRadius="0,20,20,0" MouseDown="Border_MouseDown">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Background="WhiteSmoke">
                     <TextBlock Text="{Binding ErrorMessage}" Style="{StaticResource normalText}" Foreground="{Binding MessageColor}" Margin="10 0 0 0"/>
@@ -147,7 +147,7 @@
                         
                     </StackPanel>
                 </Grid>                
-                <Border  CornerRadius="5" BorderThickness="1" BorderBrush="LightGray" Margin="5 0 5 0">
+                <Border  CornerRadius="12" BorderThickness="2" BorderBrush="#3AB19B" Margin="5 0 5 0">
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -286,7 +286,7 @@
                         </TextBox>
                     </StackPanel>                    
                 </Grid>
-                <Border BorderThickness="1" BorderBrush="#acb0af" Margin="5,5,5,0" CornerRadius="5">
+                <Border BorderThickness="2" BorderBrush="#3AB19B" Margin="5,5,5,0" CornerRadius="12">
                     <Grid Margin="15 5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
@@ -298,7 +298,7 @@
                         </Rectangle>
                     </Grid>
                 </Border>
-                <Border BorderThickness="0" BorderBrush="#acb0af" Margin="25 3 25 1" CornerRadius="5">
+                <Border BorderThickness="0" BorderBrush="#3AB19B" Margin="25 3 25 1" CornerRadius="12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
@@ -352,7 +352,7 @@
 
         <!-- Popup control -->
         <Popup x:Name="TrackerSwitchPopup" IsOpen="{Binding PopupForSwitchTracker}" Placement="Center" PlacementTarget="{Binding ElementName=mainWindow}">
-            <Border Background="White" BorderThickness="1" BorderBrush="LightGray" CornerRadius="5" Width="400" Height="150" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Background="White" BorderThickness="2" BorderBrush="#3AB19B" CornerRadius="12" Width="400" Height="150" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel>
                     <!-- Title Banner -->
                     <Grid Background="LightGray">
@@ -375,10 +375,10 @@
         </Popup>
         
         <!-- Version number -->
-        <StackPanel Grid.Column="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="10,0,0,10">
+        <StackPanel Grid.Column="0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="15,0,0,15">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Version" Margin="0,0,5,0" Foreground="#3AB19B"/>
-                <TextBlock x:Name="currentVersion" Text="1.0.0" Foreground="#3AB19B"/>
+                <TextBlock Text="Version" Margin="0,0,5,0" Foreground="White" Opacity="0.7" FontSize="11"/>
+                <TextBlock x:Name="currentVersion" Text="1.0.0" Foreground="White" Opacity="0.7" FontSize="11"/>
             </StackPanel>
         </StackPanel>
     </Grid>

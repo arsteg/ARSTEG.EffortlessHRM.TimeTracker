@@ -193,6 +193,7 @@ namespace TimeTracker.AppUsedTracker
                     }
                     catch (Exception ex)
                     {
+                        Debug.WriteLine($"GetActiveProcess error: {ex.Message}");
                         _appTitle = title;
                         _appName = null;
                     }
@@ -233,6 +234,7 @@ namespace TimeTracker.AppUsedTracker
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine($"GetActiveWindowTitleV1 error: {ex.Message}");
                     return;
                 }
             }
@@ -296,24 +298,14 @@ namespace TimeTracker.AppUsedTracker
             string path = Path.Combine(tempPath, $"trackerlogApp_{DateTime.Now.ToString("ddMMyyyy")}.log");
             try
             {
-                StreamWriter sw;
-                if (!File.Exists(path))
+                using (var sw = File.AppendText(path))
                 {
-                    sw = File.CreateText(path);
+                    sw.WriteLine($"\n{DateTime.Now.ToString()} Info : {message}");
                 }
-                else
-                {
-                    sw = File.AppendText(path);
-                }
-
-                sw.WriteLine($"\n{DateTime.Now.ToString()} Info : {message}");
-
-                sw.Flush();
-                sw.Close();
             }
             catch (Exception ex)
             {
-
+                Debug.WriteLine($"TempLog error: {ex.Message}");
             }
         }
 

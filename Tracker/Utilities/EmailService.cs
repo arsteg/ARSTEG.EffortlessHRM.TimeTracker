@@ -14,40 +14,34 @@ namespace TimeTracker.Utilities
     {
         public async Task<SendGrid.Response> SendEmailAsyncToRecipientUsingSendGrid(string key, string fromEmail, string toEmail, string ccEmail, string bccEmail, string subject, string body)
         {
-            try
+            var client = new SendGridClient(key);
+            var message = new SendGridMessage();
+
+            message.SetFrom(new EmailAddress(fromEmail, "Effortless HRM"));
+            message.AddTo(new EmailAddress(toEmail));
+            if (!string.IsNullOrEmpty(ccEmail))
             {
-                var client = new SendGridClient(key);
-                var message = new SendGridMessage();
+                message.AddCc(new EmailAddress(ccEmail));
+            }
+            if (!string.IsNullOrEmpty(bccEmail))
+            {
+                message.AddBcc(new EmailAddress(bccEmail));
+            }
 
-                message.SetFrom(new EmailAddress(fromEmail, "Effortless HRM"));
-                message.AddTo(new EmailAddress(toEmail));
-                if (!string.IsNullOrEmpty(ccEmail))
-                {
-                    message.AddCc(new EmailAddress(ccEmail));
-                }
-                if (!string.IsNullOrEmpty(bccEmail))
-                {
-                    message.AddBcc(new EmailAddress(bccEmail));
-                }
-
-                var folderPath = @$"{Environment.CurrentDirectory}\{DateTime.Now.ToString("yyyy-MM-dd")}";
-                var files = System.IO.Directory.GetFiles(folderPath);
-                
-                foreach(var file in files)
+            var folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DateTime.Now.ToString("yyyy-MM-dd"));
+            if (Directory.Exists(folderPath))
+            {
+                var files = Directory.GetFiles(folderPath);
+                foreach (var file in files)
                 {
                     var contentid = Path.GetFileName(file);
-                    message.AddAttachment(file, Convert.ToBase64String(File.ReadAllBytes(file)), "image/jpeg","inline", contentid);
-                }               
-                message.SetSubject(subject);
-                //message.AddContent(MimeType.Html, body);
-                message.HtmlContent = body;
-                
-                return await client.SendEmailAsync(message);
+                    message.AddAttachment(file, Convert.ToBase64String(File.ReadAllBytes(file)), "image/jpeg", "inline", contentid);
+                }
             }
-            catch (Exception ex)
-            {
-                throw ex;   
-            }
+            message.SetSubject(subject);
+            message.HtmlContent = body;
+
+            return await client.SendEmailAsync(message).ConfigureAwait(false);
         }
     }
 }

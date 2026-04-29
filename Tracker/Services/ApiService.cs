@@ -5,45 +5,57 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TimeTracker.Models;
+using TimeTracker.Services.Interfaces;
 
 namespace TimeTracker.Services
 {
-    public static class APIService
+    public interface IApiService
     {
-        public static async Task<bool> GetEnableBeepSoundSetting()
+        Task<bool> GetEnableBeepSoundSetting();
+        Task<UserPreferenceResult> GetUserPreferencesSetting();
+        Task<BaseResponse> SetUserPreferences(CreateUserPreferenceRequest createUserPreferenceRequest);
+        Task<Project> GetUserPreferencesByKey();
+    }
+
+    public class APIService : IApiService
+    {
+        private readonly IRestService _restService;
+
+        public APIService(IRestService restService)
         {
-            var rest = new REST(new HttpProviders());
-            var result = await rest.GetEnableBeepSoundSetting(
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+        }
+
+        public async Task<bool> GetEnableBeepSoundSetting()
+        {
+            var result = await _restService.GetEnableBeepSoundSetting(
                 $"api/v1/userPreferences/getUserPreferenceByKey/TimeTracker.BlurScreenshots"
             );
             return result?.data ?? false;
         }
 
-        public static async Task<UserPreferenceResult> GetUserPreferencesSetting()
+        public async Task<UserPreferenceResult> GetUserPreferencesSetting()
         {
-            var rest = new REST(new HttpProviders());
-            var result = await rest.GetUserPreferencesSetting(
+            var result = await _restService.GetUserPreferencesSetting(
                 $"api/v1/userPreferences/user/{GlobalSetting.Instance.LoginResult.data.user.id}"
             );
             return result;
         }
 
-        public static async Task<BaseResponse> SetUserPreferences(
+        public async Task<BaseResponse> SetUserPreferences(
             CreateUserPreferenceRequest createUserPreferenceRequest
         )
         {
-            var rest = new REST(new HttpProviders());
-            var result = await rest.SetUserPreferences(
+            var result = await _restService.SetUserPreferences(
                 $"api/v1/userPreferences/create",
                 createUserPreferenceRequest
             );
             return result;
         }
 
-        public static async Task<Project> GetUserPreferencesByKey()
+        public async Task<Project> GetUserPreferencesByKey()
         {
-            var rest = new REST(new HttpProviders());
-            var result = await rest.GetUserPreferencesSettingByKey(
+            var result = await _restService.GetUserPreferencesSettingByKey(
                 $"api/v1/userPreferences/preference-key/{GlobalSetting.Instance.userPreferenceKey.TrackerSelectedProject}?userId={GlobalSetting.Instance.LoginResult.data.user.id}"
             );
             return result;

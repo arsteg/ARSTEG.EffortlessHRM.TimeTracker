@@ -23,99 +23,106 @@ namespace TimeTracker.Utilities
         public static extern bool DeleteObject(IntPtr onj);
         public static string CaptureMyScreenOld()
         {
-            Bitmap bitmap;
+            Bitmap bitmap = null;
             string result = null;
+            IntPtr handle = IntPtr.Zero;
 
             ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
-            var myEncoder =
-                 System.Drawing.Imaging.Encoder.Quality;
-            var myEncoderParameters = new EncoderParameters(1);
-            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 75L);
-            myEncoderParameters.Param[0] = myEncoderParameter;
-
-            bitmap = new Bitmap((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight, PixelFormat.Format32bppArgb);
-
-            using (Graphics g = Graphics.FromImage(bitmap))
+            var myEncoder = System.Drawing.Imaging.Encoder.Quality;
+            using (var myEncoderParameters = new EncoderParameters(1))
             {
-                g.CopyFromScreen(0, 0, 0, 0, bitmap.Size);
-            }
-            IntPtr handle = IntPtr.Zero;
-            try
-            {
-                handle = bitmap.GetHbitmap();
-                var createdImage = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
-                var folderPath = @$"{Environment.CurrentDirectory}\{DateTime.Now.ToString("yyyy-MM-dd")}";
-                if (!System.IO.Directory.Exists(folderPath))
+                myEncoderParameters.Param[0] = new EncoderParameter(myEncoder, 75L);
+
+                bitmap = new Bitmap((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight, PixelFormat.Format32bppArgb);
+
+                using (Graphics g = Graphics.FromImage(bitmap))
                 {
-                    System.IO.Directory.CreateDirectory(folderPath);
+                    g.CopyFromScreen(0, 0, 0, 0, bitmap.Size);
                 }
-                var fileName = $@"{DateTime.UtcNow.ToString("HH-mm")}.jpg";
-                result = @$"{folderPath}\{fileName}";
-                bitmap.Save(result, jpgEncoder, myEncoderParameters);
-            }
-            catch (Exception)
-            {
-            }
-            finally
-            {
-                DeleteObject(handle);
+
+                try
+                {
+                    handle = bitmap.GetHbitmap();
+                    var folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DateTime.Now.ToString("yyyy-MM-dd"));
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
+                    var fileName = $@"{DateTime.UtcNow.ToString("HH-mm")}.jpg";
+                    result = Path.Combine(folderPath, fileName);
+                    bitmap.Save(result, jpgEncoder, myEncoderParameters);
+                }
+                catch (Exception ex)
+                {
+                    TimeTracker.Trace.LogManager.Logger.Error($"Error capturing screen (old method): {ex.Message}");
+                }
+                finally
+                {
+                    DeleteObject(handle);
+                    bitmap?.Dispose();
+                }
             }
             return result;
         }
 
         public static string CaptureMyScreen(bool isBlured = false)
         {
-            Bitmap bitmap;
+            Bitmap bitmap = null;
+            Bitmap blurredBitmap = null;
             string result = null;
+            IntPtr handle = IntPtr.Zero;
 
             ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
             var myEncoder = System.Drawing.Imaging.Encoder.Quality;
-            var myEncoderParameters = new EncoderParameters(1);
-            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 75L);
-            myEncoderParameters.Param[0] = myEncoderParameter;
-
-            // Get the total dimensions of all screens combined
-            int screenLeft = SystemInformation.VirtualScreen.Left;
-            int screenTop = SystemInformation.VirtualScreen.Top;
-            int screenWidth = SystemInformation.VirtualScreen.Width;
-            int screenHeight = SystemInformation.VirtualScreen.Height;
-
-            // Create a bitmap of the appropriate size to receive the full-screen screenshot.
-            bitmap = new Bitmap(screenWidth, screenHeight);
-
-            // Draw the screenshot into our bitmap.
-            using (Graphics g = Graphics.FromImage(bitmap))
+            using (var myEncoderParameters = new EncoderParameters(1))
             {
-                g.CopyFromScreen(screenLeft, screenTop, 0, 0, bitmap.Size);
-            }
+                myEncoderParameters.Param[0] = new EncoderParameter(myEncoder, 75L);
 
-            if (isBlured)
-            {
-                bitmap = ApplyBlur(bitmap); // Replace original with blurred version
-            }
+                // Get the total dimensions of all screens combined
+                int screenLeft = SystemInformation.VirtualScreen.Left;
+                int screenTop = SystemInformation.VirtualScreen.Top;
+                int screenWidth = SystemInformation.VirtualScreen.Width;
+                int screenHeight = SystemInformation.VirtualScreen.Height;
 
-            IntPtr handle = IntPtr.Zero;
-            try
-            {
-                handle = bitmap.GetHbitmap();
-                var createdImage = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
-                var folderPath = Path.Combine(Path.Combine(Environment.CurrentDirectory,"Screenshots"), DateTime.Now.ToString("yyyy-MM-dd"));
-                if (!Directory.Exists(folderPath))
+                // Create a bitmap of the appropriate size to receive the full-screen screenshot.
+                bitmap = new Bitmap(screenWidth, screenHeight);
+
+                // Draw the screenshot into our bitmap.
+                using (Graphics g = Graphics.FromImage(bitmap))
                 {
-                    Directory.CreateDirectory(folderPath);
+                    g.CopyFromScreen(screenLeft, screenTop, 0, 0, bitmap.Size);
                 }
-                var fileName = $@"{DateTime.UtcNow.ToString("HH-mm")}.jpg";
-                result = Path.Combine(folderPath, fileName);
-                bitmap.Save(result, jpgEncoder, myEncoderParameters);
-            }
-            catch (Exception)
-            {
-            }
-            finally
-            {
-                DeleteObject(handle);
+
+                Bitmap bitmapToSave = bitmap;
+                if (isBlured)
+                {
+                    blurredBitmap = ApplyBlur(bitmap);
+                    bitmapToSave = blurredBitmap;
+                }
+
+                try
+                {
+                    handle = bitmapToSave.GetHbitmap();
+                    var folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Screenshots", DateTime.Now.ToString("yyyy-MM-dd"));
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
+                    var fileName = $@"{DateTime.UtcNow.ToString("HH-mm")}.jpg";
+                    result = Path.Combine(folderPath, fileName);
+                    bitmapToSave.Save(result, jpgEncoder, myEncoderParameters);
+                }
+                catch (Exception ex)
+                {
+                    TimeTracker.Trace.LogManager.Logger.Error($"Error capturing screen: {ex.Message}");
+                }
+                finally
+                {
+                    DeleteObject(handle);
+                    // Dispose bitmaps properly
+                    bitmap?.Dispose();
+                    blurredBitmap?.Dispose();
+                }
             }
             return result;
         }
@@ -125,71 +132,79 @@ namespace TimeTracker.Utilities
             Bitmap blurred = new Bitmap(image.Width, image.Height);
             int bytesPerPixel = 3;
 
-            BitmapData srcData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
-                ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            BitmapData dstData = blurred.LockBits(new Rectangle(0, 0, blurred.Width, blurred.Height),
-                ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
-
-            int stride = srcData.Stride;
-            byte[] srcPixels = new byte[srcData.Stride * srcData.Height];
-            byte[] tempPixels = new byte[srcData.Stride * srcData.Height];
-            byte[] dstPixels = new byte[dstData.Stride * dstData.Height];
-
-            System.Runtime.InteropServices.Marshal.Copy(srcData.Scan0, srcPixels, 0, srcPixels.Length);
-
-            // Horizontal pass
-            for (int y = 0; y < image.Height; y++)
+            BitmapData srcData = null;
+            BitmapData dstData = null;
+            try
             {
-                for (int x = 0; x < image.Width; x++)
-                {
-                    int red = 0, green = 0, blue = 0, count = 0;
-                    for (int kx = -blurRadius; kx <= blurRadius; kx++)
-                    {
-                        int nx = x + kx;
-                        if (nx >= 0 && nx < image.Width)
-                        {
-                            int pixelOffset = y * stride + nx * bytesPerPixel;
-                            blue += srcPixels[pixelOffset];
-                            green += srcPixels[pixelOffset + 1];
-                            red += srcPixels[pixelOffset + 2];
-                            count++;
-                        }
-                    }
-                    int dstOffset = y * stride + x * bytesPerPixel;
-                    tempPixels[dstOffset] = (byte)(blue / count);
-                    tempPixels[dstOffset + 1] = (byte)(green / count);
-                    tempPixels[dstOffset + 2] = (byte)(red / count);
-                }
-            }
+                srcData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
+                    ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                dstData = blurred.LockBits(new Rectangle(0, 0, blurred.Width, blurred.Height),
+                    ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
 
-            // Vertical pass
-            for (int y = 0; y < image.Height; y++)
+                int stride = srcData.Stride;
+                byte[] srcPixels = new byte[srcData.Stride * srcData.Height];
+                byte[] tempPixels = new byte[srcData.Stride * srcData.Height];
+                byte[] dstPixels = new byte[dstData.Stride * dstData.Height];
+
+                System.Runtime.InteropServices.Marshal.Copy(srcData.Scan0, srcPixels, 0, srcPixels.Length);
+
+                // Horizontal pass
+                for (int y = 0; y < image.Height; y++)
+                {
+                    for (int x = 0; x < image.Width; x++)
+                    {
+                        int red = 0, green = 0, blue = 0, count = 0;
+                        for (int kx = -blurRadius; kx <= blurRadius; kx++)
+                        {
+                            int nx = x + kx;
+                            if (nx >= 0 && nx < image.Width)
+                            {
+                                int pixelOffset = y * stride + nx * bytesPerPixel;
+                                blue += srcPixels[pixelOffset];
+                                green += srcPixels[pixelOffset + 1];
+                                red += srcPixels[pixelOffset + 2];
+                                count++;
+                            }
+                        }
+                        int dstOffset = y * stride + x * bytesPerPixel;
+                        tempPixels[dstOffset] = (byte)(blue / count);
+                        tempPixels[dstOffset + 1] = (byte)(green / count);
+                        tempPixels[dstOffset + 2] = (byte)(red / count);
+                    }
+                }
+
+                // Vertical pass
+                for (int y = 0; y < image.Height; y++)
+                {
+                    for (int x = 0; x < image.Width; x++)
+                    {
+                        int red = 0, green = 0, blue = 0, count = 0;
+                        for (int ky = -blurRadius; ky <= blurRadius; ky++)
+                        {
+                            int ny = y + ky;
+                            if (ny >= 0 && ny < image.Height)
+                            {
+                                int pixelOffset = ny * stride + x * bytesPerPixel;
+                                blue += tempPixels[pixelOffset];
+                                green += tempPixels[pixelOffset + 1];
+                                red += tempPixels[pixelOffset + 2];
+                                count++;
+                            }
+                        }
+                        int dstOffset = y * stride + x * bytesPerPixel;
+                        dstPixels[dstOffset] = (byte)(blue / count);
+                        dstPixels[dstOffset + 1] = (byte)(green / count);
+                        dstPixels[dstOffset + 2] = (byte)(red / count);
+                    }
+                }
+
+                System.Runtime.InteropServices.Marshal.Copy(dstPixels, 0, dstData.Scan0, dstPixels.Length);
+            }
+            finally
             {
-                for (int x = 0; x < image.Width; x++)
-                {
-                    int red = 0, green = 0, blue = 0, count = 0;
-                    for (int ky = -blurRadius; ky <= blurRadius; ky++)
-                    {
-                        int ny = y + ky;
-                        if (ny >= 0 && ny < image.Height)
-                        {
-                            int pixelOffset = ny * stride + x * bytesPerPixel;
-                            blue += tempPixels[pixelOffset];
-                            green += tempPixels[pixelOffset + 1];
-                            red += tempPixels[pixelOffset + 2];
-                            count++;
-                        }
-                    }
-                    int dstOffset = y * stride + x * bytesPerPixel;
-                    dstPixels[dstOffset] = (byte)(blue / count);
-                    dstPixels[dstOffset + 1] = (byte)(green / count);
-                    dstPixels[dstOffset + 2] = (byte)(red / count);
-                }
+                if (srcData != null) image.UnlockBits(srcData);
+                if (dstData != null) blurred.UnlockBits(dstData);
             }
-
-            System.Runtime.InteropServices.Marshal.Copy(dstPixels, 0, dstData.Scan0, dstPixels.Length);
-            image.UnlockBits(srcData);
-            blurred.UnlockBits(dstData);
             return blurred;
         }
 
@@ -208,10 +223,10 @@ namespace TimeTracker.Utilities
 
         public static void ClearScreenshotsFolder()
         {
-            var folderPath = Path.Combine(Environment.CurrentDirectory, "Screenshots");
+            var folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Screenshots");
             if (Directory.Exists(folderPath))
             {
-                System.IO.DirectoryInfo directory = new System.IO.DirectoryInfo(folderPath);
+                var directory = new DirectoryInfo(folderPath);
                 directory.Delete(true);
             }
         }

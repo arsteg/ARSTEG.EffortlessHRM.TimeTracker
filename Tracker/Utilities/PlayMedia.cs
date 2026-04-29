@@ -8,8 +8,11 @@ namespace TimeTracker.Utilities
     {
         public static void PlayScreenCaptureSound()
         {
-            System.Media.SoundPlayer player = new System.Media.SoundPlayer(@$"{Environment.CurrentDirectory}\media\audio\screencaptureSound.wav");
-            player.Play();
+            using (var player = new System.Media.SoundPlayer(
+                System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "media", "audio", "screencaptureSound.wav")))
+            {
+                player.Play();
+            }
         }
     }
 }

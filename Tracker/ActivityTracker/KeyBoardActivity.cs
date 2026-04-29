@@ -46,7 +46,7 @@ namespace TimeTracker.ActivityTracker
             if (nCode >= 0 && (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_ALTDOWN))
             {
                 var vkCode = (Keys)Marshal.ReadInt32(lParam);
-                OnKeyDown(null, new KeyEventArgs(vkCode));
+                OnKeyDown?.Invoke(null, new KeyEventArgs(vkCode));
             }
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }

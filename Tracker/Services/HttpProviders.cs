@@ -13,13 +13,29 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using SendGrid.Helpers.Mail;
 using TimeTracker.Models;
+using TimeTracker.Services.Interfaces;
 using TimeTracker.Trace;
 
 namespace TimeTracker.Services
 {
-    public class HttpProviders
+    public class HttpProviders : IHttpProvider
     {
         private readonly JsonSerializerSettings _serializerSettings;
+
+        // Shared HttpClient instance to prevent socket exhaustion
+        private static readonly HttpClient _sharedHttpClient;
+
+        static HttpProviders()
+        {
+            var handler = new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            };
+            _sharedHttpClient = new HttpClient(handler)
+            {
+                Timeout = TimeSpan.FromSeconds(100)
+            };
+        }
 
         public HttpProviders()
         {
@@ -43,24 +59,16 @@ namespace TimeTracker.Services
         {
             try
             {
-                HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(uri);
+                using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                request.Headers.Add("ApiKey", ApiKey);
 
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json")
-                );
-                httpClient.DefaultRequestHeaders.Add("ApiKey", ApiKey);
-                HttpResponseMessage response = await httpClient.GetAsync(uri);
+                using HttpResponseMessage response = await _sharedHttpClient.SendAsync(request);
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
 
-                // TResult result = await Task.Run(() => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings));
-
-                //Country Res_ = JsonConvert.DeserializeObject(serialized, typeof(Country)) as Country;
-                TResult result = await Task.Run(
-                    () => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings)
-                );
+                TResult result = JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
                 return result;
             }
             catch (Exception ex)
@@ -69,7 +77,7 @@ namespace TimeTracker.Services
                     ex,
                     $"error in GetAsync<TResult>(string uri, string ApiKey, string token = \"\"), calling url:{uri}"
                 );
-                return JsonConvert.DeserializeObject<TResult>(null);
+                return default;
             }
         }
 
@@ -77,20 +85,15 @@ namespace TimeTracker.Services
         {
             try
             {
-                HttpClient httpClient = new HttpClient();
+                using var request = new HttpRequestMessage(HttpMethod.Get, uri);
                 var cookies =
                     $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
-                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json")
-                );
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                    "Bearer",
-                    token
-                );
+                request.Headers.Add("Cookie", cookies);
+                request.Headers.Accept.Clear();
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                HttpResponseMessage response = await httpClient.GetAsync(uri);
+                using HttpResponseMessage response = await _sharedHttpClient.SendAsync(request);
                 await HandleResponse(response);
 
                 string serialized = await response.Content.ReadAsStringAsync();
@@ -107,8 +110,7 @@ namespace TimeTracker.Services
                     $"Error in GetWithTokenAsync<TResult>(string uri, string token = \"\"), calling URL: {uri}"
                 );
 
-                // Return a default value for TResult
-                return default(TResult);
+                return default;
             }
         }
 
@@ -116,47 +118,40 @@ namespace TimeTracker.Services
         {
             try
             {
-                HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
+                using var request = new HttpRequestMessage(HttpMethod.Post, uri);
+                request.Headers.Accept.Clear();
 
-                Login login = data as Login;
-                // Log the JSON string
-                LogManager.Logger.Info($"{login.email}: {login.password}");
+                // Log only email for login attempts (never log passwords)
+                if (data is Login login)
+                {
+                    LogManager.Logger.Info($"Login attempt for: {login.email}");
+                }
 
                 var content = new StringContent(
                     JsonConvert.SerializeObject(data),
                     Encoding.UTF8,
                     "application/json"
                 );
+                request.Content = content;
 
-                HttpResponseMessage response = await httpClient
-                    .PostAsync(uri, content)
+                using HttpResponseMessage response = await _sharedHttpClient
+                    .SendAsync(request)
                     .ConfigureAwait(false);
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
 
-                LogManager.Logger.Info($" serialized {serialized}");
-
-                TResult result = await Task.Run(
-                    () => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings)
-                );
+                TResult result = JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
 
                 return result;
             }
             catch (Exception ex)
             {
-                var payload = new StringContent(
-                    JsonConvert.SerializeObject(data),
-                    Encoding.UTF8,
-                    "application/json"
-                );
                 LogManager.Logger.Error(
                     ex,
-                    $"error in PostAsync<TResult,T>(string uri, T data, string token = \"\"), calling url:{uri} \n\n. Payload ${payload}"
+                    $"error in PostAsync<TResult,T>(string uri, T data, string token = \"\"), calling url:{uri}"
                 );
 
-                throw ex;
+                throw;
             }
         }
 
@@ -166,39 +161,33 @@ namespace TimeTracker.Services
             {
                 var cookies =
                     $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
-                HttpClient httpClient = new HttpClient();
-                httpClient.Timeout = TimeSpan.FromSeconds(100);
-                httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                    "Bearer",
-                    token
-                );
-                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Add("Cookie", cookies);
 
                 var content = new StringContent(
                     JsonConvert.SerializeObject(data),
                     Encoding.UTF8,
                     "application/json"
                 );
+                request.Content = content;
 
                 try
                 {
-                    await httpClient.PostAsync(uri, content);
+                    using var response = await _sharedHttpClient.SendAsync(request);
                 }
-                catch (Exception ex) { }
-                //HttpResponseMessage response = await httpClient.PostAsync(uri, content).ConfigureAwait(false);
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Warn($"PostAsyncWithVoid failed for {uri}: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
-                var payload = new StringContent(
-                    JsonConvert.SerializeObject(data),
-                    Encoding.UTF8,
-                    "application/json"
-                );
                 LogManager.Logger.Error(
                     ex,
-                    $"error in PostAsyncWithVoid<T>(string uri, T data, string token = \"\"), calling url:{uri} \n\n. Payload ${payload}"
+                    $"error in PostAsyncWithVoid<T>(string uri, T data, string token = \"\"), calling url:{uri}"
                 );
                 throw;
             }
@@ -210,82 +199,46 @@ namespace TimeTracker.Services
             {
                 var cookies =
                     $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
-                HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                    "Bearer",
-                    token
-                );
-                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Add("Cookie", cookies);
 
                 var content = new StringContent(
                     JsonConvert.SerializeObject(data),
                     Encoding.UTF8,
                     "application/json"
                 );
+                request.Content = content;
 
-                HttpResponseMessage response = await httpClient
-                    .PostAsync(uri, content)
+                using HttpResponseMessage response = await _sharedHttpClient
+                    .SendAsync(request)
                     .ConfigureAwait(false);
+
                 // Check if the response indicates an Unauthorized status
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    // Log the unauthorized error and take appropriate action
                     LogManager.Logger.Warn($"Unauthorized access. URL: {uri}");
-                    throw new UnauthorizedAccessException(
-                        "Unauthorized access. Please check your token."
+                    // Return a properly formed error response
+                    return JsonConvert.DeserializeObject<TResult>(
+                        "{\"statusCode\":401,\"status\":\"failed\",\"data\":null}",
+                        _serializerSettings
                     );
                 }
+
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(serialized);
-                TResult result = await Task.Run(() =>
-                {
-                    return JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
-                });
+                TResult result = JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
 
-                return result;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                // Handle unauthorized exception separately if needed
-                LogManager.Logger.Error(ex, "Unauthorized exception in PostWithTokenAsync.");
-                // Optional: Trigger a re-login or token refresh mechanism here
-                TResult result = await Task.Run(
-                    () =>
-                        JsonConvert.DeserializeObject<TResult>(
-                            "{statusCode:401,status:'failed',data:null}",
-                            _serializerSettings
-                        )
-                );
                 return result;
             }
             catch (Exception ex)
             {
-                try
-                {
-                    TResult result = await Task.Run(() =>
-                    {
-                        return JsonConvert.DeserializeObject<TResult>(
-                            ex.Message,
-                            _serializerSettings
-                        );
-                    });
-                    return result;
-                }
-                catch
-                {
-                    var payload = new StringContent(
-                        JsonConvert.SerializeObject(data),
-                        Encoding.UTF8,
-                        "application/json"
-                    );
-                    LogManager.Logger.Error(
-                        ex,
-                        $"error in PostWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri} \n\n. Payload ${payload}"
-                    );
-                }
+                LogManager.Logger.Error(
+                    ex,
+                    $"error in PostWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri}"
+                );
                 return default;
             }
         }
@@ -296,23 +249,19 @@ namespace TimeTracker.Services
             {
                 var cookies =
                     $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
-                HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                    "Bearer",
-                    token
-                );
-                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
-                HttpResponseMessage response = await httpClient
-                    .DeleteAsync(uri)
+
+                using var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Add("Cookie", cookies);
+
+                using HttpResponseMessage response = await _sharedHttpClient
+                    .SendAsync(request)
                     .ConfigureAwait(false);
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
 
-                TResult result = await Task.Run(
-                    () => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings)
-                );
+                TResult result = JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
                 return result;
             }
             catch (Exception ex)
@@ -329,27 +278,27 @@ namespace TimeTracker.Services
         {
             try
             {
-                HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Add("ApiKey", ApiKey);
+                using var request = new HttpRequestMessage(HttpMethod.Post, uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Add("ApiKey", ApiKey);
                 var content = new StringContent(
                     JsonConvert.SerializeObject(""),
                     Encoding.UTF8,
                     "application/json"
                 );
-                HttpResponseMessage response = await httpClient
-                    .PostAsync(uri, content)
+                request.Content = content;
+
+                using HttpResponseMessage response = await _sharedHttpClient
+                    .SendAsync(request)
                     .ConfigureAwait(false);
 
                 await HandleResponse(response);
-                var serialized = await response.Content.ReadAsStringAsync();
             }
             catch (Exception ex)
             {
                 LogManager.Logger.Error(
                     ex,
-                    $"error in PostAsync(string uri, string ApiKey, string token = \"\"), method:public async Task PostAsync(string uri, string ApiKey, string token = \"\") ,calling url:{uri}"
+                    $"error in PostAsync(string uri, string ApiKey, string token = \"\"), calling url:{uri}"
                 );
                 throw;
             }
@@ -359,89 +308,52 @@ namespace TimeTracker.Services
         {
             try
             {
-                HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Add("ApiKey", ApiKey);
+                using var request = new HttpRequestMessage(HttpMethod.Post, uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Add("ApiKey", ApiKey);
                 var content = new StringContent(
                     JsonConvert.SerializeObject(data),
                     Encoding.UTF8,
                     "application/json"
                 );
-                HttpResponseMessage response = await httpClient
-                    .PostAsync(uri, content)
+                request.Content = content;
+
+                using HttpResponseMessage response = await _sharedHttpClient
+                    .SendAsync(request)
                     .ConfigureAwait(false);
 
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
 
-                TResult result = await Task.Run(
-                    () => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings)
-                );
+                TResult result = JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
 
                 return result;
             }
             catch (Exception ex)
             {
-                var payload = new StringContent(
-                    JsonConvert.SerializeObject(data),
-                    Encoding.UTF8,
-                    "application/json"
-                );
                 LogManager.Logger.Error(
                     ex,
-                    $"error in PostAsync<TResult>(string uri, string ApiKey, TResult data), calling url:{uri} \n\n. Payload ${payload}"
+                    $"error in PostAsync<TResult>(string uri, string ApiKey, TResult data), calling url:{uri}"
                 );
                 throw;
             }
         }
 
-        private HttpClient CreateHttpClient(string ApiKey, string token = "")
-        {
-            var httpClient = new HttpClient();
-
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json")
-            );
-
-            if (!string.IsNullOrEmpty(token))
-            {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                    "AuthToken",
-                    token
-                );
-            }
-            if (!string.IsNullOrEmpty(ApiKey))
-            {
-                httpClient.DefaultRequestHeaders.Add("ApiKey", ApiKey);
-            }
-
-            return httpClient;
-        }
-
         private async Task HandleResponse(HttpResponseMessage response)
         {
-            try
+            if (!response.IsSuccessStatusCode)
             {
-                if (!response.IsSuccessStatusCode)
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (
+                    response.StatusCode == HttpStatusCode.Forbidden
+                    || response.StatusCode == HttpStatusCode.Unauthorized
+                )
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-
-                    if (
-                        response.StatusCode == HttpStatusCode.Forbidden
-                        || response.StatusCode == HttpStatusCode.Unauthorized
-                    )
-                    {
-                        throw new ServiceAuthenticationException(content);
-                    }
-
-                    throw new HttpRequestExceptionEx(response.StatusCode, content);
+                    throw new ServiceAuthenticationException(content);
                 }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+
+                throw new HttpRequestExceptionEx(response.StatusCode, content);
             }
         }
 
@@ -451,42 +363,33 @@ namespace TimeTracker.Services
             {
                 var cookies =
                     $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
-                HttpClient httpClient = new HttpClient();
-                httpClient.BaseAddress = new Uri(uri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                    "Bearer",
-                    token
-                );
-                httpClient.DefaultRequestHeaders.Add("Cookie", cookies);
+
+                using var request = new HttpRequestMessage(HttpMethod.Put, uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Add("Cookie", cookies);
 
                 var content = new StringContent(
                     JsonConvert.SerializeObject(data),
                     Encoding.UTF8,
                     "application/json"
                 );
+                request.Content = content;
 
-                HttpResponseMessage response = await httpClient
-                    .PutAsync(uri, content)
+                using HttpResponseMessage response = await _sharedHttpClient
+                    .SendAsync(request)
                     .ConfigureAwait(false);
                 await HandleResponse(response);
                 string serialized = await response.Content.ReadAsStringAsync();
 
-                TResult result = await Task.Run(
-                    () => JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings)
-                );
+                TResult result = JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
                 return result;
             }
             catch (Exception ex)
             {
-                var payload = new StringContent(
-                    JsonConvert.SerializeObject(data),
-                    Encoding.UTF8,
-                    "application/json"
-                );
                 LogManager.Logger.Error(
                     ex,
-                    $"error in PutWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri} \n\n. Payload ${payload.ToString()}"
+                    $"error in PutWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri}"
                 );
                 throw;
             }

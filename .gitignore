@@ -51,3 +51,5 @@ TimeTracker.Bootstrapper/obj/Debug/Bundle.wixobj
 /TimeTracker.Bootstrapper/obj
 /TimeTracker.Bootstrapper/obj/Debug
 /TimeTracker.Bootstrapper/obj
+/Tracker.Tests/bin
+/Tracker.Tests/obj

@@ -10,6 +10,12 @@ namespace TimeTracker.Utilities
 {
     internal static class Commons
     {
+        // Shared HttpClient for URL accessibility checks
+        private static readonly HttpClient _sharedHttpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
+
         public static bool IsWindows()
         {
             return Environment.OSVersion.Platform == PlatformID.Win32NT;
@@ -17,31 +23,36 @@ namespace TimeTracker.Utilities
 
         public static bool IsMacOS()
         {
-            return Environment.OSVersion.Platform == PlatformID.Unix &&
-                   !IsWindows() && !IsLinux();
+            return Environment.OSVersion.Platform == PlatformID.MacOSX ||
+                   (Environment.OSVersion.Platform == PlatformID.Unix &&
+                    System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                        System.Runtime.InteropServices.OSPlatform.OSX));
         }
+
         public static bool IsLinux()
         {
-            return Environment.OSVersion.Platform == PlatformID.Unix &&
-                   !IsWindows() && !IsMacOS();
+            return Environment.OSVersion.Platform == PlatformID.Unix && !IsMacOS();
         }
-        public static async Task<bool> CheckUrlAccessibility( string url )
-        {
-            using (HttpClient client = new HttpClient())
-            {
-                try
-                {
-                    HttpResponseMessage response = await client.GetAsync(url);
 
-                    // Check if the status code indicates success (2xx)
+        public static async Task<bool> CheckUrlAccessibility(string url)
+        {
+            try
+            {
+                using (var request = new HttpRequestMessage(HttpMethod.Head, url))
+                {
+                    HttpResponseMessage response = await _sharedHttpClient.SendAsync(request).ConfigureAwait(false);
                     return response.IsSuccessStatusCode;
                 }
-                catch (HttpRequestException)
-                {
-                    // An exception occurred, indicating that the URL is not accessible
-                    return false;
-                }
             }
-        }        
+            catch (HttpRequestException)
+            {
+                return false;
+            }
+            catch (TaskCanceledException)
+            {
+                // Timeout
+                return false;
+            }
+        }
     }
 }

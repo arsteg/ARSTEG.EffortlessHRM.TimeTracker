@@ -1,52 +1,36 @@
-﻿using CommonServiceLocator;
-using GalaSoft.MvvmLight.Ioc;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using GalaSoft.MvvmLight.Views;
+using TimeTracker.Services;
 
 namespace TimeTracker.ViewModels
 {
+    /// <summary>
+    /// This class contains static references to all the view models in the
+    /// application and provides an entry point for the bindings.
+    /// ViewModels are resolved from the DI container.
+    /// </summary>
     public class ViewModelLocator
-    {         
+    {
         /// <summary>
-        /// Initializes a new instance of the ViewModelLocator class.
+        /// Gets the TimeTrackerViewModel from the DI container.
         /// </summary>
-        public ViewModelLocator()
-        {
-            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);            
-            SimpleIoc.Default.Register<TimeTrackerViewModel>();
-            SimpleIoc.Default.Register<LoginViewModel>();
-            SimpleIoc.Default.Register<ProductivityAppsSettingsViewModel>();
-        }
+        public TimeTrackerViewModel TimeTracker => AppServiceProvider.GetRequiredService<TimeTrackerViewModel>();
 
-        public TimeTrackerViewModel TimeTracker
-        {
-            get
-            {
-                return ServiceLocator.Current.GetInstance<TimeTrackerViewModel>();
-            }
-        }
+        /// <summary>
+        /// Gets the LoginViewModel from the DI container.
+        /// </summary>
+        public LoginViewModel Login => AppServiceProvider.GetRequiredService<LoginViewModel>();
 
-        public LoginViewModel Login
-        {
-            get
-            {
-                return ServiceLocator.Current.GetInstance<LoginViewModel>();
-            }
-        }
+        /// <summary>
+        /// Gets the ProductivityAppsSettingsViewModel from the DI container.
+        /// </summary>
+        public ProductivityAppsSettingsViewModel ProductivityAppsSettings => AppServiceProvider.GetRequiredService<ProductivityAppsSettingsViewModel>();
 
-        public ProductivityAppsSettingsViewModel ProductivityAppsSettings
-        {
-            get
-            {
-                return ServiceLocator.Current.GetInstance<ProductivityAppsSettingsViewModel>();
-            }
-        }
-
+        /// <summary>
+        /// Cleans up all the resources.
+        /// </summary>
         public static void Cleanup()
         {
-            // TODO Clear the ViewModels
-        }        
+            // Cleanup logic if needed
+        }
     }
 }

@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using TimeTracker.Models;
 using TimeTracker.Services;
+using TimeTracker.Services.Interfaces;
 using TimeTracker.Trace;
 
 namespace TimeTracker
@@ -21,13 +18,20 @@ namespace TimeTracker
     /// </summary>
     public partial class App : Application
     {
-        private static Mutex mutex = null;
-        private readonly REST _restService;
+        private IRestService _restService;
 
         public App()
         {
-            // Initialize services in constructor to ensure they’re ready before OnStartup
-            _restService = new REST(new HttpProviders());
+            // Configure dependency injection
+            var services = new ServiceCollection();
+            services.AddApplicationServices();
+            var serviceProvider = services.BuildServiceProvider();
+
+            // Initialize the service locator for transitional support
+            AppServiceProvider.Initialize(serviceProvider);
+
+            // Get the REST service from DI
+            _restService = serviceProvider.GetRequiredService<IRestService>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -64,7 +68,9 @@ namespace TimeTracker
             {
                 try
                 {
-                    UpdateOnlineStatusAsync(false).GetAwaiter().GetResult(); // Sync call for sleep
+                    // Use Task.Run with timeout since this runs on system event thread
+                    var updateTask = Task.Run(async () => await UpdateOnlineStatusAsync(false));
+                    updateTask.Wait(TimeSpan.FromSeconds(3)); // Short timeout for sleep event
                 }
                 catch (Exception ex)
                 {
@@ -116,8 +122,18 @@ namespace TimeTracker
         {
             try
             {
-                // Update online status synchronously on exit
-                Task.Run(() => UpdateOnlineStatusAsync(false)).GetAwaiter().GetResult();
+                // Unsubscribe from system events to prevent memory leak
+                SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+
+                // Dispose TimeTracker ViewModel to clean up timers and event handlers
+                if (GlobalSetting.Instance.TimeTracker?.DataContext is IDisposable disposableViewModel)
+                {
+                    disposableViewModel.Dispose();
+                }
+
+                // Update online status - use timeout to prevent hanging on exit
+                var updateTask = Task.Run(async () => await UpdateOnlineStatusAsync(false));
+                updateTask.Wait(TimeSpan.FromSeconds(5)); // Timeout after 5 seconds
             }
             catch (Exception ex)
             {
@@ -134,9 +150,11 @@ namespace TimeTracker
         {
             try
             {
-                Exception exception = e.ExceptionObject as Exception;
-                MessageBox.Show(exception.Message);
-                // Handle the exception here (e.g., log the exception details, show a user-friendly error message)
+                if (e.ExceptionObject is Exception exception)
+                {
+                    LogManager.Logger.Error("Unhandled exception", exception);
+                    MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {

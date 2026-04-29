@@ -14,17 +14,18 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using TimeTracker.Models;
+using TimeTracker.Services.Interfaces;
 using TimeTracker.Trace;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace TimeTracker.Services
 {
-    public class REST
+    public class REST : IRestService
     {
         private readonly JsonSerializerSettings _serializerSettings;
-        HttpProviders _httpProvider;
+        private readonly IHttpProvider _httpProvider;
 
-        public REST(HttpProviders httpProvider)
+        public REST(IHttpProvider httpProvider)
         {
             _serializerSettings = new JsonSerializerSettings
             {
@@ -114,14 +115,24 @@ namespace TimeTracker.Services
         #region "ErrorLog"
         public void AddErrorLogs(ErrorLog errorLog)
         {
+            // Fire and forget - don't block the calling thread
             var uri = CombineUri(GlobalSetting.apiBaseUrl, $"/api/v1/errorlogs/new");
-            var res = _httpProvider
-                .PostWithTokenAsync<AddErrorLogAPIResult, ErrorLog>(
-                    uri,
-                    errorLog,
-                    GlobalSetting.Instance.LoginResult.token
-                )
-                .Result;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _httpProvider.PostWithTokenAsync<AddErrorLogAPIResult, ErrorLog>(
+                        uri,
+                        errorLog,
+                        GlobalSetting.Instance.LoginResult.token
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log locally but don't throw - this is error logging itself
+                    System.Diagnostics.Debug.WriteLine($"Failed to send error log: {ex.Message}");
+                }
+            });
         }
 
         public async Task<GetErrorLogResult> GetErrorLogs(string userId)
@@ -259,7 +270,6 @@ namespace TimeTracker.Services
             ProductivityAppResult res = new ProductivityAppResult();
             try
             {
-                HttpClient client = new HttpClient();
                 var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
                 res = await _httpProvider.GetWithTokenAsync<ProductivityAppResult>(
                     uri,
@@ -281,7 +291,6 @@ namespace TimeTracker.Services
             ProductivityAppAddResult res = new ProductivityAppAddResult();
             try
             {
-                HttpClient client = new HttpClient();
                 var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
                 res = await _httpProvider.PostWithTokenAsync<
                     ProductivityAppAddResult,
@@ -300,7 +309,6 @@ namespace TimeTracker.Services
             ProductivityAppDeleteResult res = new ProductivityAppDeleteResult();
             try
             {
-                HttpClient client = new HttpClient();
                 var uri = CombineUri(GlobalSetting.apiBaseUrl, id);
                 res = await _httpProvider.DeleteWithTokenAsync<ProductivityAppDeleteResult>(
                     uri,
@@ -333,7 +341,6 @@ namespace TimeTracker.Services
             var res = new EnableBeepSoundResult();
             try
             {
-                HttpClient client = new HttpClient();
                 var uri = CombineUri(GlobalSetting.apiBaseUrl, url);
                 res = await _httpProvider.GetWithTokenAsync<EnableBeepSoundResult>(
                     uri,

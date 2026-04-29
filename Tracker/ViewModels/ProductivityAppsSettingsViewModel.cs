@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Forms;
 using TimeTracker.Models;
 using TimeTracker.Services;
+using TimeTracker.Services.Interfaces;
 using TimeTracker.Utilities;
 using SystemWindows = System.Windows;
 
@@ -22,13 +23,20 @@ namespace TimeTracker.ViewModels
 {
     public class ProductivityAppsSettingsViewModel : ViewModelBase
     {
-        #region  private members        
-        private IConfiguration configuration;                
+        #region  private members
+        private readonly IRestService _restService;
+        private IConfiguration configuration;
         #endregion
 
         #region constructor
-        public ProductivityAppsSettingsViewModel()
+        /// <summary>
+        /// Creates a new ProductivityAppsSettingsViewModel with the specified REST service.
+        /// </summary>
+        /// <param name="restService">The REST service for API calls.</param>
+        public ProductivityAppsSettingsViewModel(IRestService restService)
         {
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+
             CloseCommand = new RelayCommand<CancelEventArgs>(CloseCommandExecute);
             DeleteApplication = new RelayCommand<string>(DeleteApplicationExecute);
             ReloadProcessesCommand = new RelayCommand(LoadRunningProcesses);
@@ -37,7 +45,6 @@ namespace TimeTracker.ViewModels
             configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             this.loadData();
         }
-        
 
         #endregion
 
@@ -82,24 +89,42 @@ namespace TimeTracker.ViewModels
         #region public methods
         public async void CloseCommandExecute(CancelEventArgs args)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            try
             {
-                // Get the process ID of the current application
-                int currentProcessId = Process.GetCurrentProcess().Id;
-                // Terminate the process
-                Process.GetProcessById(currentProcessId)?.Kill();            }
-            else
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    // Get the process ID of the current application
+                    using (var currentProcess = Process.GetCurrentProcess())
+                    {
+                        int currentProcessId = currentProcess.Id;
+                        // Terminate the process
+                        Process.GetProcessById(currentProcessId)?.Kill();
+                    }
+                }
+                else
+                {
+                    // Get the current window using the Application object
+                    Window window = SystemWindows.Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive);
+                    // Close the window if found
+                    window?.Close();
+                }
+            }
+            catch (Exception ex)
             {
-                // Get the current window using the Application object
-                Window window = SystemWindows.Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive);
-                // Close the window if found
-                window?.Close();
+                Debug.WriteLine($"CloseCommandExecute error: {ex.Message}");
             }
         }
         public async void DeleteApplicationExecute(string id)
         {
-            deleteProductivityApp(id);
-            getProductivityApps();
+            try
+            {
+                deleteProductivityApp(id);
+                await getProductivityApps();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"DeleteApplicationExecute error: {ex.Message}");
+            }
         }
         
         #endregion
@@ -111,64 +136,93 @@ namespace TimeTracker.ViewModels
 
 
        
-        private async Task<ObservableCollection<ProductivityModel>>  getProductivityApps()
+        private async Task<ObservableCollection<ProductivityModel>> getProductivityApps()
         {
-            var rest = new REST(new HttpProviders());
-            var result = await rest.GetProductivityApps($"api/v1/appWebsite/productivity/apps/{GlobalSetting.Instance.LoginResult.data.user.id}");                        
+            var result = await _restService.GetProductivityApps($"api/v1/appWebsite/productivity/apps/{GlobalSetting.Instance.LoginResult.data.user.id}");
             this.ProductivityApps = new ObservableCollection<ProductivityModel>(result.data);
             return this.ProductivityApps;
         }
 
         private async void deleteProductivityApp(string id)
         {
-            DialogResult dialogResult = System.Windows.Forms.MessageBox.Show("Are you sure?", "Delete Confirmation", MessageBoxButtons.YesNo);
-            if (dialogResult == DialogResult.Yes)  // error is here
+            try
             {
-                var rest = new REST(new HttpProviders());
-                var result = await rest.DeleteProductivityApp($"/api/v1/appWebsite/productivity/{id}");
-                if(result.data!=null)
-                {                    
-                    this.LoadRunningProcesses();
+                DialogResult dialogResult = System.Windows.Forms.MessageBox.Show("Are you sure?", "Delete Confirmation", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
+                {
+                    var result = await _restService.DeleteProductivityApp($"/api/v1/appWebsite/productivity/{id}");
+                    if (result?.data != null)
+                    {
+                        this.LoadRunningProcesses();
+                    }
                 }
-            }                        
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"deleteProductivityApp error: {ex.Message}");
+            }
         }
         private async void LoadRunningProcesses()
         {
-            this.RunningProcesses.Clear();
-            var processList= new ObservableCollection<ProductivityModel>(this.GetRunningApplications());
-            foreach (var process in processList)
+            try
             {
-                var pExists = this.ProductivityApps.Any(x => x.key.ToLower() == process.key.ToLower());
-                if (!pExists) {
-                    this.RunningProcesses.Add(process);
+                this.RunningProcesses.Clear();
+                var processList = new ObservableCollection<ProductivityModel>(this.GetRunningApplications());
+                foreach (var process in processList)
+                {
+                    var pExists = this.ProductivityApps.Any(x => x.key.ToLower() == process.key.ToLower());
+                    if (!pExists)
+                    {
+                        this.RunningProcesses.Add(process);
+                    }
                 }
+                this.productivityApps.Clear();
+                await this.getProductivityApps();
             }
-            this.productivityApps.Clear();
-            await this.getProductivityApps();
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"LoadRunningProcesses error: {ex.Message}");
+            }
         }
         private async void AddApplicationExecute(string key)
         {
-            var model = this.ProductivityApps.Where(x => x.key == key).FirstOrDefault();
-            if (model == null)
+            try
             {
-                model = this.RunningProcesses.Where(x => x.key == key).FirstOrDefault();
-                model.isApproved = false;
-                model.status = "pending";
-                model.icon = model.key;
-                var rest = new REST(new HttpProviders());
-                var result = await rest.AddProductivityApps($"api/v1/appWebsite/productivity", model);
-                if (result.data != null)
+                var model = this.ProductivityApps.Where(x => x.key == key).FirstOrDefault();
+                if (model == null)
                 {
-                    this.LoadRunningProcesses();
+                    model = this.RunningProcesses.Where(x => x.key == key).FirstOrDefault();
+                    if (model != null)
+                    {
+                        model.isApproved = false;
+                        model.status = "pending";
+                        model.icon = model.key;
+                        var result = await _restService.AddProductivityApps($"api/v1/appWebsite/productivity", model);
+                        if (result?.data != null)
+                        {
+                            this.LoadRunningProcesses();
+                        }
+                    }
                 }
+                this.loadData();
             }
-            this.loadData();
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"AddApplicationExecute error: {ex.Message}");
+            }
         }               
 
         private async void loadData()
         {
-            await this.getProductivityApps();            
-            this.LoadRunningProcesses();
+            try
+            {
+                await this.getProductivityApps();
+                this.LoadRunningProcesses();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"loadData error: {ex.Message}");
+            }
         }
 
         public  List<ProductivityModel> GetRunningApplications()
@@ -190,42 +244,51 @@ namespace TimeTracker.ViewModels
             return runningApplications;
         }
 
-        private  List<ProductivityModel> GetRunningApplicationsWindows()
+        private List<ProductivityModel> GetRunningApplicationsWindows()
         {
             List<ProductivityModel> runningApplications = new List<ProductivityModel>();
 
             foreach (Process process in Process.GetProcesses())
             {
-                if (!string.IsNullOrEmpty(process.MainWindowTitle) && HasUI(process))
+                try
                 {
-                    runningApplications.Add(new ProductivityModel { key = process.ProcessName, name= process.MainWindowTitle });
+                    if (!string.IsNullOrEmpty(process.MainWindowTitle) && HasUI(process))
+                    {
+                        runningApplications.Add(new ProductivityModel { key = process.ProcessName, name = process.MainWindowTitle });
+                    }
+                }
+                finally
+                {
+                    process.Dispose();
                 }
             }
 
             return runningApplications;
         }
 
-        private  List<ProductivityModel> GetRunningApplicationsMacOS()
+        private List<ProductivityModel> GetRunningApplicationsMacOS()
         {
             List<ProductivityModel> runningApplications = new List<ProductivityModel>();
 
-            Process process = new Process();
-            process.StartInfo.FileName = "bash";
-            process.StartInfo.Arguments = "-c \"osascript -e 'tell application \"System Events\" to get name of (processes where background only is false) end'\"";
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.CreateNoWindow = true;
-
-            process.Start();
-            while (!process.StandardOutput.EndOfStream)
+            using (var process = new Process())
             {
-                string line = process.StandardOutput.ReadLine();
-                if (!string.IsNullOrEmpty(line))
+                process.StartInfo.FileName = "bash";
+                process.StartInfo.Arguments = "-c \"osascript -e 'tell application \"System Events\" to get name of (processes where background only is false) end'\"";
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.CreateNoWindow = true;
+
+                process.Start();
+                while (!process.StandardOutput.EndOfStream)
                 {
-                    //runningApplications.Add(line);
+                    string line = process.StandardOutput.ReadLine();
+                    if (!string.IsNullOrEmpty(line))
+                    {
+                        //runningApplications.Add(line);
+                    }
                 }
+                process.WaitForExit();
             }
-            process.WaitForExit();
 
             return runningApplications;
         }

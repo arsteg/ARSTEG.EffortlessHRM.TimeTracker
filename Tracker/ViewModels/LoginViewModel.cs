@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using TimeTracker.Models;
 using TimeTracker.Services;
+using TimeTracker.Services.Interfaces;
 using TimeTracker.Trace;
 
 namespace TimeTracker.ViewModels
@@ -13,14 +14,20 @@ namespace TimeTracker.ViewModels
     public class LoginViewModel : ViewModelBase
     {
         #region private members
+        private readonly IRestService _restService;
         private IConfiguration configuration;
         #endregion
 
         #region constructor
-        public LoginViewModel()
+        /// <summary>
+        /// Creates a new LoginViewModel with the specified REST service.
+        /// </summary>
+        /// <param name="restService">The REST service for API calls.</param>
+        public LoginViewModel(IRestService restService)
         {
-            this.configuration = configuration;
-            LogManager.Logger.Info($"constructor starts");            
+            _restService = restService ?? throw new ArgumentNullException(nameof(restService));
+
+            LogManager.Logger.Info($"constructor starts");
             LoginCommand = new RelayCommand(async () => await LoginCommandExecuteAsync());
             CloseCommand = new RelayCommand(CloseCommandExecute);
             OpenForgotPasswordCommand = new RelayCommand(OpenForgotPasswordCommandExecute);
@@ -127,9 +134,7 @@ namespace TimeTracker.ViewModels
                 ProgressWidth = 30;
                 ErrorMessage = "";
 
-                var rest = new REST(new HttpProviders());
-
-                var result = await rest.SignIn(new Models.Login() { email = UserName, password = Password });
+                var result = await _restService.SignIn(new Models.Login() { email = UserName, password = Password });
 
                 if (result.status == "success")
                 {

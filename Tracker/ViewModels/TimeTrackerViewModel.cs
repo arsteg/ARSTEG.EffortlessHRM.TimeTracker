@@ -27,6 +27,8 @@ using TimeTracker.Services;
 using TimeTracker.Services.Interfaces;
 using TimeTracker.Trace;
 using TimeTracker.Utilities;
+using TimeTracker.Services.Communication;
+using TimeTracker.ViewModels.Communication;
 using SystemWindows = System.Windows;
 
 namespace TimeTracker.ViewModels
@@ -93,6 +95,7 @@ namespace TimeTracker.ViewModels
             ProductivityApplicationCommand = new RelayCommand(
                 ProductivityApplicationCommandExecute
             );
+            OpenCommunicationCommand = new RelayCommand(OpenCommunicationCommandExecute);
             TaskCompleteCommand = new RelayCommand(TaskCompleteCommandExecute);
             CreateNewTaskCommand = new RelayCommand(
                 async () => await CreateNewTaskCommandExecute()
@@ -697,6 +700,7 @@ namespace TimeTracker.ViewModels
         public RelayCommand TaskOpenCommand { get; set; }
         public RelayCommand SwitchTrackerYesCommand { get; set; }
         public RelayCommand SwitchTrackerNoCommand { get; set; }
+        public RelayCommand OpenCommunicationCommand { get; set; }
 
         ActiveApplicationPropertyThread activeWorker = new ActiveApplicationPropertyThread();
 
@@ -947,6 +951,42 @@ namespace TimeTracker.ViewModels
             catch (Exception ex)
             {
                 LogManager.Logger.Error(ex);
+            }
+        }
+
+        private Views.Communication.CommunicationWindow _communicationWindow;
+
+        public void OpenCommunicationCommandExecute()
+        {
+            try
+            {
+                LogManager.Logger.Info("Opening communication window...");
+
+                if (_communicationWindow == null || !_communicationWindow.IsLoaded)
+                {
+                    LogManager.Logger.Info("Creating new communication window instance...");
+
+                    var httpProvider = new HttpProviders();
+                    var communicationService = new CommunicationService(httpProvider);
+                    var webSocketService = new CommunicationWebSocketService();
+                    var viewModel = new CommunicationViewModel(communicationService, webSocketService);
+
+                    _communicationWindow = new Views.Communication.CommunicationWindow();
+                    _communicationWindow.DataContext = viewModel;
+                    _communicationWindow.Closed += (s, e) => _communicationWindow = null;
+
+                    LogManager.Logger.Info("Communication window created successfully");
+                }
+
+                _communicationWindow.Show();
+                _communicationWindow.Activate();
+                LogManager.Logger.Info("Communication window shown");
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"Error opening communication window: {ex.Message}\n{ex.StackTrace}");
+                SystemWindows.MessageBox.Show($"Error opening Messages: {ex.Message}", "Error",
+                    SystemWindows.MessageBoxButton.OK, SystemWindows.MessageBoxImage.Error);
             }
         }
 

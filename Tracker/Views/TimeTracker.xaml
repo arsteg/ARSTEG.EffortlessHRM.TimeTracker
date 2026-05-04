@@ -165,7 +165,8 @@
                                             </Icons:PackIconMaterial>
                                         </MenuItem.Icon>
                                         <MenuItem Background="White" Header="Dashboard" Command="{Binding OpenDashboardCommand}"></MenuItem>
-                                        
+                                        <MenuItem Header="Messages" Command="{Binding OpenCommunicationCommand}">
+                                        </MenuItem>
                                         <MenuItem Header="Productivity Applications" Command="{Binding ProductivityApplicationCommand}">
                                         </MenuItem>
                                         <MenuItem Header="View Logs" Command="{Binding LogCommand}"/>

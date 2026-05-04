@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using TimeTracker.Services.Communication;
 using TimeTracker.Services.Interfaces;
 using TimeTracker.ViewModels;
+using TimeTracker.ViewModels.Communication;
 
 namespace TimeTracker.Services
 {
@@ -19,10 +21,15 @@ namespace TimeTracker.Services
             services.AddTransient<IRestService, REST>();
             services.AddTransient<IApiService, APIService>();
 
+            // Register Communication services
+            services.AddTransient<ICommunicationService, CommunicationService>();
+            services.AddSingleton<CommunicationWebSocketService>();
+
             // Register ViewModels
             services.AddTransient<LoginViewModel>();
             services.AddTransient<TimeTrackerViewModel>();
             services.AddTransient<ProductivityAppsSettingsViewModel>();
+            services.AddTransient<CommunicationViewModel>();
 
             return services;
         }

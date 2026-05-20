@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Concurrent;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SocketIOClient;
 using TimeTracker.Models;
 using TimeTracker.Models.Communication;
 using TimeTracker.Trace;
@@ -14,14 +12,13 @@ namespace TimeTracker.Services.Communication
 {
     public class CommunicationWebSocketService : IDisposable
     {
-        private ClientWebSocket _webSocket;
-        private CancellationTokenSource _cancellationTokenSource;
-        private readonly string _baseWsUrl;
+        private SocketIOClient.SocketIO _socket;
+        private readonly string _baseUrl;
         private string _userId;
         private bool _isConnecting;
         private int _reconnectAttempts;
         private const int MaxReconnectAttempts = 50;
-        private Timer _heartbeatTimer;
+        private bool _disposed;
 
         // Events
         public event EventHandler<bool> ConnectionStateChanged;
@@ -38,11 +35,11 @@ namespace TimeTracker.Services.Communication
         public event EventHandler<Conversation> ConversationCreated;
         public event EventHandler<Conversation> ConversationUpdated;
 
-        public bool IsConnected => _webSocket?.State == WebSocketState.Open;
+        public bool IsConnected => _socket?.Connected ?? false;
 
         public CommunicationWebSocketService()
         {
-            _baseWsUrl = GlobalSetting.apiBaseUrl.Replace("https://", "wss://").Replace("http://", "ws://");
+            _baseUrl = GlobalSetting.apiBaseUrl;
         }
 
         public async Task ConnectAsync(string userId)
@@ -57,260 +54,418 @@ namespace TimeTracker.Services.Communication
             {
                 await DisconnectInternalAsync();
 
-                _webSocket = new ClientWebSocket();
-                _cancellationTokenSource = new CancellationTokenSource();
-
                 var token = GlobalSetting.Instance.LoginResult?.token;
-                var wsUrl = $"{_baseWsUrl}/communication?token={token}";
+                if (string.IsNullOrEmpty(token))
+                {
+                    LogManager.Logger.Warn("No token available for WebSocket connection");
+                    _isConnecting = false;
+                    ConnectionStateChanged?.Invoke(this, false);
+                    return;
+                }
 
-                await _webSocket.ConnectAsync(new Uri(wsUrl), _cancellationTokenSource.Token);
+                // Create Socket.IO client with authentication
+                _socket = new SocketIOClient.SocketIO(_baseUrl, new SocketIOOptions
+                {
+                    Auth = new { token = token },
+                    Reconnection = true,
+                    ReconnectionAttempts = MaxReconnectAttempts,
+                    ReconnectionDelay = 1000,
+                    ReconnectionDelayMax = 30000,
+                    ConnectionTimeout = TimeSpan.FromSeconds(20),
+                    Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
+                });
 
-                LogManager.Logger.Info("Communication WebSocket connected");
+                SetupEventHandlers();
+
+                LogManager.Logger.Info($"Connecting to Socket.IO at {_baseUrl}");
+                await _socket.ConnectAsync();
+
+                LogManager.Logger.Info("Socket.IO connected successfully");
                 _reconnectAttempts = 0;
                 _isConnecting = false;
-
                 ConnectionStateChanged?.Invoke(this, true);
-                StartHeartbeat();
-                _ = ListenForMessagesAsync();
             }
             catch (Exception ex)
             {
-                LogManager.Logger.Error($"WebSocket connection error: {ex.Message}");
+                LogManager.Logger.Error($"Socket.IO connection error: {ex.Message}");
                 _isConnecting = false;
                 ConnectionStateChanged?.Invoke(this, false);
                 ScheduleReconnect();
             }
         }
 
+        private void SetupEventHandlers()
+        {
+            _socket.OnConnected += (sender, e) =>
+            {
+                LogManager.Logger.Info("Socket.IO OnConnected event fired");
+                ConnectionStateChanged?.Invoke(this, true);
+            };
+
+            _socket.OnDisconnected += (sender, e) =>
+            {
+                LogManager.Logger.Info($"Socket.IO disconnected: {e}");
+                ConnectionStateChanged?.Invoke(this, false);
+                if (_userId != null && !_disposed)
+                {
+                    ScheduleReconnect();
+                }
+            };
+
+            _socket.OnError += (sender, e) =>
+            {
+                LogManager.Logger.Error($"Socket.IO error: {e}");
+            };
+
+            _socket.OnReconnectAttempt += (sender, attempt) =>
+            {
+                LogManager.Logger.Info($"Socket.IO reconnect attempt {attempt}");
+            };
+
+            _socket.OnReconnected += (sender, attempt) =>
+            {
+                LogManager.Logger.Info($"Socket.IO reconnected after {attempt} attempts");
+                ConnectionStateChanged?.Invoke(this, true);
+            };
+
+            _socket.OnReconnectFailed += (sender, e) =>
+            {
+                LogManager.Logger.Error("Socket.IO reconnect failed");
+            };
+
+            // Message events
+            _socket.On("new_message", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var message = json?["message"]?.ToObject<Message>();
+                    if (message != null)
+                    {
+                        LogManager.Logger.Debug($"Received new_message: {message.Id}");
+                        NewMessageReceived?.Invoke(this, message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling new_message: {ex.Message}");
+                }
+            });
+
+            _socket.On("message_updated", response =>
+            {
+                try
+                {
+                    var message = response.GetValue<Message>();
+                    if (message != null)
+                    {
+                        MessageUpdated?.Invoke(this, message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling message_updated: {ex.Message}");
+                }
+            });
+
+            _socket.On("message_deleted", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var conversationId = json?["conversationId"]?.ToString();
+                    var messageId = json?["messageId"]?.ToString();
+                    if (!string.IsNullOrEmpty(conversationId) && !string.IsNullOrEmpty(messageId))
+                    {
+                        MessageDeleted?.Invoke(this, (conversationId, messageId));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling message_deleted: {ex.Message}");
+                }
+            });
+
+            // Typing events
+            _socket.On("user_typing", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var conversationId = json?["conversationId"]?.ToString();
+                    var userId = json?["userId"]?.ToString();
+                    var userName = json?["userName"]?.ToString();
+                    if (!string.IsNullOrEmpty(conversationId) && !string.IsNullOrEmpty(userId))
+                    {
+                        UserTyping?.Invoke(this, (conversationId, userId, userName ?? ""));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling user_typing: {ex.Message}");
+                }
+            });
+
+            _socket.On("user_stopped_typing", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var conversationId = json?["conversationId"]?.ToString();
+                    var userId = json?["userId"]?.ToString();
+                    if (!string.IsNullOrEmpty(conversationId) && !string.IsNullOrEmpty(userId))
+                    {
+                        UserStoppedTyping?.Invoke(this, (conversationId, userId));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling user_stopped_typing: {ex.Message}");
+                }
+            });
+
+            // Presence events
+            _socket.On("presence_update", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var userId = json?["userId"]?.ToString();
+                    var status = json?["status"]?.ToString();
+                    if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(status))
+                    {
+                        PresenceUpdated?.Invoke(this, (userId, status));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling presence_update: {ex.Message}");
+                }
+            });
+
+            // Call events
+            _socket.On("incoming_call", response =>
+            {
+                try
+                {
+                    var call = response.GetValue<CallSession>();
+                    if (call != null)
+                    {
+                        IncomingCall?.Invoke(this, call);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling incoming_call: {ex.Message}");
+                }
+            });
+
+            _socket.On("call_answered", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var callId = json?["callId"]?.ToString();
+                    if (!string.IsNullOrEmpty(callId))
+                    {
+                        CallAnswered?.Invoke(this, callId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling call_answered: {ex.Message}");
+                }
+            });
+
+            _socket.On("call_declined", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var callId = json?["callId"]?.ToString();
+                    if (!string.IsNullOrEmpty(callId))
+                    {
+                        CallDeclined?.Invoke(this, callId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling call_declined: {ex.Message}");
+                }
+            });
+
+            _socket.On("call_ended", response =>
+            {
+                try
+                {
+                    var json = response.GetValue<JObject>();
+                    var callId = json?["callId"]?.ToString();
+                    if (!string.IsNullOrEmpty(callId))
+                    {
+                        CallEnded?.Invoke(this, callId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling call_ended: {ex.Message}");
+                }
+            });
+
+            // Conversation events
+            _socket.On("conversation_created", response =>
+            {
+                try
+                {
+                    var conversation = response.GetValue<Conversation>();
+                    if (conversation != null)
+                    {
+                        ConversationCreated?.Invoke(this, conversation);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling conversation_created: {ex.Message}");
+                }
+            });
+
+            _socket.On("conversation_updated", response =>
+            {
+                try
+                {
+                    var conversation = response.GetValue<Conversation>();
+                    if (conversation != null)
+                    {
+                        ConversationUpdated?.Invoke(this, conversation);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error handling conversation_updated: {ex.Message}");
+                }
+            });
+        }
+
         public async Task DisconnectAsync()
         {
             _userId = null;
-            StopHeartbeat();
             await DisconnectInternalAsync();
             ConnectionStateChanged?.Invoke(this, false);
         }
 
         private async Task DisconnectInternalAsync()
         {
-            if (_webSocket != null)
+            if (_socket != null)
             {
                 try
                 {
-                    if (_webSocket.State == WebSocketState.Open)
+                    if (_socket.Connected)
                     {
-                        _cancellationTokenSource?.Cancel();
-                        await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", CancellationToken.None);
+                        await _socket.DisconnectAsync();
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    LogManager.Logger.Error($"Error disconnecting Socket.IO: {ex.Message}");
+                }
                 finally
                 {
-                    _webSocket.Dispose();
-                    _webSocket = null;
+                    _socket.Dispose();
+                    _socket = null;
                 }
-            }
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
-        }
-
-        private async Task ListenForMessagesAsync()
-        {
-            var buffer = new byte[4096];
-            var messageBuilder = new StringBuilder();
-
-            try
-            {
-                while (_webSocket?.State == WebSocketState.Open)
-                {
-                    var result = await _webSocket.ReceiveAsync(
-                        new ArraySegment<byte>(buffer),
-                        _cancellationTokenSource.Token
-                    );
-
-                    if (result.MessageType == WebSocketMessageType.Close)
-                    {
-                        LogManager.Logger.Info("WebSocket closed by server");
-                        break;
-                    }
-
-                    if (result.MessageType == WebSocketMessageType.Text)
-                    {
-                        messageBuilder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
-
-                        if (result.EndOfMessage)
-                        {
-                            var message = messageBuilder.ToString();
-                            messageBuilder.Clear();
-                            HandleMessage(message);
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when disconnecting
-            }
-            catch (Exception ex)
-            {
-                LogManager.Logger.Error($"WebSocket receive error: {ex.Message}");
-            }
-            finally
-            {
-                ConnectionStateChanged?.Invoke(this, false);
-                if (_userId != null)
-                {
-                    ScheduleReconnect();
-                }
-            }
-        }
-
-        private void HandleMessage(string rawMessage)
-        {
-            try
-            {
-                var json = JObject.Parse(rawMessage);
-                var eventType = json["event"]?.ToString();
-                var payload = json["payload"];
-
-                if (string.IsNullOrEmpty(eventType)) return;
-
-                switch (eventType)
-                {
-                    case "new_message":
-                        var newMessage = payload.ToObject<NewMessagePayload>();
-                        if (newMessage?.Message != null)
-                            NewMessageReceived?.Invoke(this, newMessage.Message);
-                        break;
-
-                    case "message_updated":
-                        var updatedMessage = payload.ToObject<Message>();
-                        if (updatedMessage != null)
-                            MessageUpdated?.Invoke(this, updatedMessage);
-                        break;
-
-                    case "message_deleted":
-                        var deletedData = payload.ToObject<MessageDeletedPayload>();
-                        if (deletedData != null)
-                            MessageDeleted?.Invoke(this, (deletedData.ConversationId, deletedData.MessageId));
-                        break;
-
-                    case "user_typing":
-                        var typingData = payload.ToObject<TypingPayload>();
-                        if (typingData != null)
-                            UserTyping?.Invoke(this, (typingData.ConversationId, typingData.UserId, typingData.UserName));
-                        break;
-
-                    case "user_stopped_typing":
-                        var stoppedTypingData = payload.ToObject<TypingPayload>();
-                        if (stoppedTypingData != null)
-                            UserStoppedTyping?.Invoke(this, (stoppedTypingData.ConversationId, stoppedTypingData.UserId));
-                        break;
-
-                    case "presence_update":
-                        var presenceData = payload.ToObject<PresencePayload>();
-                        if (presenceData != null)
-                            PresenceUpdated?.Invoke(this, (presenceData.UserId, presenceData.Status));
-                        break;
-
-                    case "incoming_call":
-                        var incomingCall = payload.ToObject<CallSession>();
-                        if (incomingCall != null)
-                            IncomingCall?.Invoke(this, incomingCall);
-                        break;
-
-                    case "call_answered":
-                        var answeredCallId = payload["callId"]?.ToString();
-                        if (!string.IsNullOrEmpty(answeredCallId))
-                            CallAnswered?.Invoke(this, answeredCallId);
-                        break;
-
-                    case "call_declined":
-                        var declinedCallId = payload["callId"]?.ToString();
-                        if (!string.IsNullOrEmpty(declinedCallId))
-                            CallDeclined?.Invoke(this, declinedCallId);
-                        break;
-
-                    case "call_ended":
-                        var endedCallId = payload["callId"]?.ToString();
-                        if (!string.IsNullOrEmpty(endedCallId))
-                            CallEnded?.Invoke(this, endedCallId);
-                        break;
-
-                    case "conversation_created":
-                        var newConversation = payload.ToObject<Conversation>();
-                        if (newConversation != null)
-                            ConversationCreated?.Invoke(this, newConversation);
-                        break;
-
-                    case "conversation_updated":
-                        var updatedConversation = payload.ToObject<Conversation>();
-                        if (updatedConversation != null)
-                            ConversationUpdated?.Invoke(this, updatedConversation);
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogManager.Logger.Error($"Error handling WebSocket message: {ex.Message}");
             }
         }
 
         #region Send Methods
 
-        private async Task SendAsync(string eventType, object payload)
+        public async Task JoinConversationAsync(string conversationId)
         {
-            if (_webSocket?.State != WebSocketState.Open) return;
-
+            if (!IsConnected) return;
             try
             {
-                var message = JsonConvert.SerializeObject(new { @event = eventType, payload });
-                var bytes = Encoding.UTF8.GetBytes(message);
-                await _webSocket.SendAsync(
-                    new ArraySegment<byte>(bytes),
-                    WebSocketMessageType.Text,
-                    true,
-                    _cancellationTokenSource?.Token ?? CancellationToken.None
-                );
+                await _socket.EmitAsync("join_conversation", new { conversationId });
             }
             catch (Exception ex)
             {
-                LogManager.Logger.Error($"Error sending WebSocket message: {ex.Message}");
+                LogManager.Logger.Error($"Error joining conversation: {ex.Message}");
             }
         }
 
-        public Task JoinConversationAsync(string conversationId)
+        public async Task LeaveConversationAsync(string conversationId)
         {
-            return SendAsync("join_conversation", new { conversationId });
+            if (!IsConnected) return;
+            try
+            {
+                await _socket.EmitAsync("leave_conversation", new { conversationId });
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"Error leaving conversation: {ex.Message}");
+            }
         }
 
-        public Task LeaveConversationAsync(string conversationId)
+        public async Task JoinCallRoomAsync(string callId)
         {
-            return SendAsync("leave_conversation", new { conversationId });
+            if (!IsConnected) return;
+            try
+            {
+                await _socket.EmitAsync("join_call", new { callId });
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"Error joining call room: {ex.Message}");
+            }
         }
 
-        public Task JoinCallRoomAsync(string callId)
+        public async Task LeaveCallRoomAsync(string callId)
         {
-            return SendAsync("join_call", new { callId });
+            if (!IsConnected) return;
+            try
+            {
+                await _socket.EmitAsync("leave_call", new { callId });
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"Error leaving call room: {ex.Message}");
+            }
         }
 
-        public Task LeaveCallRoomAsync(string callId)
+        public async Task StartTypingAsync(string conversationId)
         {
-            return SendAsync("leave_call", new { callId });
+            if (!IsConnected) return;
+            try
+            {
+                await _socket.EmitAsync("typing_start", new { conversationId });
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"Error sending typing start: {ex.Message}");
+            }
         }
 
-        public Task StartTypingAsync(string conversationId)
+        public async Task StopTypingAsync(string conversationId)
         {
-            return SendAsync("typing_start", new { conversationId });
+            if (!IsConnected) return;
+            try
+            {
+                await _socket.EmitAsync("typing_stop", new { conversationId });
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"Error sending typing stop: {ex.Message}");
+            }
         }
 
-        public Task StopTypingAsync(string conversationId)
+        public async Task UpdatePresenceAsync(string status, string customMessage = null)
         {
-            return SendAsync("typing_stop", new { conversationId });
-        }
-
-        public Task UpdatePresenceAsync(string status, string customMessage = null)
-        {
-            return SendAsync("presence_update", new { status, customMessage });
+            if (!IsConnected) return;
+            try
+            {
+                await _socket.EmitAsync("presence_update", new { status, customMessage });
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error($"Error updating presence: {ex.Message}");
+            }
         }
 
         #endregion
@@ -319,16 +474,16 @@ namespace TimeTracker.Services.Communication
 
         private void ScheduleReconnect()
         {
-            if (_reconnectAttempts >= MaxReconnectAttempts || _userId == null) return;
+            if (_reconnectAttempts >= MaxReconnectAttempts || _userId == null || _disposed) return;
 
             var delay = Math.Min(1000 * Math.Pow(2, _reconnectAttempts), 30000);
             _reconnectAttempts++;
 
-            LogManager.Logger.Info($"Scheduling reconnect in {delay}ms (attempt {_reconnectAttempts})");
+            LogManager.Logger.Info($"Scheduling Socket.IO reconnect in {delay}ms (attempt {_reconnectAttempts})");
 
             Task.Delay((int)delay).ContinueWith(async _ =>
             {
-                if (_userId != null)
+                if (_userId != null && !_disposed)
                 {
                     await ConnectAsync(_userId);
                 }
@@ -337,58 +492,10 @@ namespace TimeTracker.Services.Communication
 
         #endregion
 
-        #region Heartbeat
-
-        private void StartHeartbeat()
-        {
-            StopHeartbeat();
-            _heartbeatTimer = new Timer(async _ =>
-            {
-                await SendAsync("ping", new { });
-            }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-        }
-
-        private void StopHeartbeat()
-        {
-            _heartbeatTimer?.Dispose();
-            _heartbeatTimer = null;
-        }
-
-        #endregion
-
         public void Dispose()
         {
-            StopHeartbeat();
-            DisconnectInternalAsync().Wait();
+            _disposed = true;
+            DisconnectInternalAsync().Wait(TimeSpan.FromSeconds(5));
         }
-
-        #region Payload Classes
-
-        private class NewMessagePayload
-        {
-            public string ConversationId { get; set; }
-            public Message Message { get; set; }
-        }
-
-        private class MessageDeletedPayload
-        {
-            public string ConversationId { get; set; }
-            public string MessageId { get; set; }
-        }
-
-        private class TypingPayload
-        {
-            public string ConversationId { get; set; }
-            public string UserId { get; set; }
-            public string UserName { get; set; }
-        }
-
-        private class PresencePayload
-        {
-            public string UserId { get; set; }
-            public string Status { get; set; }
-        }
-
-        #endregion
     }
 }

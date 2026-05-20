@@ -42,6 +42,7 @@ namespace TimeTracker.Services.Communication
         Task<List<UserPresence>> GetBulkPresenceAsync(List<string> userIds);
         Task RegisterDeviceAsync(RegisterDeviceRequest request);
         Task UnregisterDeviceAsync(string deviceId);
+        Task SendHeartbeatAsync(string deviceId, bool isActive);
 
         // Users
         Task<List<ChatUser>> SearchUsersAsync(string query);

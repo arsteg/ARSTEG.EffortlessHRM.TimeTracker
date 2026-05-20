@@ -189,16 +189,23 @@ namespace TimeTracker.ViewModels.Communication
             CloseNewConversationPanelCommand = new RelayCommand(() => ShowNewConversationPanel = false);
 
             SetupWebSocketHandlers();
+            if(CurrentUserId==null)
+                CurrentUserId = GlobalSetting.Instance.LoginResult?.data?.user?.id;
         }
 
         public async Task InitializeAsync()
         {
             CurrentUserId = GlobalSetting.Instance.LoginResult?.data?.user?.id;
+            LogManager.Logger.Info($"CommunicationViewModel initialized. CurrentUserId: '{CurrentUserId}'");
 
             if (!string.IsNullOrEmpty(CurrentUserId))
             {
                 await _webSocketService.ConnectAsync(CurrentUserId);
                 await LoadConversationsAsync();
+            }
+            else
+            {
+                LogManager.Logger.Warn("CurrentUserId is null or empty - user may not be properly logged in");
             }
         }
 
@@ -652,7 +659,16 @@ namespace TimeTracker.ViewModels.Communication
             {
                 IsLoading = true;
                 var users = await _communicationService.GetOrganizationUsersAsync();
-                _allUsers = users.Where(u => u.Id != CurrentUserId).ToList();
+
+                LogManager.Logger.Info($"Loaded {users?.Count ?? 0} users from API. CurrentUserId: '{CurrentUserId}'");
+
+                // Filter out the current user - use case-insensitive comparison and trim
+                _allUsers = users.Where(u =>
+                    !string.IsNullOrEmpty(u.Id) &&
+                    !string.Equals(u.Id?.Trim(), CurrentUserId?.Trim(), StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+
+                LogManager.Logger.Info($"After filtering out current user: {_allUsers.Count} users remain");
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -674,25 +690,41 @@ namespace TimeTracker.ViewModels.Communication
             }
         }
 
-        private async Task StartConversationWithUserAsync(ChatUser user)
+        public async Task StartConversationWithUserAsync(ChatUser user)
         {
-            if (user == null) return;
+            if (user == null)
+            {
+                LogManager.Logger.Warn("StartConversationWithUserAsync called with null user");
+                return;
+            }
+
+            LogManager.Logger.Info($"Starting conversation with user: {user.FullName} ({user.Id})");
+
+            // Show loading state
+            IsLoading = true;
 
             try
             {
                 // Check if a direct conversation already exists with this user
                 var existingConv = Conversations.FirstOrDefault(c =>
                     c.Type == "direct" &&
+                    c.Participants != null &&
                     c.Participants.Any(p => p.UserId == user.Id));
 
                 if (existingConv != null)
                 {
-                    SelectedConversation = existingConv;
-                    ShowNewConversationPanel = false;
+                    LogManager.Logger.Info($"Found existing conversation: {existingConv.Id}");
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        SelectedConversation = existingConv;
+                        ShowNewConversationPanel = false;
+                        IsLoading = false;
+                    });
                     return;
                 }
 
                 // Create new conversation
+                LogManager.Logger.Info("Creating new direct conversation...");
                 var request = new CreateConversationRequest
                 {
                     Type = "direct",
@@ -700,22 +732,37 @@ namespace TimeTracker.ViewModels.Communication
                 };
 
                 var conversation = await _communicationService.CreateConversationAsync(request);
-                if (conversation != null)
+
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    if (conversation != null)
                     {
+                        LogManager.Logger.Info($"Conversation created: {conversation.Id}");
                         if (!Conversations.Any(c => c.Id == conversation.Id))
                         {
                             Conversations.Insert(0, conversation);
                         }
                         SelectedConversation = conversation;
                         ShowNewConversationPanel = false;
-                    });
-                }
+                    }
+                    else
+                    {
+                        LogManager.Logger.Warn("CreateConversationAsync returned null - API may have returned an error");
+                        MessageBox.Show("Failed to create conversation. Please try again.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ShowNewConversationPanel = false;
+                    }
+                    IsLoading = false;
+                });
             }
             catch (Exception ex)
             {
-                LogManager.Logger.Error($"Error starting conversation: {ex.Message}");
+                LogManager.Logger.Error($"Error starting conversation: {ex.Message}\n{ex.StackTrace}");
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show($"Error creating conversation: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ShowNewConversationPanel = false;
+                    IsLoading = false;
+                });
             }
         }
 

@@ -394,5 +394,43 @@ namespace TimeTracker.Services
                 throw;
             }
         }
+
+        public async Task<TResult> PatchWithTokenAsync<TResult, T>(string uri, T data, string token)
+        {
+            try
+            {
+                var cookies =
+                    $"companyId={GlobalSetting.Instance.LoginResult.data.user.company.id}; jwt={token}; userId={GlobalSetting.Instance.LoginResult.data.user.id}";
+
+                using var request = new HttpRequestMessage(new HttpMethod("PATCH"), uri);
+                request.Headers.Accept.Clear();
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Add("Cookie", cookies);
+
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(data),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+                request.Content = content;
+
+                using HttpResponseMessage response = await _sharedHttpClient
+                    .SendAsync(request)
+                    .ConfigureAwait(false);
+                await HandleResponse(response);
+                string serialized = await response.Content.ReadAsStringAsync();
+
+                TResult result = JsonConvert.DeserializeObject<TResult>(serialized, _serializerSettings);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                LogManager.Logger.Error(
+                    ex,
+                    $"error in PatchWithTokenAsync<TResult, T>(string uri, T data, string token), calling url:{uri}"
+                );
+                return default;
+            }
+        }
     }
 }

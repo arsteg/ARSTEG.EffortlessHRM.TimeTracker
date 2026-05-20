@@ -16,5 +16,6 @@ namespace TimeTracker.Services.Interfaces
         Task<TResult> PostWithTokenAsync<TResult, T>(string uri, T data, string token);
         Task<TResult> DeleteWithTokenAsync<TResult>(string uri, string token);
         Task<TResult> PutWithTokenAsync<TResult, T>(string uri, T data, string token);
+        Task<TResult> PatchWithTokenAsync<TResult, T>(string uri, T data, string token);
     }
 }

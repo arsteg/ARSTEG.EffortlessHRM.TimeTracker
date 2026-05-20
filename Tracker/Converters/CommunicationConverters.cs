@@ -28,16 +28,29 @@ namespace TimeTracker.Converters
 
     /// <summary>
     /// Converts a positive number to Visibility.Visible, otherwise Collapsed
+    /// Use ConverterParameter=Inverse to invert the logic
     /// </summary>
     public class PositiveToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int intValue && intValue > 0)
-            {
-                return Visibility.Visible;
-            }
-            return Visibility.Collapsed;
+            bool isPositive = false;
+
+            if (value is int intValue)
+                isPositive = intValue > 0;
+            else if (value is double doubleValue)
+                isPositive = doubleValue > 0;
+            else if (value is long longValue)
+                isPositive = longValue > 0;
+
+            // Check for Inverse parameter
+            bool inverse = parameter is string paramStr &&
+                          paramStr.Equals("Inverse", StringComparison.OrdinalIgnoreCase);
+
+            if (inverse)
+                return isPositive ? Visibility.Collapsed : Visibility.Visible;
+
+            return isPositive ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -187,29 +200,64 @@ namespace TimeTracker.Converters
     }
 
     /// <summary>
-    /// Converts relative time from DateTime
+    /// Converts relative time from DateTime (handles both UTC and local times)
     /// </summary>
     public class RelativeTimeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is DateTime dateTime)
+            DateTime dateTime;
+
+            if (value is DateTime dt)
             {
-                var now = DateTime.Now;
-                var diff = now - dateTime;
-
-                if (diff.TotalSeconds < 60)
-                    return "Just now";
-                if (diff.TotalMinutes < 60)
-                    return $"{(int)diff.TotalMinutes}m ago";
-                if (diff.TotalHours < 24)
-                    return $"{(int)diff.TotalHours}h ago";
-                if (diff.TotalDays < 7)
-                    return $"{(int)diff.TotalDays}d ago";
-
-                return dateTime.ToString("MMM d");
+                // Convert to local time if it's UTC
+                dateTime = dt.Kind == DateTimeKind.Utc ? dt.ToLocalTime() : dt;
             }
-            return "";
+            else if (value is DateTimeOffset dto)
+            {
+                dateTime = dto.LocalDateTime;
+            }
+            else if (value is string dateStr && DateTime.TryParse(dateStr, out var parsed))
+            {
+                dateTime = parsed.Kind == DateTimeKind.Utc ? parsed.ToLocalTime() : parsed;
+            }
+            else
+            {
+                return "";
+            }
+
+            var now = DateTime.Now;
+            var diff = now - dateTime;
+
+            if (diff.TotalSeconds < 0)
+                return "Just now"; // Future time, treat as now
+
+            if (diff.TotalSeconds < 60)
+                return "Just now";
+            if (diff.TotalMinutes < 60)
+                return $"{(int)diff.TotalMinutes}m ago";
+            if (diff.TotalHours < 24)
+                return $"{(int)diff.TotalHours}h ago";
+            if (diff.TotalDays < 7)
+                return $"{(int)diff.TotalDays}d ago";
+
+            return dateTime.ToString("MMM d");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Converts null or empty string to Visibility.Collapsed
+    /// </summary>
+    public class StringToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return string.IsNullOrWhiteSpace(value as string) ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

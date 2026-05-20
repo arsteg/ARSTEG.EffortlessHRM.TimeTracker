@@ -278,8 +278,8 @@
                 </Border>
 
                 <!-- Messages -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="16">
-                    <ItemsControl ItemsSource="{Binding Messages}">
+                <ScrollViewer x:Name="MessagesScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="16">
+                    <ItemsControl x:Name="MessagesItemsControl" ItemsSource="{Binding Messages}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,4">
@@ -291,9 +291,15 @@
                                             <TextBlock Text="{Binding Content.Text}"
                                                        TextWrapping="Wrap"
                                                        Foreground="{Binding IsOwn, Converter={StaticResource OwnMessageForegroundConverter}}"/>
-                                            <TextBlock Text="{Binding CreatedAt, StringFormat=HH:mm}"
-                                                       FontSize="10" Foreground="#999"
-                                                       HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                                                <TextBlock Text="{Binding CreatedAt, StringFormat=HH:mm}"
+                                                           FontSize="10" Foreground="#999"/>
+                                                <!-- Read indicator for own messages -->
+                                                <TextBlock Text="✓✓" FontSize="10" Foreground="#4CAF50" Margin="4,0,0,0"
+                                                           Visibility="{Binding IsRead, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                <TextBlock Text="✓" FontSize="10" Foreground="#999" Margin="4,0,0,0"
+                                                           Visibility="{Binding IsDelivered, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -355,11 +361,14 @@
             </Grid>
         </Grid>
 
-        <!-- Connection Status -->
-        <Border Grid.ColumnSpan="2" VerticalAlignment="Top" HorizontalAlignment="Center"
-                Background="#333" CornerRadius="0,0,4,4" Padding="12,6"
+        <!-- Connection Status - small indicator that doesn't block functionality -->
+        <Border Grid.ColumnSpan="2" VerticalAlignment="Top" HorizontalAlignment="Right"
+                Background="#FFF3E0" CornerRadius="0,0,4,4" Padding="8,4" Margin="0,0,10,0"
                 Visibility="{Binding IsConnected, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-            <TextBlock Text="Connecting..." Foreground="White" FontSize="12"/>
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Width="8" Height="8" Fill="#FF9800" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="Reconnecting..." Foreground="#E65100" FontSize="11"/>
+            </StackPanel>
         </Border>
 
         <!-- New Conversation Panel -->
@@ -416,59 +425,72 @@
                     </Border>
 
                     <!-- Users List -->
-                    <ListBox Grid.Row="2" ItemsSource="{Binding AvailableUsers}"
-                             BorderThickness="0" Background="Transparent"
+                    <ListBox x:Name="UsersListBox" Grid.Row="2"
+                             ItemsSource="{Binding AvailableUsers}"
                              MaxHeight="350"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Button Style="{StaticResource IconButton}"
-                                        HorizontalContentAlignment="Stretch"
-                                        Command="{Binding DataContext.StartConversationWithUserCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        Padding="12,8">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="45"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Avatar -->
-                                        <Border Width="36" Height="36" CornerRadius="18" Background="#1976D2">
-                                            <TextBlock Text="{Binding Initials}"
-                                                       FontSize="14" FontWeight="Bold" Foreground="White"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-
-                                        <!-- User Info -->
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
-                                            <TextBlock Text="{Binding FullName}"
-                                                       FontWeight="Medium" FontSize="14"/>
-                                            <TextBlock Text="{Binding Email}"
-                                                       Foreground="#666" FontSize="12"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Button>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             SelectionChanged="UsersListBox_SelectionChanged"
+                             Visibility="{Binding AvailableUsers.Count, Converter={StaticResource PositiveToVisibilityConverter}}">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                 <Setter Property="Padding" Value="0"/>
                                 <Setter Property="Margin" Value="0"/>
+                                <Setter Property="Cursor" Value="Hand"/>
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="ListBoxItem">
-                                            <ContentPresenter/>
+                                            <Border x:Name="Bd" Background="White" Padding="12,10">
+                                                <ContentPresenter/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="#F0F0F0"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="#E3F2FD"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
                             </Style>
                         </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Avatar -->
+                                    <Border Width="36" Height="36" CornerRadius="18" Background="#1976D2"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Initials}"
+                                                   FontSize="14" FontWeight="Bold" Foreground="White"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- User Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                        <TextBlock Text="{Binding FullName}"
+                                                   FontWeight="Medium" FontSize="14"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Email}"
+                                                   Foreground="#666" FontSize="12"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <!-- Empty State -->
+                    <!-- Empty State - Only show when no users and not loading -->
                     <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                IsHitTestVisible="False"
                                 Visibility="{Binding AvailableUsers.Count, Converter={StaticResource PositiveToVisibilityConverter}, ConverterParameter=Inverse}">
                         <TextBlock Text="No users found" FontSize="14" Foreground="#666"
                                    HorizontalAlignment="Center"/>
